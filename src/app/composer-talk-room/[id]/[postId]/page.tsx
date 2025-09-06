@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import CommentList from './comment-list';
+import { ReportButton } from './report-button';
 
 // Mock Data
 const mockPostData = {
@@ -33,14 +34,14 @@ export type Comment = (typeof mockComments)[0];
 
 
 type PostDetailPageProps = {
-  params: {
+  params: Promise<{
     id: string;
     postId: string;
-  };
+  }>;
 };
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
-  const { id: composerId, postId } = params;
+  const { id: composerId, postId } = await params;
 
   return (
     <div className="bg-[#f4f5f7] min-h-screen">
@@ -53,9 +54,12 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                     <p className="font-semibold text-sm text-zinc-700">{mockPostData.author}</p>
                     <p className="text-xs text-zinc-400">{mockPostData.timestamp} · {mockPostData.category}</p>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-zinc-500 font-semibold">
-                    <Image src="/icons/talkIcon.svg" alt="" width={12} height={12} />
-                    <span>{mockPostData.postType}</span>
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-xs text-zinc-500 font-semibold">
+                        <Image src="/icons/talkIcon.svg" alt="" width={12} height={12} />
+                        <span>{mockPostData.postType}</span>
+                    </div>
+                    <ReportButton postId={postId} composerId={composerId} />
                 </div>
             </div>
 
@@ -97,7 +101,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
       {/* Comments Section */}
       <div className="mt-1.5 flex flex-col gap-1.5 w-[375px] mx-auto">
-        <CommentList />
+        <CommentList composerId={composerId} initialComments={mockComments} />
       </div>
     </div>
   );

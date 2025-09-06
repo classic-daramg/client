@@ -2,25 +2,30 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import CommentItem from './comment-item';
-import { mockComments, Comment } from './page'; // Mock data and type from page.tsx
+import { Comment } from './page'; // Type from page.tsx
 
 const COMMENTS_PER_PAGE = 5;
 
-export default function CommentList() {
-  const [comments, setComments] = useState<Comment[]>(mockComments.slice(0, COMMENTS_PER_PAGE));
+interface CommentListProps {
+  composerId?: string;
+  initialComments: Comment[];
+}
+
+export default function CommentList({ composerId, initialComments }: CommentListProps) {
+  const [comments, setComments] = useState<Comment[]>(initialComments.slice(0, COMMENTS_PER_PAGE));
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(mockComments.length > COMMENTS_PER_PAGE);
+  const [hasMore, setHasMore] = useState(initialComments.length > COMMENTS_PER_PAGE);
   const loader = useRef(null);
 
   const loadMoreComments = () => {
     if (!hasMore) return;
 
     const nextPage = page + 1;
-    const newComments = mockComments.slice(0, nextPage * COMMENTS_PER_PAGE);
+    const newComments = initialComments.slice(0, nextPage * COMMENTS_PER_PAGE);
     
     setComments(newComments);
     setPage(nextPage);
-    if (newComments.length >= mockComments.length) {
+    if (newComments.length >= initialComments.length) {
       setHasMore(false);
     }
   };
@@ -53,7 +58,7 @@ export default function CommentList() {
   return (
     <>
       {comments.map((comment) => (
-        <CommentItem key={comment.id} comment={comment} isReply={comment.isReply} />
+        <CommentItem key={comment.id} comment={comment} isReply={comment.isReply} composerId={composerId} />
       ))}
       {hasMore && (
         <div ref={loader} className="py-4 text-center text-zinc-500">

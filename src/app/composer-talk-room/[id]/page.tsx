@@ -148,7 +148,8 @@ function PostItem({ post }: { post: Post }) {
 
 
 // --- Main Page Component ---
-export default function ComposerTalkPage({ params }: { params: { id: string } }) {
+export default async function ComposerTalkPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
     return (
         <div className="px-5">
             {/* Composer Profile도 id에 맞는 정보로 바뀌어야함 */}
@@ -157,7 +158,7 @@ export default function ComposerTalkPage({ params }: { params: { id: string } })
             {/* Post List */}
             <section>
                 {mockPosts.map((post) => (
-                    <Link key={post.id} href={`/composer-talk-room/${params.id}/${post.id}`}>
+                    <Link key={post.id} href={`/composer-talk-room/${id}/${post.id}`}>
                         <PostItem post={post} />
                     </Link>
                 ))}
