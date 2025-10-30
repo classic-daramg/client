@@ -11,7 +11,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="w-full max-w-[375px] min-h-screen flex flex-col bg-white shadow-lg">
                     {/* 헤더 */}
                     
-
                     {/* 페이지 콘텐츠 (children) */}
                     <main className="w-full flex-1">
                         {children}

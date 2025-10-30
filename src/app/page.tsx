@@ -33,7 +33,7 @@ export default function HomePage() {
             <Link href="/notification">
                 <Image src="/icons/alarm.svg" alt="알림" width={24} height={24} />
             </Link>
-            <Link href="/loginpage">
+            <Link href="/my-page">
                 <Image src="/icons/profile.svg" alt="프로필" width={24} height={24} />
             </Link>
         </div>

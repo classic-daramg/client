@@ -1,15 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SearchFilterBar() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  // 필터 토글 대신 규칙 보기 버튼만 유지
+
+  useEffect(() => {
+    setSearchTerm(searchParams.get('search') || '');
+  }, [searchParams]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('검색어:', searchTerm);
+    router.push(`/free-talk?search=${searchTerm}`);
   };
 
   const handleRulesClick = () => {

@@ -49,10 +49,15 @@ const samplePosts = [
   }
 ];
 
-export default function PostList() {
+export default function PostList({ searchTerm }: { searchTerm?: string }) {
+  const filteredPosts = samplePosts.filter(post =>
+    post.title.toLowerCase().includes(searchTerm?.toLowerCase() || '') ||
+    post.content.toLowerCase().includes(searchTerm?.toLowerCase() || '')
+  );
+
   return (
     <div className="self-stretch bg-white flex flex-col justify-start items-center">
-      {samplePosts.map((post) => (
+      {filteredPosts.map((post) => (
         <PostItem
           key={post.id}
           id={post.id}
