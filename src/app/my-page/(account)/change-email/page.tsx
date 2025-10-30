@@ -31,7 +31,7 @@ export default function ChangeEmail() {
   // 가상 서버 통신 함수 (실제 서버 연동시 fetch로 대체)
   const fakeServerCheckCurrentEmail = async (email: string) => {
     // 실제로는 서버에서 현재 이메일이 맞는지 확인
-    return email === 'ad***@g****.com';
+    return email === 'admin@gmail.com';
   };
   const fakeServerSendCode = async (email: string) => {
     // 실제로는 서버에서 인증코드 생성 후 이메일로 발송

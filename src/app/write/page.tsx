@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ComposerSearch from './composer-search';
@@ -25,6 +25,20 @@ export default function WritePage() {
     const postTypes = ['큐레이션 글', '라흐마니노프 이야기'];
     const [selectedComposer, setSelectedComposer] = useState<string | null>(null);
     const [showComposerSearch, setShowComposerSearch] = useState(true);
+
+    // draft-edit 데이터가 있으면 제목/내용에 자동 입력
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const draftStr = localStorage.getItem('draft-edit');
+            if (draftStr) {
+                try {
+                    const draft = JSON.parse(draftStr);
+                    if (draft.title) setTitle(draft.title);
+                    if (draft.content) setContent(draft.content);
+                } catch {}
+            }
+        }
+    }, []);
 
     const handleSelectComposer = (composerName: string) => {
         setSelectedComposer(composerName);

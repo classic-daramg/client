@@ -90,7 +90,7 @@ export default function MyPage() {
         <ListItem title="비밀번호 변경" href="/my-page/change-password" />
 
         <SectionHeader title="게시글 관련" />
-        <ListItem title="작성한 글" href="/my-page/posts" />
+        <ListItem title="작성한 글" href="/my-page/my-posts" />
         <ListItem title="임시저장한 글" href="/my-page/drafts" />
         <ListItem title="스크랩한 글" href="/my-page/scraps" />
 
