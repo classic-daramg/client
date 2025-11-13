@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
 
-// Figma SVG assets
-const backIcon = "http://localhost:3845/assets/0154afbf47d5bd606ede89145084a98a3ac3b2f3.svg";
-const curationIcon = "http://localhost:3845/assets/20100bcd76d1b89b0c9d1746fff57ce5c6b50b2a.svg";
+// Local SVG assets
+const backIcon = "/icons/back.svg";
+const curationIcon = "/icons/write-blue.svg";
 
 export default function Drafts() {
 	// 샘플 데이터 (디자인용)
@@ -39,7 +39,7 @@ export default function Drafts() {
 			<div className="absolute bg-white flex flex-col gap-[16px] items-start left-0 pt-0 pb-[12px] px-[20px] top-[calc(50%-352px)] w-[375px]">
 				<div className="flex gap-[4px] items-center w-full">
 					<div className="relative w-6 h-6 flex items-center justify-center">
-						<img src={backIcon} alt="back" className="w-[7px] h-[15px] rotate-180" />
+						<img src={backIcon} alt="back" className="w-[20px] h-[20px]" />
 					</div>
 					<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
 						<p>임시저장한 글</p>
@@ -54,8 +54,8 @@ export default function Drafts() {
 							<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
 								{/* Label */}
 								<div className="flex gap-[3px] items-center">
-									<img src={curationIcon} alt="큐레이션글" className="w-3 h-3" />
-									<span className="text-[#d9d9d9] text-[11px] font-semibold">큐레이션글</span>
+									<img src={curationIcon} alt="큐레이션글" className="w-4 h-4" />
+									<span className="text-[#293A92] text-[11px] font-semibold">큐레이션글</span>
 								</div>
 								{/* Title/Content */}
 								<div className="flex flex-col gap-[4px] w-full">

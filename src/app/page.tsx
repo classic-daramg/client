@@ -1,5 +1,8 @@
+"use client";
+import { jwtDecode } from 'jwt-decode';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useUserProfileStore } from '../store/userProfileStore';
 import './globals.css';
 import UserProfileCard from '../components/UserProfileCard';
 
@@ -22,6 +25,37 @@ const menuItems = [
 ];
 
 export default function HomePage() {
+  // JWT 유효성 검사 함수
+  function isTokenValid(token: string | null): boolean {
+    if (!token) return false;
+    try {
+      const decoded: any = jwtDecode(token);
+      if (!decoded.exp) return false;
+      const now = Math.floor(Date.now() / 1000);
+      return decoded.exp > now;
+    } catch {
+      return false;
+    }
+  }
+
+  // Zustand에서 프로필 상태 가져오기 (로그인 여부 확인용)
+  const profile = useUserProfileStore((state) => state.profile);
+
+  // localStorage에서 토큰 가져오기
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+
+  // 로그인 여부: 토큰 유효 + 프로필 존재
+  const isLoggedIn = isTokenValid(token) && !!profile;
+
+  // 프로필 아이콘 클릭 핸들러
+  const handleProfileClick = () => {
+    if (isLoggedIn) {
+      window.location.href = '/my-page';
+    } else {
+      window.location.href = '/loginpage';
+    }
+  };
+
   return (
     <>
       <header className="w-full flex justify-between items-center p-4 border-b">
@@ -33,9 +67,14 @@ export default function HomePage() {
             <Link href="/notification">
                 <Image src="/icons/alarm.svg" alt="알림" width={24} height={24} />
             </Link>
-            <Link href="/my-page">
-                <Image src="/icons/profile.svg" alt="프로필" width={24} height={24} />
-            </Link>
+            <button
+              type="button"
+              onClick={handleProfileClick}
+              className="focus:outline-none"
+            >
+              <Image src="/icons/profile.svg" alt="프로필" width={24} height={24} />
+            </button>
+            {/* 로그인을 하기 전에는 마이페이지를 보여주면 안됨 */}
         </div>
       </header>
       <div className="p-4">
