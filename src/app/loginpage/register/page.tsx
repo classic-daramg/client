@@ -24,19 +24,24 @@ const SignupPage = () => {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [tempSelectedDate, setTempSelectedDate] = useState<Date>(new Date(2002, 3, 18));
   const [passwordError, setPasswordError] = useState('');
+  const [passwordCheckResult, setPasswordCheckResult] = useState<'valid' | 'invalid' | ''>('');
+  const [confirmPasswordChecked, setConfirmPasswordChecked] = useState<'valid' | 'invalid' | ''>('');
   const [ageError, setAgeError] = useState('');
 
-  // 모든 필드가 유효한지 검증
+  // 모든 필드가 유효한지 검증 (비밀번호 규약, 일치, 인증 포함)
   const isFormValid = () => {
+    const passwordRuleValid = validatePasswordRule(formData.password);
+    const passwordMatch = formData.password === formData.confirmPassword && formData.password.trim() !== '';
     return (
       formData.name.trim() !== '' &&
       formData.birthDate !== '' &&
       ageError === '' &&
       formData.email.trim() !== '' &&
       isEmailVerified &&
-      formData.password.trim() !== '' &&
-      formData.confirmPassword.trim() !== '' &&
-      passwordError === ''
+      passwordRuleValid &&
+      passwordMatch &&
+      passwordCheckResult === 'valid' &&
+      confirmPasswordChecked === 'valid'
     );
   };
 
@@ -53,6 +58,7 @@ const SignupPage = () => {
       } else {
         setPasswordError('');
       }
+      setConfirmPasswordChecked(''); // 입력 시 결과 초기화
     }
 
     if (field === 'password') {
@@ -61,15 +67,52 @@ const SignupPage = () => {
       } else {
         setPasswordError('');
       }
+      setPasswordCheckResult(''); // 비밀번호 입력 시 결과 초기화
+      setConfirmPasswordChecked(''); // 입력 시 결과 초기화
+    }
+  };
+  // 비밀번호 규약 체크 함수 (예시: 8~20자, 영문/숫자/특수문자 포함)
+  function validatePasswordRule(password: string): boolean {
+    // 8~20자, 영문/숫자/특수문자 모두 포함
+    const lengthValid = password.length >= 8 && password.length <= 20;
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    return lengthValid && hasLetter && hasNumber && hasSpecial;
+  }
+
+  // 비밀번호 확인 버튼 클릭
+  const handlePasswordCheck = () => {
+    if (validatePasswordRule(formData.password)) {
+      setPasswordCheckResult('valid');
+    } else {
+      setPasswordCheckResult('invalid');
+    }
+  };
+
+  // 비밀번호 확인 버튼 (확인 비밀번호)
+  const handleConfirmPasswordCheck = () => {
+    if (
+      formData.password === formData.confirmPassword &&
+      formData.password.trim() !== '' &&
+      validatePasswordRule(formData.password)
+    ) {
+      setConfirmPasswordChecked('valid');
+    } else {
+      setConfirmPasswordChecked('invalid');
     }
   };
 
   const handleSendVerificationCode = () => {
-    setIsCodeSent(true);
+    if (formData.email.trim() !== '') {
+      setIsCodeSent(true);
+    }
   };
 
   const handleVerifyCode = () => {
-    setIsEmailVerified(true);
+    if (formData.verificationCode.trim() !== '') {
+      setIsEmailVerified(true);
+    }
   };
 
   const handleTempDateChange = useCallback((selectedDate: Date) => {
@@ -290,9 +333,14 @@ const SignupPage = () => {
             </div>
             <button
               onClick={handleSendVerificationCode}
-              className="flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] bg-[#F4F5F7] rounded-md hover:bg-[#293A92] cursor-pointer"
+              disabled={formData.email.trim() === ''}
+              className={`flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] rounded-md transition-colors duration-200
+                ${formData.email.trim() !== '' ? 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]' : 'bg-[#F4F5F7] cursor-not-allowed'}
+              `}
             >
-              <span className="whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#A6A6A6] hover:text-[#FFFFFF]">
+              <span className={`whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center
+                ${formData.email.trim() !== '' ? 'text-[#FFFFFF]' : 'text-[#A6A6A6]'}
+              `}>
                 인증코드 전송
               </span>
             </button>
@@ -312,10 +360,14 @@ const SignupPage = () => {
             </div>
             <button
               onClick={handleVerifyCode}
-              disabled={!isCodeSent}
-              className="flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] bg-[#F4F5F7] rounded-md hover:bg-[#293A92] cursor-pointer"
+              disabled={!isCodeSent || formData.verificationCode.trim() === ''}
+              className={`flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] rounded-md transition-colors duration-200
+                ${isCodeSent && formData.verificationCode.trim() !== '' ? 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]' : 'bg-[#F4F5F7] cursor-not-allowed'}
+              `}
             >
-              <span className="whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#A6A6A6] hover:text-[#FFFFFF]">
+              <span className={`whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center
+                ${isCodeSent && formData.verificationCode.trim() !== '' ? 'text-[#FFFFFF]' : 'text-[#A6A6A6]'}
+              `}>
                 인증코드 확인
               </span>
             </button>
@@ -343,19 +395,35 @@ const SignupPage = () => {
                 className="w-[231px] h-[18px] font-pretendard font-medium text-[15px] leading-[18px] flex items-center text-[#BFBFBF] bg-transparent outline-none"
               />
               <div className="w-[231px] h-0 border-t border-[#D9D9D9]"></div>
+              {passwordCheckResult === 'valid' && (
+                <div className="w-[231px] h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#293A92] mt-1 mb-[5px]">
+                  사용가능한 비밀번호입니다
+                </div>
+              )}
+              {passwordCheckResult === 'invalid' && (
+                <div className="w-[231px] h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-red-500 mt-1">
+                  사용할 수 없는 비밀번호입니다
+                </div>
+              )}
             </div>
             <button
-              disabled
-              className="flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] bg-[#F4F5F7] rounded-md hover:bg-[#293A92] cursor-pointer"
+              type="button"
+              onClick={handlePasswordCheck}
+              disabled={formData.password.trim() === ''}
+              className={`flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] rounded-md transition-colors duration-200
+                ${formData.password.trim() !== '' ? 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]' : 'bg-[#F4F5F7] cursor-not-allowed'}
+              `}
             >
-              <span className="whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#A6A6A6] hover:text-[#FFFFFF]">
+              <span className={`whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center
+                ${formData.password.trim() !== '' ? 'text-[#FFFFFF]' : 'text-[#A6A6A6]'}
+              `}>
                 비밀번호 확인
               </span>
             </button>
           </div>
 
           {/* Confirm Password Input */}
-          <div className="flex flex-row items-end gap-[11px] w-[335px] h-[42px]">
+          <div className="flex flex-row items-end gap-[11px] w-[335px] h-[42px] mt-[16px]">
             <div className="flex flex-col items-start gap-3 w-[231px] h-[30px]">
               <input
                 type="password"
@@ -370,12 +438,32 @@ const SignupPage = () => {
                   {passwordError}
                 </div>
               )}
+              {confirmPasswordChecked === 'valid' && (
+                <div className="w-[231px] h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#293A92] mt-1 mb-[5px]">
+                  비밀번호가 일치합니다
+                </div>
+              )}
+              {confirmPasswordChecked === 'invalid' && (
+                <div className="w-[231px] h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-red-500 mt-1">
+                  비밀번호가 일치하지 않습니다
+                </div>
+              )}
             </div>
             <button
-              disabled
-              className="flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] bg-[#F4F5F7] rounded-md hover:bg-[#293A92] cursor-pointer"
+              type="button"
+              onClick={handleConfirmPasswordCheck}
+              disabled={
+                formData.password.trim() === '' ||
+                formData.confirmPassword.trim() === '' ||
+                formData.password !== formData.confirmPassword
+              }
+              className={`flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] rounded-md transition-colors duration-200
+                ${formData.password.trim() !== '' && formData.confirmPassword.trim() !== '' && formData.password === formData.confirmPassword ? 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]' : 'bg-[#F4F5F7] cursor-not-allowed'}
+              `}
             >
-              <span className="whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#A6A6A6] hover:text-[#FFFFFF]">
+              <span className={`whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center
+                ${formData.password.trim() !== '' && formData.confirmPassword.trim() !== '' && formData.password === formData.confirmPassword ? 'text-[#FFFFFF]' : 'text-[#A6A6A6]'}
+              `}>
                 비밀번호 확인
               </span>
             </button>

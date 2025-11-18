@@ -121,10 +121,7 @@ export default function HomePage() {
           </div>
       </div>
 
-      {/* 사용자 프로필 카드 (테스트용) */}
-      <div className="px-4 py-6">
-        <UserProfileCard />
-      </div>
+      {/* // ...existing code... */}
     </>
   );
 }

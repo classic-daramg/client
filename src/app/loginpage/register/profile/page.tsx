@@ -16,6 +16,9 @@ const ProfileSetupPage = () => {
   const [profileImage, setProfileImage] = useState<string | null>(defaultProfileImage); // store에서 기본 이미지 가져오기
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [isNicknameChecked, setIsNicknameChecked] = useState(false);
+  const [nicknameCheckLoading, setNicknameCheckLoading] = useState(false);
+  const [nicknameCheckError, setNicknameCheckError] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,8 +56,8 @@ const ProfileSetupPage = () => {
   const isDefaultImage = profileImage === defaultProfileImage;
 
   const isNicknameValid = nickname.length > 0 && nickname.length <= 8;
-  const isBioValid = bio.length <= 12;
-  const isFormValid = isNicknameValid && isBioValid && profileImage;
+  const isBioValid = bio.length > 0 && bio.length <= 12;
+  const isFormValid = isNicknameValid && isNicknameChecked && isBioValid && profileImage;
 
   const handleNext = async () => {
     if (!isFormValid) return;
@@ -152,6 +155,31 @@ const ProfileSetupPage = () => {
     router.push('/loginpage');
   };
 
+  // 닉네임 중복 체크 API 호출
+  const handleNicknameCheck = async () => {
+    if (!isNicknameValid) return;
+    setNicknameCheckLoading(true);
+    setNicknameCheckError('');
+    setIsNicknameChecked(false);
+    try {
+      // 실제 API 엔드포인트로 변경 필요
+      const response = await fetch(`/api/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+      const data = await response.json();
+      if (response.ok && data.available) {
+        setIsNicknameChecked(true);
+        setNicknameCheckError('');
+      } else {
+        setIsNicknameChecked(false);
+        setNicknameCheckError('이미 사용 중인 닉네임입니다.');
+      }
+    } catch (error) {
+      setIsNicknameChecked(false);
+      setNicknameCheckError('닉네임 중복 확인 중 오류가 발생했습니다.');
+    } finally {
+      setNicknameCheckLoading(false);
+    }
+  };
+
   return (
     <div className="relative w-full max-w-[375px] mx-auto h-screen bg-white flex flex-col">
       {/* Header */}
@@ -242,19 +270,31 @@ const ProfileSetupPage = () => {
                     type="text"
                     placeholder="최대 8글자 입력 가능합니다"
                     value={nickname}
-                    onChange={(e) => setNickname(e.target.value.slice(0, 8))}
+                    onChange={(e) => {
+                      setNickname(e.target.value.slice(0, 8));
+                      setIsNicknameChecked(false);
+                      setNicknameCheckError('');
+                    }}
                     className="w-full text-[15px] font-medium text-[#1A1A1A] placeholder:text-[#BFBFBF] border-b border-[#D9D9D9] pb-3 outline-none focus:border-[#1A1A1A] transition-colors"
                   />
                 </div>
                 <button
-                  className={`px-3.5 py-2.5 rounded-md text-xs font-medium text-white whitespace-nowrap ${
-                    isNicknameValid ? 'bg-[#293A92]' : 'bg-[#D9D9D9]'
+                  type="button"
+                  onClick={handleNicknameCheck}
+                  className={`px-3.5 py-2.5 rounded-md text-xs font-medium text-white whitespace-nowrap transition-colors duration-200 ${
+                    isNicknameValid && !nicknameCheckLoading ? 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]' : 'bg-[#D9D9D9] cursor-not-allowed'
                   }`}
-                  disabled={!isNicknameValid}
+                  disabled={!isNicknameValid || nicknameCheckLoading}
                 >
-                  중복 인증
+                  {nicknameCheckLoading ? '확인 중...' : '중복 인증'}
                 </button>
               </div>
+              {isNicknameChecked && (
+                <div className="text-xs text-[#293A92] mt-1">사용 가능한 닉네임입니다.</div>
+              )}
+              {nicknameCheckError && (
+                <div className="text-xs text-red-500 mt-1">{nicknameCheckError}</div>
+              )}
             </div>
           </div>
 
@@ -304,6 +344,7 @@ const ProfileSetupPage = () => {
       )}
     </div>
   );
-};
+}
 
 export default ProfileSetupPage;
+// 완료버튼만 누르면 회원가입 완료에 api로 회원가입을 post 하기
