@@ -1,0 +1,39 @@
+import { useState } from 'react';
+import Image from 'next/image';
+
+export interface ScrapButtonProps {
+  defaultSelected: boolean; // API에서 받아온 디폴트 값
+  onToggle?: (selected: boolean) => void;
+  className?: string;
+  size?: number; // 아이콘 크기 (px)
+}
+
+const ScrapButton = ({ defaultSelected, onToggle, className = '', size = 24 }: ScrapButtonProps) => {
+  const [selected, setSelected] = useState(defaultSelected);
+  const handleClick = () => {
+    setSelected((prev) => {
+      const next = !prev;
+      if (onToggle) onToggle(next);
+      return next;
+    });
+    // TODO: 백엔드 API 호출로 스크랩 상태 업데이트
+  };
+  return (
+    <button
+      onClick={handleClick}
+      className={`overflow-clip relative shrink-0 rounded-full transition-colors hover:bg-gray-100 ${className}`}
+      aria-label="스크랩"
+      style={{ width: size, height: size }}
+    >
+      <Image
+        src={selected ? "/icons/bookmark-on.svg" : "/icons/bookmark-off.svg"}
+        alt="scrap"
+        width={size - 4}
+        height={size - 4}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+      />
+    </button>
+  );
+};
+
+export default ScrapButton;

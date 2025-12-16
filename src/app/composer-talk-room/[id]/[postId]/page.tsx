@@ -6,6 +6,8 @@ import CommentList from './comment-list';
 import CommentInput from './comment-input';
 import { ReportButton } from './report-button';
 import { useState, useEffect } from 'react';
+import LikeButton from '@/components/LikeButton';
+import ScrapButton from '@/components/ScrapButton';
 
 // Mock Data
 const mockPostData = {
@@ -170,12 +172,14 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
             <div className="flex justify-between items-center">
                 <div className="flex gap-3">
                     <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                        <Image src="/icons/heart.svg" alt="likes" width={24} height={24} />
-                        <span>좋아요</span>
+                      <LikeButton defaultSelected={false} size={30} />
+                      <span>좋아요</span>
+                      <span>{mockPostData.likes}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                        <Image src="/icons/logo.svg" alt="scraps" width={24} height={24} />
-                        <span>스크랩</span>
+                      <ScrapButton defaultSelected={false} size={24} />
+                      <span>스크랩</span>
+                      <span>{mockPostData.scraps}</span>
                     </div>
                 </div>
                 <button>
