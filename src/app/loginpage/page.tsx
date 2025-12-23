@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import ToastNotification from '../../components/ToastNotification';
+import { useUserProfileStore } from '../../store/userProfileStore';
 
 const loginpage = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +13,8 @@ const loginpage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const setProfile = useUserProfileStore((state) => state.setProfile);
 
   const handleLogin = async () => {
     // 입력 검증
@@ -24,6 +28,44 @@ const loginpage = () => {
       return;
     }
 
+    // 관리자 임시 로그인 우회
+    //보안위험**************
+    if (email.trim() === 'admin@gmail.com' && password === 'admin1234!') {
+      setToast({ show: true, message: '관리자 계정으로 로그인되었습니다.' });
+      // 임시 JWT (exp: 24시간 후)
+      const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24;
+      // 유니코드 안전 base64 인코딩 함수
+      function base64EncodeUnicode(str: string) {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+          String.fromCharCode(parseInt(p1, 16))
+        ));
+      }
+
+      const adminJwt = [
+        base64EncodeUnicode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })),
+        base64EncodeUnicode(JSON.stringify({
+          email: 'admin@gmail.com',
+          name: '관리자',
+          nickname: 'admin',
+        })),
+        'signature'
+      ].join('.')
+      localStorage.setItem('authToken', adminJwt);
+      setProfile({
+        name: '관리자',
+        nickname: 'admin',
+        email: 'admin@gmail.com',
+        bio: '관리자 계정',
+        profileImage: '/icons/profile.svg',
+        birthDate: '',
+      });
+      setIsLoading(false);
+      setTimeout(() => {
+        router.push('/');
+      }, 500);
+      return;
+    }
+    //*********보안 위험*********//
     setIsLoading(true);
 
     try {
@@ -50,9 +92,9 @@ const loginpage = () => {
           localStorage.setItem('authToken', data.token);
         }
 
-        // 메인 페이지로 이동 또는 리다이렉트
-        // router.push('/') 등으로 페이지 이동
-
+        setTimeout(() => {
+          router.push('/');
+        }, 500);
       } else {
         // 로그인 실패
         switch (response.status) {

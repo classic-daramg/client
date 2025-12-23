@@ -1,4 +1,6 @@
+
 "use client";
+import React from 'react';
 import { jwtDecode } from 'jwt-decode';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -38,14 +40,56 @@ export default function HomePage() {
     }
   }
 
+
   // Zustand에서 프로필 상태 가져오기 (로그인 여부 확인용)
   const profile = useUserProfileStore((state) => state.profile);
+  const setProfile = useUserProfileStore((state) => state.setProfile);
 
-  // localStorage에서 토큰 가져오기
-  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  // isLoggedIn을 상태로 관리
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
-  // 로그인 여부: 토큰 유효 + 프로필 존재
-  const isLoggedIn = isTokenValid(token) && !!profile;
+
+  React.useEffect(() => {
+    // 클라이언트에서만 localStorage 접근
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    setIsLoggedIn(isTokenValid(token) && !!profile);
+
+    // profile이 null이고 토큰이 유효하면, 토큰에서 프로필 복원
+    if (!profile && isTokenValid(token) && token) {
+      try {
+        const payload = token.split('.')[1];
+        // base64 디코딩 (유니코드 안전)
+        function base64DecodeUnicode(str: string) {
+          return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+        }
+        const user = JSON.parse(base64DecodeUnicode(payload));
+        if (user && user.email) {
+          setProfile({
+            name: user.name || '',
+            nickname: user.nickname || '',
+            email: user.email,
+            bio: user.bio || '',
+            profileImage: user.profileImage || '/icons/profile.svg',
+            birthDate: user.birthDate || '',
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [profile]);
+
+  // localStorage 토큰 변경 감지 (storage 이벤트 활용)
+  React.useEffect(() => {
+    const handleStorage = () => {
+      const token = localStorage.getItem('authToken');
+      setIsLoggedIn(isTokenValid(token) && !!profile);
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [profile]);
 
   // 프로필 아이콘 클릭 핸들러
   const handleProfileClick = () => {
