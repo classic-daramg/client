@@ -59,6 +59,13 @@ const loginpage = () => {
         profileImage: '/icons/profile.svg',
         birthDate: '',
       });
+      // 상태 확인용 콘솔 출력
+      // setTimeout(() => {
+      //   const profileState = useUserProfileStore.getState().profile;
+      //   console.log('localStorage user-profile-storage:', localStorage.getItem('user-profile-storage'));
+      //   console.log('profile 상태:', profileState);
+      //   console.log('isLoggedIn (profile !== null):', profileState !== null);
+      // }, 100);
       setIsLoading(false);
       setTimeout(() => {
         router.push('/');
@@ -93,6 +100,10 @@ const loginpage = () => {
         }
 
         setTimeout(() => {
+          const profileState = useUserProfileStore.getState().profile;
+          console.log('localStorage user-profile-storage:', localStorage.getItem('user-profile-storage'));
+          console.log('profile 상태:', profileState);
+          console.log('isLoggedIn (profile !== null):', profileState !== null);
           router.push('/');
         }, 500);
       } else {

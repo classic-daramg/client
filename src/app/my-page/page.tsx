@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useUserProfileStore } from '@/store/userProfileStore';
 
 // --- Reusable Components for the New Design ---
 
@@ -66,18 +68,83 @@ const SectionHeader = ({ title }: { title: string }) => (
 );
 
 // List Item for Settings
-const ListItem = ({ title, href }: { title: string; href: string }) => (
+const ListItem = ({ title, href, onClick }: { title: string; href?: string; onClick?: () => void }) => (
   <>
-    <Link href={href} className="px-5 py-4 bg-white flex items-center">
-      <span className="flex-1 text-neutral-600 text-sm font-semibold">{title}</span>
-    </Link>
+    {href ? (
+      <Link href={href} className="px-5 py-4 bg-white flex items-center">
+        <span className="flex-1 text-neutral-600 text-sm font-semibold">{title}</span>
+      </Link>
+    ) : (
+      <button onClick={onClick} className="px-5 py-4 bg-white flex items-center w-full text-left">
+        <span className="flex-1 text-neutral-600 text-sm font-semibold">{title}</span>
+      </button>
+    )}
     <div className="h-px bg-neutral-100" />
   </>
+);
+
+// Logout Confirmation Popup
+const LogoutPopup = ({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
+    <div className="bg-white flex flex-col gap-2.5 items-center justify-center pb-4 pt-5 px-7 rounded-[20px] shadow-[0px_0px_10px_2px_rgba(0,0,0,0.05)]">
+      <div className="flex flex-col items-center justify-center px-0 py-5 w-full">
+        <p className="text-[#4c4c4c] text-base font-semibold text-center w-[216px]">
+          로그아웃 하시겠습니까?
+        </p>
+      </div>
+      <div className="flex gap-1.5 w-full">
+        <button
+          onClick={onCancel}
+          className="flex-1 bg-white border border-[#d9d9d9] flex items-center justify-center px-3.5 py-1.5 rounded-[50px]"
+        >
+          <span className="text-[#4c4c4c] text-xs font-semibold">취소</span>
+        </button>
+        <button
+          onClick={onConfirm}
+          className="flex-1 bg-[#293a92] flex items-center justify-center px-3.5 py-1.5 rounded-[50px]"
+        >
+          <span className="text-white text-xs font-semibold">로그아웃</span>
+        </button>
+      </div>
+    </div>
+  </div>
 );
 
 
 // --- Main MyPage Component ---
 export default function MyPage() {
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const router = useRouter();
+  const clearProfile = useUserProfileStore((state) => state.clearProfile);
+
+  const handleLogout = async () => {
+    try {
+      // TODO: 백엔드 API가 준비되면 주석 해제
+      // const response = await fetch('/api/auth/logout', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+      //   }
+      // });
+      
+      // if (!response.ok) {
+      //   throw new Error('로그아웃 실패');
+      // }
+
+      // 임시: API 호출 없이 바로 로그아웃 처리
+      localStorage.removeItem('authToken');
+      clearProfile();
+      router.push('/loginpage');
+    } catch (error) {
+      console.error('로그아웃 에러:', error);
+      // 에러가 발생해도 로컬 상태는 초기화
+      localStorage.removeItem('authToken');
+      clearProfile();
+      router.push('/loginpage');
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto bg-gray-100 min-h-screen">
       <Header />
@@ -104,8 +171,16 @@ export default function MyPage() {
         <SectionHeader title="기타" />
         <ListItem title="알림설정" href="/my-page/notifications" />
         <ListItem title="회원탈퇴" href="/my-page/delete-account" />
-        <ListItem title="로그아웃" href="/my-page/logout" />
+        <ListItem title="로그아웃" onClick={() => setShowLogoutPopup(true)} />
       </div>
+
+      {/* Logout Popup */}
+      {showLogoutPopup && (
+        <LogoutPopup
+          onCancel={() => setShowLogoutPopup(false)}
+          onConfirm={handleLogout}
+        />
+      )}
     </div>
   );
 }
