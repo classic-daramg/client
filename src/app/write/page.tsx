@@ -5,10 +5,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ComposerSearch from './composer-search';
 
-// Reusable component for section headers
+// Section Header Component
 const SectionHeader = ({ title }: { title: string }) => (
-    <div className="self-stretch px-5 py-3.5 bg-gray-100">
-        <p className="text-neutral-600 text-xs font-medium font-['Pretendard']">{title}</p>
+    <div className="w-full px-5 py-3.5 bg-[#f4f5f7]">
+        <p className="text-[#4c4c4c] text-xs font-medium font-['Pretendard']">{title}</p>
     </div>
 );
 
@@ -18,13 +18,13 @@ export default function WritePage() {
     const [content, setContent] = useState('');
     const [hashtags, setHashtags] = useState('');
     const [link, setLink] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedType, setSelectedType] = useState('라흐마니노프 이야기');
     const postTypes = ['큐레이션 글', '라흐마니노프 이야기'];
     const [selectedComposer, setSelectedComposer] = useState<string | null>(null);
-    const [showComposerSearch, setShowComposerSearch] = useState(true);
+    const [showComposerSearch, setShowComposerSearch] = useState(false);
 
     // draft-edit 데이터가 있으면 제목/내용에 자동 입력
     useEffect(() => {
@@ -42,12 +42,20 @@ export default function WritePage() {
 
     const handleSelectComposer = (composerName: string) => {
         setSelectedComposer(composerName);
+    };
+
+    const handleOpenComposerSearch = () => {
+        setShowComposerSearch(true);
+    };
+
+    const handleCloseComposerSearch = () => {
         setShowComposerSearch(false);
     };
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            setImageFile(event.target.files[0]);
+        if (event.target.files) {
+            const newFiles = Array.from(event.target.files);
+            setImageFiles([...imageFiles, ...newFiles]);
         }
     };
 
@@ -60,94 +68,132 @@ export default function WritePage() {
     const handleRegister = async () => {
         if (!isButtonEnabled) return;
 
-        const formData = new FormData();
-        formData.append('postType', selectedType);
-        if (selectedType === '큐레이션 글' && selectedComposer) {
-            formData.append('composer', selectedComposer);
-        }
-        formData.append('title', title);
-        formData.append('content', content);
-        formData.append('hashtags', hashtags);
-        formData.append('link', link);
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
-
-        // For demonstration: log FormData entries
-        console.log('--- Form Data to be Sent ---');
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value);
-        }
-        console.log('--------------------------');
-
         try {
-            // Replace with your actual backend API endpoint
+            // 이미지 파일을 base64로 변환
+            const imagePromises = imageFiles.map(file => {
+                return new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = reader.result as string;
+                        resolve(result);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            const imageBase64Array = await Promise.all(imagePromises);
+
+            // JSON 형식으로 데이터 구성
+            const postData = {
+                postType: selectedType,
+                composer: selectedType === '큐레이션 글' ? selectedComposer : null,
+                title: title,
+                content: content,
+                hashtags: hashtags,
+                link: link,
+                images: imageBase64Array,
+            };
+
+            console.log('--- JSON Data to be Sent ---');
+            console.log(JSON.stringify(postData, null, 2));
+            console.log('--------------------------');
+
             const response = await fetch('/api/posts', {
                 method: 'POST',
-                body: formData,
-                // Headers might be set automatically by the browser for FormData,
-                // but if you need to add an Authorization token, do it here.
-                // headers: { 'Authorization': 'Bearer your_token' }
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postData),
             });
 
             if (response.ok) {
                 const result = await response.json();
                 console.log('Post created successfully:', result);
                 alert('등록되었습니다.');
-                // Redirect to the new post or another page
-                // router.push(`/composer-talk-room/${result.postId}`);
+                router.push('/composer-talk');
             } else {
                 console.error('Failed to create post:', response.statusText);
+                alert('게시글 등록에 실패했습니다.');
             }
         } catch (error) {
             console.error('An error occurred while creating the post:', error);
+            alert('오류가 발생했습니다.');
         }
     };
 
     const handleSaveDraft = () => {
-        // Logic to save the post as a draft
-        console.log('Saving draft...');
+        const draft = {
+            postType: selectedType,
+            composer: selectedComposer,
+            title,
+            content,
+            hashtags,
+            link,
+        };
+        localStorage.setItem('draft-edit', JSON.stringify(draft));
+        alert('임시저장 되었습니다.');
     };
 
     return (
-        <div className="relative bg-white min-h-screen">
+        <div className="relative bg-[#f4f5f7] min-h-screen">
             {/* Header */}
-            <header className="bg-white py-2 px-4 flex justify-between items-center border-b sticky top-0 z-10 h-14">
-                <button onClick={() => router.back()}>
-                    <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
-                </button>
-                <h1 className="text-zinc-900 text-base font-semibold absolute left-1/2 -translate-x-1/2">글쓰기</h1>
-                <div className="flex items-center gap-1.5">
-                    <button onClick={handleSaveDraft} className="px-3 py-1.5 bg-white rounded-full border border-zinc-300 flex justify-center items-center gap-0.5">
-                        <span className="text-neutral-400 text-xs font-semibold">임시저장</span>
-                        {/* Placeholder for save icon */}
+            <header className="bg-white px-5 py-3 flex items-center sticky top-0 z-10 w-full">
+                <div className="flex items-center gap-1 w-full">
+                    <button onClick={() => router.back()} className="flex-shrink-0">
+                        <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
                     </button>
-                    <button onClick={handleRegister} disabled={!isButtonEnabled} className={`pl-3.5 pr-3 py-1.5 rounded-full flex justify-center items-center gap-0.5 ${isButtonEnabled ? 'bg-blue-900' : 'bg-gray-300'}`}>
-                        <span className="text-white text-xs font-semibold">등록</span>
-                        {/* Placeholder for check icon */}
-                    </button>
+                    <h1 className="flex-1 text-[#1a1a1a] text-base font-semibold font-['Pretendard'] ml-1">글쓰기</h1>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button 
+                            onClick={handleSaveDraft} 
+                            className="px-3 py-1.5 bg-white rounded-full border border-[#d9d9d9] flex items-center gap-0.5"
+                        >
+                            <span className="text-[#a6a6a6] text-[13px] font-semibold font-['Pretendard']">임시저장</span>
+                        </button>
+                        <button 
+                            onClick={handleRegister} 
+                            disabled={!isButtonEnabled} 
+                            className={`px-3 py-1.5 rounded-full flex items-center gap-0.5 ${
+                                isButtonEnabled ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
+                            }`}
+                        >
+                            <span className="text-white text-[13px] font-semibold font-['Pretendard']">등록</span>
+                        </button>
+                    </div>
                 </div>
             </header>
 
             {/* Main Form */}
             <main>
+                {/* 게시글 유형 */}
                 <SectionHeader title="게시글 유형" />
-                <div className="relative">
+                <div className="relative bg-white">
                     <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="w-full self-stretch px-6 py-4 bg-white flex justify-between items-center gap-2 text-left"
+                        className="w-full px-6 py-[18px] bg-white flex items-center gap-2"
                     >
-                        <div className="flex items-center gap-2">
-                            <div className="relative flex items-center justify-center">
-                                {/* <div className="w-2.5 h-2.5 bg-blue-900 rounded-full" /> */}
-                                <Image src="/icons/write-blue.svg" alt="post type" width={16} height={16} />
-                            </div>
-                            <p className="text-zinc-900 text-sm font-semibold">{selectedType}</p>
+                        <div className="w-3 h-3 flex-shrink-0">
+                            <Image 
+                                src="/icons/write-blue.svg" 
+                                alt="post type" 
+                                width={12} 
+                                height={12} 
+                            />
                         </div>
-                        <Image src="/icons/back.svg" alt="dropdown" width={16} height={16} className={`transform transition-transform ${isDropdownOpen ? 'rotate-90' : '-rotate-90'}`} />
+                        <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">{selectedType}</p>
+                        <div className={`w-4 h-4 flex-shrink-0 transform transition-transform ${isDropdownOpen ? '' : 'rotate-90'}`}>
+                            <Image 
+                                src="/icons/back.svg" 
+                                alt="dropdown" 
+                                width={16} 
+                                height={16} 
+                                className="rotate-[-90deg]"
+                            />
+                        </div>
                     </button>
                     {isDropdownOpen && (
-                        <div className="absolute top-full left-0 right-0 bg-white border-x border-b rounded-b-lg shadow-lg z-20">
+                        <div className="absolute top-full left-0 right-0 bg-white border-t border-[#f4f5f7] shadow-lg z-20">
                             {postTypes.map((type) => (
                                 <div
                                     key={type}
@@ -155,7 +201,7 @@ export default function WritePage() {
                                         setSelectedType(type);
                                         setIsDropdownOpen(false);
                                     }}
-                                    className="px-6 py-3 hover:bg-gray-100 cursor-pointer text-sm font-medium"
+                                    className="px-6 py-[18px] hover:bg-[#f4f5f7] cursor-pointer text-sm font-semibold font-['Pretendard'] text-[#1a1a1a]"
                                 >
                                     {type}
                                 </div>
@@ -164,86 +210,129 @@ export default function WritePage() {
                     )}
                 </div>
 
+                {/* 작곡가 선택 (큐레이션 글일 때만 표시) */}
                 {selectedType === '큐레이션 글' && (
                     <>
                         <SectionHeader title="작곡가 선택" />
-                        {showComposerSearch ? (
-                            <ComposerSearch onSelectComposer={handleSelectComposer} />
-                        ) : (
-                            <div className="p-5 bg-white flex justify-between items-center">
-                                <p className="font-semibold">{selectedComposer}</p>
+                        <div className="w-full px-6 py-[18px] bg-white">
+                            <div className="flex items-center gap-2.5 w-full">
                                 <button
-                                    onClick={() => {
-                                        setShowComposerSearch(true);
-                                        setSelectedComposer(null);
-                                    }}
-                                    className="text-sm text-gray-500"
+                                    onClick={handleOpenComposerSearch}
+                                    className="flex-1 bg-[#f4f5f7] rounded-full px-5 py-2.5 text-left"
                                 >
-                                    변경
+                                    <span className={`text-sm font-medium font-['Pretendard'] ${
+                                        selectedComposer ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'
+                                    }`}>
+                                        {selectedComposer || '작곡가명 검색'}
+                                    </span>
+                                </button>
+                                <button className="w-[30px] h-[30px] flex items-center justify-center flex-shrink-0">
+                                    <Image src="/icons/search.svg" alt="search" width={30} height={30} />
                                 </button>
                             </div>
-                        )}
+                        </div>
                     </>
                 )}
 
+                {/* 게시글 제목 */}
                 <SectionHeader title="게시글 제목" />
-                <div className="self-stretch px-5 py-2 bg-white">
+                <div className="w-full px-5 py-[18px] bg-white">
                     <input
                         type="text"
                         placeholder="제목을 입력하세요"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="w-full py-2 text-sm font-medium focus:outline-none placeholder-zinc-300"
+                        className="w-full text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#d9d9d9]"
                     />
                 </div>
 
+                {/* 게시글 내용 */}
                 <SectionHeader title="게시글 내용" />
-                <div className="self-stretch px-5 py-4 bg-white">
+                <div className="w-full px-5 py-[18px] bg-white">
                     <textarea
-                        placeholder="작곡가에 대해 같은 음악 취향을 가진 사람들과 나누고픈 이야기를 자유롭게 적어보세요!"
+                        placeholder={selectedType === '큐레이션 글' 
+                            ? "나만의 이야기를 담아 클래식 음악을 추천해주세요!" 
+                            : "작곡가에 대해 같은 음악 취향을 가진 사람들과 나누고픈 이야기를 자유롭게 적어보세요!"}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        className="w-full h-48 resize-none text-sm font-medium focus:outline-none placeholder-zinc-300"
+                        className="w-full h-48 resize-none text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#d9d9d9]"
                     />
                 </div>
 
+                {/* 해시태그 등록 */}
                 <SectionHeader title="해시태그 등록" />
-                <div className="self-stretch px-5 py-2 bg-white">
+                <div className="w-full px-5 py-[18px] bg-white">
                     <input
                         type="text"
                         placeholder="해시태그 작성 최대 N개"
                         value={hashtags}
                         onChange={(e) => setHashtags(e.target.value)}
-                        className="w-full py-2 text-sm font-medium focus:outline-none placeholder-neutral-600"
+                        className="w-full text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#4c4c4c]"
                     />
                 </div>
 
+                {/* 콘텐츠 첨부 */}
                 <SectionHeader title="콘텐츠 첨부" />
-                <div className="w-full px-5 py-4 bg-white flex justify-between items-center gap-3">
-                    <input
-                        type="text"
-                        placeholder="링크 붙여넣기"
-                        value={link}
-                        onChange={(e) => setLink(e.target.value)}
-                        className="flex-1 px-3.5 py-2.5 bg-gray-100 rounded-[10px] text-sm font-medium focus:outline-none placeholder-neutral-400"
-                    />
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                        className="hidden"
-                        accept="image/*"
-                    />
-                    <button onClick={handleImageUploadClick} className="w-11 h-11 bg-gray-100 rounded-[10px] flex justify-center items-center">
-                        <Image src="/icons/img.svg" alt="이미지 첨부" width={24} height={24} />
-                    </button>
-                </div>
-                {imageFile && (
-                    <div className="px-5 pb-4 bg-white">
-                        <p className="text-sm text-gray-600">첨부된 이미지: {imageFile.name}</p>
+                <div className="w-full px-5 py-[18px] bg-white flex flex-col gap-[13px]">
+                    <div className="w-full">
+                        <input
+                            type="text"
+                            placeholder="영상 링크 붙여넣기"
+                            value={link}
+                            onChange={(e) => setLink(e.target.value)}
+                            className="w-full px-3.5 py-2.5 bg-[#f4f5f7] rounded-[10px] text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#a6a6a6]"
+                        />
                     </div>
-                )}
+                    <div className="w-full">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageChange}
+                            className="hidden"
+                            accept="image/*"
+                            multiple
+                        />
+                        <button 
+                            onClick={handleImageUploadClick} 
+                            className="w-full px-3.5 py-2.5 bg-[#f4f5f7] rounded-[10px] text-sm font-medium font-['Pretendard'] text-[#a6a6a6] text-left"
+                        >
+                            이미지 업로드
+                        </button>
+                    </div>
+                    {imageFiles.length > 0 && (
+                        <div className="w-full grid grid-cols-2 gap-2.5">
+                            {imageFiles.map((file, index) => (
+                                <div 
+                                    key={index} 
+                                    className="relative aspect-square bg-[#f4f5f7] rounded-[10px] overflow-hidden"
+                                >
+                                    <Image 
+                                        src={URL.createObjectURL(file)} 
+                                        alt={`업로드된 이미지 ${index + 1}`}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                    <button
+                                        onClick={() => setImageFiles(imageFiles.filter((_, i) => i !== index))}
+                                        className="absolute top-1 right-1 w-6 h-6 bg-black bg-opacity-50 rounded-full flex items-center justify-center text-white text-xs"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </main>
+
+            {/* 작곡가 검색 모달 */}
+            {showComposerSearch && (
+                <ComposerSearch 
+                    onSelectComposer={handleSelectComposer}
+                    onClose={handleCloseComposerSearch}
+                    initialSelected={selectedComposer ? [selectedComposer] : []}
+                />
+            )}
         </div>
     );
 }
