@@ -76,37 +76,66 @@ const loginpage = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('https://classic-daramg.duckdns.org/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // 쿠키 인증을 위해 필요
         body: JSON.stringify({
           email: email.trim(),
           password: password,
         }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
         // 로그인 성공
-        console.log('로그인 성공:', data);
+        console.log('로그인 성공');
         setToast({ show: true, message: '로그인되었습니다.' });
 
-        // 토큰이 있다면 저장
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
+        let userInfo = null;
+
+        // 응답 본문이 있는지 확인 후 파싱 시도
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const data = await response.json();
+            console.log('응답 데이터:', data);
+            
+            if (data.user) {
+              userInfo = data.user;
+            }
+          } catch (error) {
+            console.log('응답 본문이 비어있거나 JSON 파싱 실패:', error);
+          }
         }
 
+        // 프로필 설정 (응답에 사용자 정보가 없어도 최소한 이메일은 저장)
+        setProfile({
+          name: userInfo?.name || '',
+          nickname: userInfo?.nickname || '',
+          email: userInfo?.email || email.trim(),
+          bio: userInfo?.bio || '',
+          profileImage: userInfo?.profileImage || '/icons/profile.svg',
+          birthDate: userInfo?.birthdate || '',
+        });
+
+        console.log('프로필 설정 완료');
+
         setTimeout(() => {
-          const profileState = useUserProfileStore.getState().profile;
-          console.log('localStorage user-profile-storage:', localStorage.getItem('user-profile-storage'));
-          console.log('profile 상태:', profileState);
-          console.log('isLoggedIn (profile !== null):', profileState !== null);
-          router.push('/');
+          router.push('/my-page');
         }, 500);
       } else {
+        // 로그인 실패 - 응답 본문이 있을 경우만 파싱
+        let data: any = {};
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            data = await response.json();
+          } catch (error) {
+            console.log('에러 응답 파싱 실패:', error);
+          }
+        }
         // 로그인 실패
         switch (response.status) {
           case 401:

@@ -103,15 +103,59 @@ const SignupPage = () => {
     }
   };
 
-  const handleSendVerificationCode = () => {
-    if (formData.email.trim() !== '') {
-      setIsCodeSent(true);
+  const handleSendVerificationCode = async () => {
+    if (formData.email.trim() === '') return;
+
+    try {
+      const response = await fetch('https://classic-daramg.duckdns.org/auth/email-verifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          emailPurpose: 'SIGNUP'
+        }),
+      });
+
+      if (response.ok) {
+        setIsCodeSent(true);
+        alert('인증코드가 이메일로 전송되었습니다.');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.message || '인증코드 전송에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('인증코드 전송 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
     }
   };
 
-  const handleVerifyCode = () => {
-    if (formData.verificationCode.trim() !== '') {
-      setIsEmailVerified(true);
+  const handleVerifyCode = async () => {
+    if (formData.verificationCode.trim() === '') return;
+
+    try {
+      const response = await fetch('https://classic-daramg.duckdns.org/auth/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          verificationCode: formData.verificationCode.trim()
+        }),
+      });
+
+      if (response.ok) {
+        setIsEmailVerified(true);
+        alert('이메일 인증이 완료되었습니다.');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.message || '인증코드가 일치하지 않습니다.');
+      }
+    } catch (error) {
+      console.error('이메일 인증 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
     }
   };
 

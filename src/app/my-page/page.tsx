@@ -119,28 +119,27 @@ export default function MyPage() {
 
   const handleLogout = async () => {
     try {
-      // TODO: 백엔드 API가 준비되면 주석 해제
-      // const response = await fetch('/api/auth/logout', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-      //   }
-      // });
+      // 서버에 로그아웃 요청 (인증 쿠키 삭제)
+      const response = await fetch('https://classic-daramg.duckdns.org/auth/logout', {
+        method: 'DELETE',
+        credentials: 'include', // 쿠키를 함께 전송
+      });
       
-      // if (!response.ok) {
-      //   throw new Error('로그아웃 실패');
-      // }
+      if (!response.ok) {
+        console.error('로그아웃 API 실패:', response.status);
+      }
 
-      // 임시: API 호출 없이 바로 로그아웃 처리
+      // 로컬 상태 초기화
       localStorage.removeItem('authToken');
       clearProfile();
+      setShowLogoutPopup(false);
       router.push('/loginpage');
     } catch (error) {
       console.error('로그아웃 에러:', error);
       // 에러가 발생해도 로컬 상태는 초기화
       localStorage.removeItem('authToken');
       clearProfile();
+      setShowLogoutPopup(false);
       router.push('/loginpage');
     }
   };
@@ -159,17 +158,17 @@ export default function MyPage() {
         <SectionHeader title="게시글 관련" />
         <ListItem title="작성한 글" href="/my-page/my-posts" />
         <ListItem title="임시저장한 글" href="/my-page/drafts" />
-        <ListItem title="스크랩한 글" href="/my-page/scraps" />
+        <ListItem title="스크랩한 글-" href="/my-page/scraps" />
 
-        <SectionHeader title="이용안내" />
-        <ListItem title="이용 제한 내역" href="/my-page/restrictions" />
-        <ListItem title="FAQ 및 문의하기" href="/my-page/faq" />
-        <ListItem title="공지사항" href="/my-page/notices" />
+        <SectionHeader title="이용안내-" />
+        <ListItem title="이용 제한 내역-" href="/my-page/restrictions" />
+        <ListItem title="FAQ 및 문의하기-" href="/my-page/faq" />
+        <ListItem title="공지사항-" href="/my-page/notices" />
         <ListItem title="서비스 이용약관" href="/my-page/terms" />
         <ListItem title="개인정보 처리방침" href="/my-page/privacy" />
 
         <SectionHeader title="기타" />
-        <ListItem title="알림설정" href="/my-page/notifications" />
+        <ListItem title="알림설정-" href="/my-page/notifications" />
         <ListItem title="회원탈퇴" href="/my-page/delete-account" />
         <ListItem title="로그아웃" onClick={() => setShowLogoutPopup(true)} />
       </div>

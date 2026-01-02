@@ -83,64 +83,77 @@ const ProfileSetupPage = () => {
 
       console.log('완전한 회원가입 데이터:', completeData);
 
-      // TODO: 백엔드 API 연결 후 주석 해제
-      /*
+      // birthDate 형식 변환: "2002년 4월 18일" -> "2002-04-18"
+      const birthDateMatch = completeData.birthDate.match(/(\d+)년 (\d+)월 (\d+)일/);
+      let formattedBirthDate = '';
+      if (birthDateMatch) {
+        const year = birthDateMatch[1];
+        const month = birthDateMatch[2].padStart(2, '0');
+        const day = birthDateMatch[3].padStart(2, '0');
+        formattedBirthDate = `${year}-${month}-${day}`;
+      }
+
+      // 요청 본문 구성
+      const requestBody = {
+        name: completeData.name.trim(),
+        email: completeData.email.trim(),
+        password: completeData.password,
+        birthdate: formattedBirthDate,
+        nickname: completeData.profile.nickname.trim(),
+        bio: completeData.profile.bio.trim()
+        // profileImage 제외 - 선택사항일 수 있음
+      };
+
+      console.log('회원가입 요청 본문:', requestBody);
+
       // 백엔드 API로 회원가입 요청
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('https://classic-daramg.duckdns.org/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: completeData.name,
-          email: completeData.email,
-          password: completeData.password,
-          birthDate: completeData.birthDate,
-          nickname: completeData.profile.nickname,
-          bio: completeData.profile.bio,
-          profileImage: completeData.profile.profileImage,
-          agreements: completeData.agreements
-        }),
+        credentials: 'include', // 쿠키 저장을 위해 필요
+        body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        // 회원가입 성공
-        console.log('회원가입 성공:', data);
+        // 회원가입 성공 (201 Created)
+        console.log('회원가입 성공');
+
+        // 회원가입 완료 시 사용자 프로필 store에 데이터 로드
+        loadFromRegistration(completeData);
 
         // Zustand store 데이터 클리어
         clearRegistrationData();
 
         // 성공 팝업 표시
         setShowSuccessPopup(true);
-
       } else {
-        // 회원가입 실패
+        // 회원가입 실패 - 응답 본문이 있을 경우만 파싱
+        let errorMessage = '회원가입에 실패했습니다.';
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (e) {
+            // JSON 파싱 실패 시 기본 메시지 사용
+            console.log('에러 응답 파싱 실패:', e);
+          }
+        }
+
         switch (response.status) {
           case 409:
-            alert('이미 존재하는 이메일입니다.');
+            alert('이미 존재하는 이메일 또는 닉네임입니다.');
             break;
           case 400:
-            alert(data.message || '입력 정보를 확인해주세요.');
+            alert(errorMessage || '입력 정보를 확인해주세요.');
             break;
           default:
-            alert(data.message || '회원가입에 실패했습니다.');
+            alert(errorMessage);
         }
       }
-      */
-
-      // 테스트용: 백엔드 연결 전까지 임시로 성공 처리
-      console.log('회원가입 성공 (테스트):', completeData);
-
-      // 회원가입 완료 시 사용자 프로필 store에 데이터 로드
-      loadFromRegistration(completeData);
-
-      // Zustand store 데이터 클리어
-      clearRegistrationData();
-
-      // 성공 팝업 표시
-      setShowSuccessPopup(true);
     } catch (error) {
       console.error('회원가입 오류:', error);
       alert('네트워크 오류가 발생했습니다.');
@@ -162,17 +175,46 @@ const ProfileSetupPage = () => {
     setNicknameCheckError('');
     setIsNicknameChecked(false);
     try {
-      // 실제 API 엔드포인트로 변경 필요
-      const response = await fetch(`/api/check-nickname?nickname=${encodeURIComponent(nickname)}`);
-      const data = await response.json();
-      if (response.ok && data.available) {
-        setIsNicknameChecked(true);
-        setNicknameCheckError('');
+      const response = await fetch(`https://classic-daramg.duckdns.org/users/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+      
+      if (response.ok) {
+        // 응답 본문이 JSON인지 확인
+        const contentType = response.headers.get('content-type');
+        let isAvailable = false;
+
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const data = await response.json();
+            console.log('닉네임 확인 응답:', data);
+            // API 응답 형식: { "닉네임 사용 가능 유무: ": true }
+            isAvailable = data['닉네임 사용 가능 유무: '] !== undefined 
+              ? data['닉네임 사용 가능 유무: ']
+              : data.available !== undefined 
+              ? data.available
+              : false;
+          } catch (parseError) {
+            console.log('JSON 파싱 실패, 응답을 텍스트로 처리:', parseError);
+            // 빈 응답이나 파싱 실패 시 사용 가능한 것으로 처리
+            isAvailable = true;
+          }
+        } else {
+          // JSON이 아닌 경우 사용 가능한 것으로 처리
+          isAvailable = true;
+        }
+
+        if (isAvailable) {
+          setIsNicknameChecked(true);
+          setNicknameCheckError('');
+        } else {
+          setIsNicknameChecked(false);
+          setNicknameCheckError('이미 사용 중인 닉네임입니다.');
+        }
       } else {
         setIsNicknameChecked(false);
         setNicknameCheckError('이미 사용 중인 닉네임입니다.');
       }
     } catch (error) {
+      console.error('닉네임 중복 확인 오류:', error);
       setIsNicknameChecked(false);
       setNicknameCheckError('닉네임 중복 확인 중 오류가 발생했습니다.');
     } finally {
