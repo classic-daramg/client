@@ -55,7 +55,7 @@ const ProfileSetupPage = () => {
 
   const isDefaultImage = profileImage === defaultProfileImage;
 
-  const isNicknameValid = nickname.length > 0 && nickname.length <= 8;
+  const isNicknameValid = nickname.length >= 2 && nickname.length <= 8;
   const isBioValid = bio.length > 0 && bio.length <= 12;
   const isFormValid = isNicknameValid && isNicknameChecked && isBioValid && profileImage;
 
@@ -100,8 +100,8 @@ const ProfileSetupPage = () => {
         password: completeData.password,
         birthdate: formattedBirthDate,
         nickname: completeData.profile.nickname.trim(),
-        bio: completeData.profile.bio.trim()
-        // profileImage 제외 - 선택사항일 수 있음
+        bio: completeData.profile.bio.trim(),
+        profileImage: profileImage
       };
 
       console.log('회원가입 요청 본문:', requestBody);
@@ -133,13 +133,24 @@ const ProfileSetupPage = () => {
         let errorMessage = '회원가입에 실패했습니다.';
         const contentType = response.headers.get('content-type');
         
+        console.error('회원가입 실패 상태코드:', response.status);
+        
         if (contentType && contentType.includes('application/json')) {
           try {
             const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
+            console.error('에러 응답 데이터:', errorData);
+            errorMessage = errorData.message || errorData.error || errorMessage;
           } catch (e) {
             // JSON 파싱 실패 시 기본 메시지 사용
             console.log('에러 응답 파싱 실패:', e);
+          }
+        } else {
+          // 텍스트 응답 시도
+          try {
+            const textError = await response.text();
+            console.error('텍스트 에러 응답:', textError);
+          } catch (e) {
+            console.log('텍스트 응답 파싱 실패:', e);
           }
         }
 
@@ -148,10 +159,10 @@ const ProfileSetupPage = () => {
             alert('이미 존재하는 이메일 또는 닉네임입니다.');
             break;
           case 400:
-            alert(errorMessage || '입력 정보를 확인해주세요.');
+            alert(errorMessage || '입력 정보를 다시 확인해주세요.\n\n- 비밀번호: 영문 대소문자, 숫자, 특수문자 포함 10자 이상\n- 생년월일: YYYY-MM-DD 형식\n- 닉네임: 2~8자\n- BIO: 12자 이하');
             break;
           default:
-            alert(errorMessage);
+            alert(`회원가입 오류 (${response.status}): ${errorMessage}`);
         }
       }
     } catch (error) {
@@ -310,10 +321,11 @@ const ProfileSetupPage = () => {
                 <div className="flex-1 flex flex-col gap-3">
                   <input
                     type="text"
-                    placeholder="최대 8글자 입력 가능합니다"
+                    placeholder="2~8글자 입력 가능합니다"
                     value={nickname}
                     onChange={(e) => {
-                      setNickname(e.target.value.slice(0, 8));
+                      const value = e.target.value.slice(0, 8);
+                      setNickname(value);
                       setIsNicknameChecked(false);
                       setNicknameCheckError('');
                     }}
