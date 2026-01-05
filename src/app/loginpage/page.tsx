@@ -90,7 +90,6 @@ const loginpage = () => {
 
       if (response.ok) {
         // 로그인 성공
-        console.log('로그인 성공');
         setToast({ show: true, message: '로그인되었습니다.' });
 
         let userInfo = null;
@@ -100,7 +99,6 @@ const loginpage = () => {
         if (contentType && contentType.includes('application/json')) {
           try {
             const data = await response.json();
-            console.log('응답 데이터:', data);
             
             if (data.user) {
               userInfo = data.user;
@@ -110,17 +108,28 @@ const loginpage = () => {
           }
         }
 
-        // 프로필 설정 (응답에 사용자 정보가 없어도 최소한 이메일은 저장)
-        setProfile({
-          name: userInfo?.name || '',
-          nickname: userInfo?.nickname || '',
-          email: userInfo?.email || email.trim(),
-          bio: userInfo?.bio || '',
-          profileImage: userInfo?.profileImage || '/icons/profile.svg',
-          birthDate: userInfo?.birthdate || '',
-        });
+        // localStorage에서 저장된 프로필 데이터 확인
+        const savedProfile = localStorage.getItem('user-profile-storage');
+        let profileData: any = null;
+        
+        if (savedProfile) {
+          try {
+            const parsed = JSON.parse(savedProfile);
+            profileData = parsed.state?.profile;
+          } catch (error) {
+            console.log('localStorage 프로필 파싱 실패:', error);
+          }
+        }
 
-        console.log('프로필 설정 완료');
+        // 프로필 설정: 저장된 데이터 우선, 없으면 응답 데이터 사용
+        setProfile({
+          name: profileData?.name || userInfo?.name || '',
+          nickname: profileData?.nickname || userInfo?.nickname || '',
+          email: profileData?.email || userInfo?.email || email.trim(),
+          bio: profileData?.bio || userInfo?.bio || '',
+          profileImage: profileData?.profileImage || userInfo?.profileImage || '/icons/DefaultImage.svg',
+          birthDate: profileData?.birthDate || userInfo?.birthdate || '',
+        });
 
         setTimeout(() => {
           router.push('/my-page');

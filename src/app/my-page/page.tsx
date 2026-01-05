@@ -26,39 +26,45 @@ const Header = () => (
 );
 
 // User Profile Section
-const UserProfileSection = () => (
-  <div className="px-5 pt-5 pb-8 bg-white shadow-[0px_0px_7px_-3px_rgba(0,0,0,0.15)] flex items-center gap-3.5">
-    <div className="flex flex-col items-center gap-2">
-      <Image
-        className="w-24 h-24 rounded-full"
-        src="/icons/DefaultImage.svg"
-        alt="프로필 이미지"
-        width={96}
-        height={96}
-      />
-      <Link href="/my-page/edit-profile" className="text-neutral-400 text-xs font-semibold flex items-center gap-1">
-        프로필 편집
-        <Image src="/icons/write.svg" alt="편집" width={12} height={12} />
-      </Link>
-    </div>
-    <div className="flex-1 flex flex-col gap-4">
-      <div>
-        <h2 className="text-zinc-900 text-xl font-semibold">사용자닉네임</h2>
-        <p className="text-neutral-400 text-xs font-medium">프로필 한줄소개가 들어갈 자리</p>
+const UserProfileSection = () => {
+  const profile = useUserProfileStore((state) => state.profile);
+  const nickname = profile?.nickname || '사용자닉네임';
+  const bio = profile?.bio || '프로필 한줄소개가 들어갈 자리';
+
+  return (
+    <div className="px-5 pt-5 pb-8 bg-white shadow-[0px_0px_7px_-3px_rgba(0,0,0,0.15)] flex items-center gap-3.5">
+      <div className="flex flex-col items-center gap-2">
+        <Image
+          className="w-24 h-24 rounded-full"
+          src="/icons/DefaultImage.svg"
+          alt="프로필 이미지"
+          width={96}
+          height={96}
+        />
+        <Link href="/my-page/edit-profile" className="text-neutral-400 text-xs font-semibold flex items-center gap-1">
+          프로필 편집
+          <Image src="/icons/write.svg" alt="편집" width={12} height={12} />
+        </Link>
       </div>
-      <div className="flex flex-col gap-0.5">
-        <button className="w-full h-7 px-3 py-1.5 bg-blue-900 rounded-[50px] inline-flex justify-center items-center gap-1 text-gray-100 text-xs font-semibold">
-          도토리 친구 목록
-          <Image src="/icons/back.svg" alt="" width={8} height={8} className="transform rotate-180 filter-white" />
-        </button>
-        <button className="w-full h-7 px-3 py-1.5 bg-white rounded-[50px] border border-zinc-300 inline-flex justify-center items-center gap-1 text-neutral-600 text-xs font-semibold">
-          칭호 목록
-          <Image src="/icons/back.svg" alt="" width={8} height={8} className="transform rotate-180" />
-        </button>
+      <div className="flex-1 flex flex-col gap-4">
+        <div>
+          <h2 className="text-zinc-900 text-xl font-semibold">{nickname}</h2>
+          <p className="text-neutral-400 text-xs font-medium">{bio}</p>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <button className="w-full h-7 px-3 py-1.5 bg-blue-900 rounded-[50px] inline-flex justify-center items-center gap-1 text-gray-100 text-xs font-semibold">
+            도토리 친구 목록
+            <Image src="/icons/back.svg" alt="" width={8} height={8} className="transform rotate-180 filter-white" />
+          </button>
+          <button className="w-full h-7 px-3 py-1.5 bg-white rounded-[50px] border border-zinc-300 inline-flex justify-center items-center gap-1 text-neutral-600 text-xs font-semibold">
+            칭호 목록
+            <Image src="/icons/back.svg" alt="" width={8} height={8} className="transform rotate-180" />
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Section Header for the List
 const SectionHeader = ({ title }: { title: string }) => (

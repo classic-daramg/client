@@ -71,14 +71,14 @@ const SignupPage = () => {
       setConfirmPasswordChecked(''); // 입력 시 결과 초기화
     }
   };
-  // 비밀번호 규약 체크 함수 (예시: 8~20자, 영문/숫자/특수문자 포함)
+  // 비밀번호 규약 체크 함수 (10자 이상, 대문자/소문자/숫자/특수문자 포함)
   function validatePasswordRule(password: string): boolean {
-    // 8~20자, 영문/숫자/특수문자 모두 포함
-    const lengthValid = password.length >= 8 && password.length <= 20;
-    const hasLetter = /[a-zA-Z]/.test(password);
+    const lengthValid = password.length >= 10;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    return lengthValid && hasLetter && hasNumber && hasSpecial;
+    return lengthValid && hasUppercase && hasLowercase && hasNumber && hasSpecial;
   }
 
   // 비밀번호 확인 버튼 클릭
@@ -425,7 +425,7 @@ const SignupPage = () => {
               비밀번호 입력
             </label>
             <p className="w-[335px] h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#BFBFBF]">
-              규약 내용 여기에 설명하기
+              대문자, 소문자, 숫자, 특수문자 포함 10자 이상
             </p>
           </div>
           

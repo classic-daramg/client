@@ -24,20 +24,13 @@ export default function DeleteAccountPage() {
 
         setIsLoading(true);
 
-        // 임시 테스트: 항상 비밀번호를 올바르다고 판단
-        setTimeout(() => {
-            setShowPopup(true);
-            setIsLoading(false);
-        }, 500);
-
-        /* 실제 API 호출 코드 (테스트 후 주석 해제)
         try {
-            const response = await fetch('/api/auth/verify-password', {
+            const response = await fetch('https://classic-daramg.duckdns.org/auth/verify-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
                 body: JSON.stringify({ password }),
             });
 
@@ -52,31 +45,19 @@ export default function DeleteAccountPage() {
         } finally {
             setIsLoading(false);
         }
-        */
     };
 
     // 회원 탈퇴 처리
     const handleDeleteAccount = async () => {
         setIsLoading(true);
 
-        // 임시 테스트: 로그아웃 후 로그인 페이지로 이동
-        setTimeout(() => {
-            localStorage.removeItem('authToken');
-            clearProfile();
-            setToast({ show: true, message: '회원 탈퇴가 완료되었습니다.' });
-            setTimeout(() => {
-                router.push('/loginpage');
-            }, 1000);
-        }, 500);
-
-        /* 실제 API 호출 코드 (테스트 후 주석 해제)
         try {
-            const response = await fetch('/api/auth/delete-account', {
+            const response = await fetch('https://classic-daramg.duckdns.org/users/account', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
             });
 
             if (response.ok) {
@@ -86,7 +67,7 @@ export default function DeleteAccountPage() {
 
                 setTimeout(() => {
                     router.push('/loginpage');
-                }, 1500);
+                }, 1000);
             } else {
                 setToast({ show: true, message: '탈퇴 처리에 실패했습니다.' });
             }
@@ -96,7 +77,6 @@ export default function DeleteAccountPage() {
         } finally {
             setIsLoading(false);
         }
-        */
     };
 
     return (

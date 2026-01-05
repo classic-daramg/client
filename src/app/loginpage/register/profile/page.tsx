@@ -13,7 +13,7 @@ const ProfileSetupPage = () => {
   const { loadFromRegistration, defaultProfileImage, getProfileImage, resetToDefaultImage: resetStoreToDefault } = useUserProfileStore();
   const [nickname, setNickname] = useState('');
   const [bio, setBio] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(defaultProfileImage); // store에서 기본 이미지 가져오기
+  const [profileImage, setProfileImage] = useState<string | null>('https://example.com/profile.jpg'); // 임시 이미지 URL
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [isNicknameChecked, setIsNicknameChecked] = useState(false);
@@ -25,9 +25,9 @@ const ProfileSetupPage = () => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // 파일 크기 체크 (예: 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('파일 크기는 5MB 이하여야 합니다.');
+      // 파일 크기 체크 (200KB 이하로 제한)
+      if (file.size > 200 * 1024) {
+        alert('파일 크기는 200KB 이하여야 합니다.');
         return;
       }
 
@@ -39,7 +39,43 @@ const ProfileSetupPage = () => {
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImage(reader.result as string);
+        const img = new Image();
+        img.onload = () => {
+          // 이미지 리사이징
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 400;
+          const MAX_HEIGHT = 400;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // JPEG 품질 0.7로 압축
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          
+          if (compressedDataUrl.length > 50000) { // 50KB 이상이면 경고
+            alert('이미지가 너무 큽니다. 더 작은 이미지를 선택해주세요.');
+            return;
+          }
+          
+          setProfileImage(compressedDataUrl);
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -81,7 +117,7 @@ const ProfileSetupPage = () => {
         return;
       }
 
-      console.log('완전한 회원가입 데이터:', completeData);
+
 
       // birthDate 형식 변환: "2002년 4월 18일" -> "2002-04-18"
       const birthDateMatch = completeData.birthDate.match(/(\d+)년 (\d+)월 (\d+)일/);
@@ -94,7 +130,7 @@ const ProfileSetupPage = () => {
       }
 
       // 요청 본문 구성
-      const requestBody = {
+      const requestBody: any = {
         name: completeData.name.trim(),
         email: completeData.email.trim(),
         password: completeData.password,
@@ -104,7 +140,16 @@ const ProfileSetupPage = () => {
         profileImage: profileImage
       };
 
-      console.log('회원가입 요청 본문:', requestBody);
+      // 디버깅: 요청 데이터 확인
+      console.log('=== 회원가입 요청 데이터 ===');
+      console.log('name:', requestBody.name, 'length:', requestBody.name.length);
+      console.log('email:', requestBody.email);
+      console.log('password:', requestBody.password, 'length:', requestBody.password.length);
+      console.log('birthdate:', requestBody.birthdate);
+      console.log('nickname:', requestBody.nickname, 'length:', requestBody.nickname.length);
+      console.log('bio:', requestBody.bio, 'length:', requestBody.bio.length);
+      console.log('profileImage:', requestBody.profileImage);
+      console.log('========================');
 
       // 백엔드 API로 회원가입 요청
       const response = await fetch('https://classic-daramg.duckdns.org/auth/signup', {
@@ -118,7 +163,6 @@ const ProfileSetupPage = () => {
 
       if (response.ok) {
         // 회원가입 성공 (201 Created)
-        console.log('회원가입 성공');
 
         // 회원가입 완료 시 사용자 프로필 store에 데이터 로드
         loadFromRegistration(completeData);
@@ -133,25 +177,20 @@ const ProfileSetupPage = () => {
         let errorMessage = '회원가입에 실패했습니다.';
         const contentType = response.headers.get('content-type');
         
-        console.error('회원가입 실패 상태코드:', response.status);
-        
-        if (contentType && contentType.includes('application/json')) {
+        // 텍스트 응답 먼저 시도
+        try {
+          const textError = await response.text();
+          
+          // 텍스트가 JSON일 수도 있으니 파싱 시도
           try {
-            const errorData = await response.json();
-            console.error('에러 응답 데이터:', errorData);
-            errorMessage = errorData.message || errorData.error || errorMessage;
+            const jsonError = JSON.parse(textError);
+            errorMessage = jsonError.message || jsonError.error || textError;
           } catch (e) {
-            // JSON 파싱 실패 시 기본 메시지 사용
-            console.log('에러 응답 파싱 실패:', e);
+            // JSON이 아니면 텍스트 그대로 사용
+            errorMessage = textError || errorMessage;
           }
-        } else {
-          // 텍스트 응답 시도
-          try {
-            const textError = await response.text();
-            console.error('텍스트 에러 응답:', textError);
-          } catch (e) {
-            console.log('텍스트 응답 파싱 실패:', e);
-          }
+        } catch (e) {
+          // 응답 본문 읽기 실패
         }
 
         switch (response.status) {
@@ -159,14 +198,13 @@ const ProfileSetupPage = () => {
             alert('이미 존재하는 이메일 또는 닉네임입니다.');
             break;
           case 400:
-            alert(errorMessage || '입력 정보를 다시 확인해주세요.\n\n- 비밀번호: 영문 대소문자, 숫자, 특수문자 포함 10자 이상\n- 생년월일: YYYY-MM-DD 형식\n- 닉네임: 2~8자\n- BIO: 12자 이하');
+            alert(`입력 정보 오류:\n\n${errorMessage}\n\n스키마 조건:\n- 비밀번호: 영문 대소문자, 숫자, 특수문자 포함 10자 이상\n- 생년월일: YYYY-MM-DD 형식\n- 닉네임: 2~8자\n- BIO: 12자 이하`);
             break;
           default:
             alert(`회원가입 오류 (${response.status}): ${errorMessage}`);
         }
       }
     } catch (error) {
-      console.error('회원가입 오류:', error);
       alert('네트워크 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
@@ -196,7 +234,6 @@ const ProfileSetupPage = () => {
         if (contentType && contentType.includes('application/json')) {
           try {
             const data = await response.json();
-            console.log('닉네임 확인 응답:', data);
             // API 응답 형식: { "닉네임 사용 가능 유무: ": true }
             isAvailable = data['닉네임 사용 가능 유무: '] !== undefined 
               ? data['닉네임 사용 가능 유무: ']
@@ -204,7 +241,6 @@ const ProfileSetupPage = () => {
               ? data.available
               : false;
           } catch (parseError) {
-            console.log('JSON 파싱 실패, 응답을 텍스트로 처리:', parseError);
             // 빈 응답이나 파싱 실패 시 사용 가능한 것으로 처리
             isAvailable = true;
           }
@@ -225,7 +261,6 @@ const ProfileSetupPage = () => {
         setNicknameCheckError('이미 사용 중인 닉네임입니다.');
       }
     } catch (error) {
-      console.error('닉네임 중복 확인 오류:', error);
       setIsNicknameChecked(false);
       setNicknameCheckError('닉네임 중복 확인 중 오류가 발생했습니다.');
     } finally {
