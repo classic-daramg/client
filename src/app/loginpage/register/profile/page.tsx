@@ -129,36 +129,57 @@ const ProfileSetupPage = () => {
         formattedBirthDate = `${year}-${month}-${day}`;
       }
 
-      // 요청 본문 구성
-      const requestBody: any = {
+      // FormData 객체 생성
+      const formData = new FormData();
+
+      // JSON 데이터를 객체로 구성
+      const jsonData = {
         name: completeData.name.trim(),
         email: completeData.email.trim(),
         password: completeData.password,
         birthdate: formattedBirthDate,
         nickname: completeData.profile.nickname.trim(),
         bio: completeData.profile.bio.trim(),
-        profileImage: profileImage
       };
+
+      // JSON 데이터를 Blob으로 감싸서 FormData에 추가 (type: "application/json" 명시)
+      // 백엔드의 @RequestPart("signupRequest")와 일치하도록 필드 이름을 "signupRequest"로 설정
+      const jsonBlob = new Blob([JSON.stringify(jsonData)], { type: 'application/json' });
+      formData.append('signupRequest', jsonBlob);
+
+      // 프로필 이미지를 base64에서 Blob으로 변환하여 파일로 추가
+      // 백엔드의 @RequestPart(value = "image", required = false)와 일치하도록 필드 이름을 "image"로 설정
+      if (profileImage) {
+        // base64 data URL을 Blob으로 변환
+        const base64Data = profileImage.split(',')[1] || profileImage; // data:image/jpeg;base64, 부분 제거
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'image/jpeg' });
+        formData.append('image', blob, 'profile.jpg');
+      }
 
       // 디버깅: 요청 데이터 확인
       console.log('=== 회원가입 요청 데이터 ===');
-      console.log('name:', requestBody.name, 'length:', requestBody.name.length);
-      console.log('email:', requestBody.email);
-      console.log('password:', requestBody.password, 'length:', requestBody.password.length);
-      console.log('birthdate:', requestBody.birthdate);
-      console.log('nickname:', requestBody.nickname, 'length:', requestBody.nickname.length);
-      console.log('bio:', requestBody.bio, 'length:', requestBody.bio.length);
-      console.log('profileImage:', requestBody.profileImage);
+      console.log('JSON 데이터:', jsonData);
+      console.log('name:', jsonData.name, 'length:', jsonData.name.length);
+      console.log('email:', jsonData.email);
+      console.log('password:', jsonData.password, 'length:', jsonData.password.length);
+      console.log('birthdate:', jsonData.birthdate);
+      console.log('nickname:', jsonData.nickname, 'length:', jsonData.nickname.length);
+      console.log('bio:', jsonData.bio, 'length:', jsonData.bio.length);
+      console.log('profileImage:', profileImage ? '파일로 전송됨' : '없음');
       console.log('========================');
 
       // 백엔드 API로 회원가입 요청
       const response = await fetch('https://classic-daramg.duckdns.org/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // 쿠키 저장을 위해 필요
-        body: JSON.stringify(requestBody),
+        // Content-Type 헤더를 제거하면 브라우저가 자동으로 multipart/form-data와 boundary를 설정합니다
+        // 회원가입 시에는 쿠키가 필요하지 않으므로 credentials 옵션 제거
+        body: formData,
       });
 
       if (response.ok) {
