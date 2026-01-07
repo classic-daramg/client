@@ -40,71 +40,84 @@ export default function HomePage() {
   }
 
   return (
-    <>
-      <header className="w-full flex justify-between items-center p-4 border-b">
+    <div className="bg-[#F4F5F7] min-h-screen">
+      {/* Header */}
+      <header className="w-full flex justify-between items-center px-5 pt-[54px] pb-4">
         <Link href="/" className="flex items-center">
-          <Image src="/icons/logo.svg" alt="다람쥐 로고" width={120} height={40} />
+          <Image src="/icons/logo.svg" alt="다람쥐 로고" width={106} height={23} />
         </Link>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-[10px]">
           <Link href="/notification">
-            <Image src="/icons/alarm.svg" alt="알림" width={24} height={24} />
+            <Image src="/icons/alarm.svg" alt="알림" width={30} height={30} />
           </Link>
           <Link href={isLoggedIn ? "/my-page" : "/loginpage"}>
             <Image
               src="/icons/profile.svg"
               alt="프로필"
-              width={24}
-              height={24}
+              width={30}
+              height={30}
               className={isLoggedIn ? "ring-2 ring-blue-500 rounded-full" : ""}
             />
           </Link>
         </div>
       </header>
-      <div className="p-4">
-        <div className="space-y-3">
-          <div className="w-full h-54 bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400 font-semibold">
-            IMAGE
+
+      {/* Main Content */}
+      <div className="px-5 pt-0">
+        <div className="flex flex-col gap-3">
+          {/* Image Slide */}
+          <div className="w-full aspect-[335/148] bg-white rounded-[20px] flex items-center justify-center overflow-hidden">
+            <span className="text-[#A6A6A6] text-[20px] font-semibold">IMAGE</span>
           </div>
-          <div>
-            <Link href="/composer-talk">
-              <div className="flex items-center p-5 bg-gray-50 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
-                <Image src={menuItems[0].icon} alt={menuItems[0].title} width={40} height={40} />
-                <div className="ml-4 flex-grow">
-                  <h2 className="font-bold text-lg transition-colors duration-200 hover:text-blue-600">{menuItems[0].title}</h2>
-                  <p className="text-sm text-gray-500">{menuItems[0].description}</p>
+
+          {/* Menu Cards */}
+          <Link href="/composer-talk">
+            <div className="bg-white h-[143px] rounded-[20px] shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)] p-6 flex flex-col justify-between cursor-pointer">
+              <Image src={menuItems[0].icon} alt={menuItems[0].title} width={36} height={36} />
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-[2px]">
+                  <h2 className="text-[#1A1A1A] text-[20px] font-semibold">{menuItems[0].title}</h2>
+                  <p className="text-[#BFBFBF] text-[11px]">{menuItems[0].description}</p>
                 </div>
-                <span className="text-gray-400">&gt;</span>
+                <svg width="7" height="15" viewBox="0 0 7 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </div>
-            </Link>
-          </div>
-          <div>
-            <Link href="/curation">
-              <div className="flex items-center p-5 bg-gray-50 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
-                <Image src={menuItems[1].icon} alt={menuItems[1].title} width={40} height={40} />
-                <div className="ml-4 flex-grow">
-                  <h2 className="font-bold text-lg transition-colors duration-200 hover:text-blue-600">{menuItems[1].title}</h2>
-                  <p className="text-sm text-gray-500">{menuItems[1].description}</p>
+            </div>
+          </Link>
+
+          <Link href="/curation">
+            <div className="bg-white h-[143px] rounded-[20px] shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)] p-6 flex flex-col justify-between cursor-pointer">
+              <Image src={menuItems[1].icon} alt={menuItems[1].title} width={36} height={36} />
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-[2px]">
+                  <h2 className="text-[#1A1A1A] text-[20px] font-semibold">{menuItems[1].title}</h2>
+                  <p className="text-[#BFBFBF] text-[11px]">{menuItems[1].description}</p>
                 </div>
-                <span className="text-gray-400">&gt;</span>
+                <svg width="7" height="15" viewBox="0 0 7 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </div>
-            </Link>
-          </div>
-          <div>
-            <Link href="/free-talk">
-              <div className="flex items-center p-5 bg-gray-50 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
-                <Image src={menuItems[2].icon} alt={menuItems[2].title} width={40} height={40} />
-                <div className="ml-4 flex-grow">
-                  <h2 className="font-bold text-lg transition-colors duration-200 hover:text-blue-600">{menuItems[2].title}</h2>
-                  <p className="text-sm text-gray-500">{menuItems[2].description}</p>
+            </div>
+          </Link>
+
+          <Link href="/free-talk">
+            <div className="bg-white h-[143px] rounded-[20px] shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)] p-6 flex flex-col justify-between cursor-pointer">
+              <Image src={menuItems[2].icon} alt={menuItems[2].title} width={36} height={36} />
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-[2px]">
+                  <h2 className="text-[#1A1A1A] text-[20px] font-semibold">{menuItems[2].title}</h2>
+                  <p className="text-[#BFBFBF] text-[11px]">{menuItems[2].description}</p>
                 </div>
-                <span className="text-gray-400">&gt;</span>
+                <svg width="7" height="15" viewBox="0 0 7 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </div>
-            </Link>
-          </div>
+            </div>
+          </Link>
         </div>
       </div>
-      {/* // ...existing code... */}
-    </>
+    </div>
   );
 }
