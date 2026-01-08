@@ -27,14 +27,14 @@ export default function ChangePassword() {
 		// 실제로는 서버에서 현재 비밀번호 확인
 		return pw === 'QWER1234';
 	};
-	const fakeServerCheckNewPw = async (pw: string) => {
+	const fakeServerCheckNewPw = async () => {
 		// 비밀번호 규칙: 8자 이상, 영문+숫자
-		if (!/^.*(?=.{8,})(?=.*\d)(?=.*[a-zA-Z]).*$/.test(pw)) return false;
+		if (!/^.*(?=.{8,})(?=.*\d)(?=.*[a-zA-Z]).*$/.test(newPw)) return false;
 		// 예시: 사용할 수 없는 비밀번호
-		if (pw === 'abcdefg') return false;
+		if (newPw === 'abcdefg') return false;
 		return true;
 	};
-	const fakeServerChangePw = async (pw: string) => {
+	const fakeServerChangePw = async () => {
 		// 실제로는 서버에 비밀번호 변경 요청
 		return true;
 	};

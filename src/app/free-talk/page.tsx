@@ -9,11 +9,17 @@ import WriteButton from '@/components/WriteButton';
 export default function FreeTalkPage({
   searchParams,
 }: {
-  searchParams?: {
+  searchParams?: Promise<{
     search?: string;
-  };
+  }>;
 }) {
-  const searchTerm = searchParams?.search || '';
+  const [searchTerm, setSearchTerm] = React.useState('');
+
+  React.useEffect(() => {
+    searchParams?.then((params) => {
+      setSearchTerm(params?.search || '');
+    });
+  }, [searchParams]);
 
   return (
     <div className="relative w-full max-w-md mx-auto bg-gray-100 min-h-screen overflow-hidden">

@@ -48,7 +48,7 @@ export default function Drafts() {
 			</div>
 			{/* Card List */}
 			<div className="absolute bg-white flex flex-col items-start left-0 top-[calc(50%-306px)] w-[375px]">
-				{drafts.map((draft, idx) => (
+				{drafts.map((draft) => (
 					<div key={draft.id} className="box-border flex flex-col gap-[10px] items-center overflow-clip px-[12px] py-[18px] w-full border-b border-[#f4f5f7]">
 						<div className="flex items-center justify-center w-[335px]">
 							<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
