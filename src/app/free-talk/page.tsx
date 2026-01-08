@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Header from './components/Header';
 import InfoBanner from './components/InfoBanner';
 import SearchFilterBar from './components/SearchFilterBar';

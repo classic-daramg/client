@@ -5,11 +5,11 @@ import { persist } from 'zustand/middleware';
 
 interface UserProfile {
   name: string;
-  nickname: string;
-  email: string;
+  nickname?: string;
+  email?: string;
   bio: string;
   profileImage: string;
-  birthDate: string;
+  birthDate?: string;
 }
 
 interface UserProfileStore {
