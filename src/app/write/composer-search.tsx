@@ -34,7 +34,7 @@ export default function ComposerSearch({
 }: ComposerSearchProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedComposers, setSelectedComposers] = useState<string[]>(initialSelected);
-    const [composers, setComposers] = useState<Composer[]>(MOCK_COMPOSERS);
+    const [composers] = useState<Composer[]>(MOCK_COMPOSERS);
 
     // TODO: API 연결 - 작곡가 목록 가져오기
     useEffect(() => {

@@ -151,10 +151,17 @@ function PostItem({ post }: { post: Post }) {
 }
 
 // --- Main Page Component ---
-export default function ComposerTalkPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function ComposerTalkPage({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string>('');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // params 처리
+  useEffect(() => {
+    params.then(({ id: composerId }) => {
+      setId(composerId);
+    });
+  }, [params]);
 
   // API 연결 전에는 mockPosts를 사용하고, API 연결 시 아래 fetch 부분을 주석 해제하세요.
   /*
