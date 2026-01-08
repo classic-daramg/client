@@ -10,7 +10,7 @@ import SignupSuccessPopup from '../../../../components/SignupSuccessPopup';
 const ProfileSetupPage = () => {
   const router = useRouter();
   const { updateProfile, getCompleteData, clearRegistrationData } = useRegistrationStore();
-  const { loadFromRegistration, defaultProfileImage, getProfileImage, resetToDefaultImage: resetStoreToDefault } = useUserProfileStore();
+  const { loadFromRegistration, defaultProfileImage } = useUserProfileStore();
   const [nickname, setNickname] = useState('');
   const [bio, setBio] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>('https://example.com/profile.jpg'); // 임시 이미지 URL
@@ -130,7 +130,16 @@ const ProfileSetupPage = () => {
       }
 
       // 요청 본문 구성
-      const requestBody: any = {
+      interface RegistrationRequest {
+        name: string;
+        email: string;
+        password: string;
+        birthdate: string;
+        nickname: string;
+        bio: string;
+        profileImage: string | null;
+      }
+      const requestBody: RegistrationRequest = {
         name: completeData.name.trim(),
         email: completeData.email.trim(),
         password: completeData.password,
@@ -175,21 +184,20 @@ const ProfileSetupPage = () => {
       } else {
         // 회원가입 실패 - 응답 본문이 있을 경우만 파싱
         let errorMessage = '회원가입에 실패했습니다.';
-        const contentType = response.headers.get('content-type');
-        
+
         // 텍스트 응답 먼저 시도
         try {
           const textError = await response.text();
-          
+
           // 텍스트가 JSON일 수도 있으니 파싱 시도
           try {
             const jsonError = JSON.parse(textError);
             errorMessage = jsonError.message || jsonError.error || textError;
-          } catch (e) {
+          } catch {
             // JSON이 아니면 텍스트 그대로 사용
             errorMessage = textError || errorMessage;
           }
-        } catch (e) {
+        } catch {
           // 응답 본문 읽기 실패
         }
 
@@ -204,7 +212,7 @@ const ProfileSetupPage = () => {
             alert(`회원가입 오류 (${response.status}): ${errorMessage}`);
         }
       }
-    } catch (error) {
+    } catch {
       alert('네트워크 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
@@ -240,7 +248,7 @@ const ProfileSetupPage = () => {
               : data.available !== undefined 
               ? data.available
               : false;
-          } catch (parseError) {
+          } catch {
             // 빈 응답이나 파싱 실패 시 사용 가능한 것으로 처리
             isAvailable = true;
           }
@@ -260,7 +268,7 @@ const ProfileSetupPage = () => {
         setIsNicknameChecked(false);
         setNicknameCheckError('이미 사용 중인 닉네임입니다.');
       }
-    } catch (error) {
+    } catch {
       setIsNicknameChecked(false);
       setNicknameCheckError('닉네임 중복 확인 중 오류가 발생했습니다.');
     } finally {

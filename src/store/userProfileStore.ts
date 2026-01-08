@@ -25,7 +25,7 @@ interface UserProfileStore {
   clearProfile: () => void;
 
   // Registration에서 프로필 데이터 로드
-  loadFromRegistration: (registrationData: { name?: string; email?: string; birthDate?: string; profile?: { nickname?: string; bio?: string; profileImage?: string } }) => void;
+  loadFromRegistration: (registrationData: { name?: string; email?: string; birthDate?: string; profile?: { nickname?: string; bio?: string; profileImage?: string | null } }) => void;
 }
 
 export const useUserProfileStore = create<UserProfileStore>()(

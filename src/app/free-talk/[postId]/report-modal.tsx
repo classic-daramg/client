@@ -37,12 +37,16 @@ export function ReportModal({ isOpen, onClose, onSubmit, postId, composerId }: R
       });
       if (response.ok) {
         alert('신고가 접수되었습니다.');
-        onSubmit ? onSubmit() : onClose();
+        if (onSubmit) {
+          onSubmit();
+        } else {
+          onClose();
+        }
       } else {
         alert('신고 접수 중 오류가 발생했습니다.');
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      console.error('신고 접수 중 오류 발생');
       alert('신고 접수 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
