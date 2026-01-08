@@ -57,7 +57,6 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     replyToAuthor: string;
   } | undefined>(undefined);
   const [showCommentInput, setShowCommentInput] = useState(true);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // params 처리
   useEffect(() => {
@@ -119,13 +118,11 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
   const handleReportOpen = () => {
     // 신고 모달 열렸을 때 댓글 입력창 숨기기
-    setIsReportModalOpen(true);
     setShowCommentInput(false);
   };
 
   const handleReportClose = () => {
     // 신고 모달 닫혔을 때 댓글 입력창 다시 보이기
-    setIsReportModalOpen(false);
     setShowCommentInput(true);
   };
 

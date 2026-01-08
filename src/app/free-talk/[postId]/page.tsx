@@ -124,8 +124,8 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
         if (active) {
           setPost(data);
         }
-      } catch (e: any) {
-        if (active) setError(e.message || '게시글을 불러오지 못했습니다.');
+      } catch (e) {
+        if (active) setError(e instanceof Error ? e.message : '게시글을 불러오지 못했습니다.');
       } finally {
         if (active) setLoading(false);
       }

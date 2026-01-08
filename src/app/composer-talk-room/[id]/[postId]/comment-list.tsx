@@ -24,7 +24,7 @@ interface CommentListProps {
   onReportClose?: () => void;
 }
 
-export default function CommentList({ composerId, initialComments, onAddComment, onReply, onReportOpen, onReportClose }: CommentListProps) {
+export default function CommentList({ composerId, initialComments, onReply, onReportOpen, onReportClose }: CommentListProps) {
   const [comments, setComments] = useState<Comment[]>(initialComments.slice(0, COMMENTS_PER_PAGE));
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialComments.length > COMMENTS_PER_PAGE);
