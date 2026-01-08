@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import React from 'react';
 import { useUserProfileStore } from '../store/userProfileStore';
 
@@ -19,11 +18,10 @@ const UserProfileCard = () => {
     <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md max-w-sm mx-auto">
       {/* 프로필 이미지 */}
       <div className="relative w-20 h-20 mb-4">
-        <Image
+        <img
           src={getProfileImage()}
           alt="프로필"
-          fill
-          className="rounded-full object-cover border-2 border-gray-200"
+          className="w-full h-full rounded-full object-cover border-2 border-gray-200"
         />
       </div>
 
@@ -33,7 +31,7 @@ const UserProfileCard = () => {
         <p className="text-sm text-gray-600">{profile.name}</p>
         <p className="text-sm text-gray-500">{profile.email}</p>
         {profile.bio && (
-          <p className="text-sm text-gray-700 italic">&quot;{profile.bio}&quot;</p>
+          <p className="text-sm text-gray-700 italic">{'"' + profile.bio + '"'}</p>
         )}
       </div>
 

@@ -27,8 +27,8 @@ interface ComposerSearchProps {
     initialSelected?: string[];
 }
 
-export default function ComposerSearch({ 
-    onSelectComposer, 
+export default function ComposerSearch({
+    onSelectComposer,
     onClose,
     initialSelected = []
 }: ComposerSearchProps) {

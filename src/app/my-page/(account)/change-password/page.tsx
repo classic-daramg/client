@@ -34,6 +34,7 @@ export default function ChangePassword() {
 		if (pw === 'abcdefg') return false;
 		return true;
 	};
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const fakeServerChangePw = async (pw: string) => {
 		// 실제로는 서버에 비밀번호 변경 요청
 		return true;
