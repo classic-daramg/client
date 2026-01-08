@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -30,16 +30,18 @@ const UserProfileSection = () => {
   const profile = useUserProfileStore((state) => state.profile);
   const nickname = profile?.nickname || '사용자닉네임';
   const bio = profile?.bio || '프로필 한줄소개가 들어갈 자리';
+  const profileImage = profile?.profileImage || '/icons/DefaultImage.svg';
 
   return (
     <div className="px-5 pt-5 pb-8 bg-white shadow-[0px_0px_7px_-3px_rgba(0,0,0,0.15)] flex items-center gap-3.5">
       <div className="flex flex-col items-center gap-2">
         <Image
-          className="w-24 h-24 rounded-full"
-          src="/icons/DefaultImage.svg"
+          className="w-24 h-24 rounded-full object-cover"
+          src={profileImage}
           alt="프로필 이미지"
           width={96}
           height={96}
+          priority
         />
         <Link href="/my-page/edit-profile" className="text-neutral-400 text-xs font-semibold flex items-center gap-1">
           프로필 편집
@@ -121,7 +123,39 @@ const LogoutPopup = ({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
 export default function MyPage() {
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const router = useRouter();
-  const clearProfile = useUserProfileStore((state) => state.clearProfile);
+  const { profile, setProfile, clearProfile } = useUserProfileStore();
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch('https://classic-daramg.duckdns.org/users', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setProfile({
+            name: data.name ?? '',
+            nickname: data.nickname ?? '',
+            email: data.email ?? '',
+            bio: data.bio ?? '',
+            profileImage: data.profileImage ?? '/icons/DefaultImage.svg',
+            birthDate: data.birthDate ?? '',
+          });
+        } else {
+          console.error('프로필 조회 실패:', response.status);
+        }
+      } catch (error) {
+        console.error('프로필 조회 에러:', error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [setProfile]);
 
   const handleLogout = async () => {
     try {

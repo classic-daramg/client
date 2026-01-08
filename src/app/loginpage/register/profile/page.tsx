@@ -13,8 +13,11 @@ const ProfileSetupPage = () => {
   const { loadFromRegistration, defaultProfileImage, getProfileImage, resetToDefaultImage: resetStoreToDefault } = useUserProfileStore();
   const [nickname, setNickname] = useState('');
   const [bio, setBio] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>('https://example.com/profile.jpg'); // 임시 이미지 URL
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImageBlob, setProfileImageBlob] = useState<Blob | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [isNicknameChecked, setIsNicknameChecked] = useState(false);
   const [nicknameCheckLoading, setNicknameCheckLoading] = useState(false);
@@ -24,23 +27,31 @@ const ProfileSetupPage = () => {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // 파일 크기 체크 (200KB 이하로 제한)
-      if (file.size > 200 * 1024) {
-        alert('파일 크기는 200KB 이하여야 합니다.');
-        return;
-      }
+    if (!file) return;
 
-      // 파일 타입 체크
-      if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다.');
-        return;
-      }
+    // 파일 크기 체크 (200KB 이하로 제한)
+    if (file.size > 200 * 1024) {
+      setUploadError('파일 크기는 200KB 이하여야 합니다.');
+      return;
+    }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const img = new Image();
-        img.onload = () => {
+    // 파일 타입 체크
+    if (!file.type.startsWith('image/')) {
+      setUploadError('이미지 파일만 업로드 가능합니다.');
+      return;
+    }
+
+    setUploadLoading(true);
+    setUploadError('');
+
+    // FileReader를 Promise로 변환하여 async/await 처리
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        try {
           // 이미지 리사이징
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 400;
@@ -63,22 +74,68 @@ const ProfileSetupPage = () => {
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
+          if (!ctx) throw new Error('Canvas context를 가져올 수 없습니다.');
           
-          // JPEG 품질 0.7로 압축
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          
-          if (compressedDataUrl.length > 50000) { // 50KB 이상이면 경고
-            alert('이미지가 너무 큽니다. 더 작은 이미지를 선택해주세요.');
-            return;
-          }
-          
-          setProfileImage(compressedDataUrl);
-        };
-        img.src = reader.result as string;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Canvas를 Blob으로 변환 (JPEG 품질 0.7)
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                setUploadError('이미지 변환에 실패했습니다.');
+                setUploadLoading(false);
+                return;
+              }
+
+              // Blob이 너무 크지 않은지 확인
+              if (blob.size > 200 * 1024) {
+                setUploadError('압축된 이미지가 너무 큽니다. 더 작은 이미지를 선택해주세요.');
+                setUploadLoading(false);
+                return;
+              }
+
+              // DataURL로 미리보기 생성
+              const reader2 = new FileReader();
+              reader2.onload = (e2) => {
+                const dataUrl = e2.target?.result as string;
+                setProfileImage(dataUrl);
+                setProfileImageBlob(blob);
+                setUploadLoading(false);
+
+                console.log('=== 이미지 업로드 완료 ===');
+                console.log('Blob size:', blob.size, 'bytes');
+                console.log('Blob type:', blob.type);
+                console.log('========================');
+              };
+              reader2.onerror = () => {
+                setUploadError('이미지 미리보기 생성 실패');
+                setUploadLoading(false);
+              };
+              reader2.readAsDataURL(blob);
+            },
+            'image/jpeg',
+            0.7
+          );
+        } catch (err) {
+          setUploadError('이미지 처리 중 오류가 발생했습니다.');
+          setUploadLoading(false);
+        }
       };
-      reader.readAsDataURL(file);
-    }
+
+      img.onerror = () => {
+        setUploadError('이미지 로드 실패. 다른 이미지를 선택해주세요.');
+        setUploadLoading(false);
+      };
+
+      img.src = e.target?.result as string;
+    };
+
+    reader.onerror = () => {
+      setUploadError('파일 읽기 실패. 다시 시도해주세요.');
+      setUploadLoading(false);
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const resetToDefaultImage = () => {
@@ -101,11 +158,11 @@ const ProfileSetupPage = () => {
     setIsLoading(true);
 
     try {
-      // 프로필 정보를 store에 저장
+      // 프로필 정보를 store에 저장 (이미지는 서버에서 저장되므로 프리뷰를 임시로 유지)
       updateProfile({
         nickname: nickname.trim(),
         bio: bio.trim(),
-        profileImage: profileImage
+        profileImage: profileImage || defaultProfileImage,
       });
 
       // 완전한 회원가입 데이터 가져오기
@@ -129,36 +186,39 @@ const ProfileSetupPage = () => {
         formattedBirthDate = `${year}-${month}-${day}`;
       }
 
-      // 요청 본문 구성
-      const requestBody: any = {
+      // SignupRequestDto 구성 (백엔드 요구사항 정확히 준수)
+      const signupRequest = {
         name: completeData.name.trim(),
         email: completeData.email.trim(),
         password: completeData.password,
         birthdate: formattedBirthDate,
         nickname: completeData.profile.nickname.trim(),
-        bio: completeData.profile.bio.trim(),
-        profileImage: profileImage
+        bio: completeData.profile.bio.trim() || null, // 빈 문자열은 null로
       };
 
       // 디버깅: 요청 데이터 확인
       console.log('=== 회원가입 요청 데이터 ===');
-      console.log('name:', requestBody.name, 'length:', requestBody.name.length);
-      console.log('email:', requestBody.email);
-      console.log('password:', requestBody.password, 'length:', requestBody.password.length);
-      console.log('birthdate:', requestBody.birthdate);
-      console.log('nickname:', requestBody.nickname, 'length:', requestBody.nickname.length);
-      console.log('bio:', requestBody.bio, 'length:', requestBody.bio.length);
-      console.log('profileImage:', requestBody.profileImage);
+      console.log('signupRequest:', signupRequest);
+      console.log('profileImageBlob:', profileImageBlob);
       console.log('========================');
 
-      // 백엔드 API로 회원가입 요청
+      // form-data 본문 구성 (signupRequest JSON Blob + image 파일)
+      const formData = new FormData();
+      
+      // signupRequest를 JSON Blob으로 감싸서 추가 (type: 'application/json' 명시 필수)
+      const jsonBlob = new Blob([JSON.stringify(signupRequest)], { type: 'application/json' });
+      formData.append('signupRequest', jsonBlob);
+      
+      // 이미지가 있을 경우에만 추가 (선택사항)
+      if (profileImageBlob) {
+        formData.append('image', profileImageBlob, 'profile.jpg');
+      }
+
+      // 백엔드 API로 회원가입 요청 (multipart/form-data)
+      // Content-Type 헤더를 명시하지 않음 (브라우저가 자동으로 boundary 설정)
       const response = await fetch('https://classic-daramg.duckdns.org/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // 쿠키 저장을 위해 필요
-        body: JSON.stringify(requestBody),
+        body: formData,
       });
 
       if (response.ok) {
@@ -318,6 +378,11 @@ const ProfileSetupPage = () => {
                   alt="프로필"
                   className="w-full h-full object-cover"
                 />
+                {uploadLoading && (
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
               </label>
             </div>
 
@@ -333,7 +398,7 @@ const ProfileSetupPage = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="text-xs font-semibold text-[#A6A6A6] border-b border-[#A6A6A6] cursor-pointer"
                 >
-                  프로필 사진 등록
+                  {uploadLoading ? '업로드 중...' : '프로필 사진 등록'}
                 </button>
               ) : (
                 <button
@@ -344,6 +409,9 @@ const ProfileSetupPage = () => {
                 </button>
               )}
             </div>
+            {uploadError && (
+              <div className="text-xs text-red-500 mt-1">{uploadError}</div>
+            )}
           </div>
 
           {/* Nickname Input */}

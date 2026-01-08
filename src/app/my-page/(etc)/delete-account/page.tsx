@@ -16,35 +16,13 @@ export default function DeleteAccountPage() {
     const [isLoading, setIsLoading] = useState(false);
 
     // 비밀번호 확인 및 팝업 표시
-    const handlePasswordConfirm = async () => {
+    const handlePasswordConfirm = () => {
         if (!password.trim()) {
             setToast({ show: true, message: '비밀번호를 입력해주세요.' });
             return;
         }
 
-        setIsLoading(true);
-
-        try {
-            const response = await fetch('https://classic-daramg.duckdns.org/auth/verify-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({ password }),
-            });
-
-            if (response.ok) {
-                setShowPopup(true);
-            } else {
-                setToast({ show: true, message: '비밀번호가 일치하지 않습니다.' });
-            }
-        } catch (error) {
-            console.error('비밀번호 확인 오류:', error);
-            setToast({ show: true, message: '네트워크 오류가 발생했습니다.' });
-        } finally {
-            setIsLoading(false);
-        }
+        setShowPopup(true);
     };
 
     // 회원 탈퇴 처리
@@ -52,12 +30,13 @@ export default function DeleteAccountPage() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('https://classic-daramg.duckdns.org/users/account', {
+            const response = await fetch('https://classic-daramg.duckdns.org/auth/signout', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include',
+                body: JSON.stringify({ password }),
             });
 
             if (response.ok) {
@@ -69,13 +48,15 @@ export default function DeleteAccountPage() {
                     router.push('/loginpage');
                 }, 1000);
             } else {
-                setToast({ show: true, message: '탈퇴 처리에 실패했습니다.' });
+                const errorText = await response.text();
+                setToast({ show: true, message: '비밀번호가 일치하지 않거나 탈퇴 처리에 실패했습니다.' });
             }
         } catch (error) {
             console.error('회원 탈퇴 오류:', error);
             setToast({ show: true, message: '네트워크 오류가 발생했습니다.' });
         } finally {
             setIsLoading(false);
+            setShowPopup(false);
         }
     };
 
