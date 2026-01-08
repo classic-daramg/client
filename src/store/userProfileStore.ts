@@ -5,11 +5,22 @@ import { persist } from 'zustand/middleware';
 
 interface UserProfile {
   name: string;
-  nickname: string;
-  email: string;
+  nickname?: string;
+  email?: string;
   bio: string;
   profileImage: string;
-  birthDate: string;
+  birthDate?: string;
+}
+
+interface RegistrationData {
+  name?: string;
+  email?: string;
+  birthDate?: string;
+  profile?: {
+    nickname?: string;
+    bio?: string;
+    profileImage?: string | null;
+  };
 }
 
 interface UserProfileStore {
@@ -25,7 +36,7 @@ interface UserProfileStore {
   clearProfile: () => void;
 
   // Registration에서 프로필 데이터 로드
-  loadFromRegistration: (registrationData: any) => void;
+  loadFromRegistration: (registrationData: RegistrationData) => void;
 }
 
 export const useUserProfileStore = create<UserProfileStore>()(

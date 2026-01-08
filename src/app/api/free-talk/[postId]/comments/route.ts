@@ -4,7 +4,17 @@ import { NextResponse } from 'next/server';
 
 // 간단한 인메모리 저장 (개발/Mock 용). 서버 재시작 시 초기화됨.
 // 실제 서비스에서는 DB (Prisma / Drizzle 등) 로 대체.
-const commentStore: Record<string, any[]> = {};
+interface Comment {
+  id: number;
+  author: string;
+  timestamp: string;
+  content: string;
+  isHeartSelected: boolean;
+  isReply: boolean;
+  parentId: number | null;
+}
+
+const commentStore: Record<string, Comment[]> = {};
 
 // NOTE (Next.js 15): context.params is now async in route handlers for dynamic segments.
 // You must await it before accessing properties, otherwise you'll see the

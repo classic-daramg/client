@@ -31,7 +31,7 @@ const UserProfileCard = () => {
         <p className="text-sm text-gray-600">{profile.name}</p>
         <p className="text-sm text-gray-500">{profile.email}</p>
         {profile.bio && (
-          <p className="text-sm text-gray-700 italic">"{profile.bio}"</p>
+          <p className="text-sm text-gray-700 italic">{'"' + profile.bio + '"'}</p>
         )}
       </div>
 

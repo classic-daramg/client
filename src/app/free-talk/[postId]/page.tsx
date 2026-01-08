@@ -7,19 +7,24 @@ import CommentInput from './comment-input';
 import CommentList from './comment-list';
 import { ReportButton } from './report-button';
 
-// 추후 실제 API 연동을 위한 타입
+// API 응답 타입 (OpenAPI 스펙 기준)
 interface FreeTalkPost {
-  id: string;
-  author: string;
-  userId: string;
+  id: number;
   title: string;
   content: string;
-  tags: string[];
-  createdAt: string; // ISO string
-  likes: number;
-  comments: number;
-  hasImage: boolean;
-  images?: string[];
+  images: string[];
+  videoUrl: string | null;
+  hashtags: string[];
+  postStatus: string;
+  likeCount: number;
+  commentCount: number;
+  isBlocked: boolean;
+  createdAt: string;
+  updatedAt: string;
+  writerNickname: string;
+  type: string;
+  primaryComposer: string | null;
+  additionalComposers: string[] | null;
 }
 
 interface CommentData {
@@ -43,58 +48,53 @@ interface CommentData {
  */
 
 // ----- 환경 스위치 -----
-const USE_MOCK = true; // 실제 연동 시 false 로 변경
-const USE_COMMENT_API = true; // 댓글 POST/GET 사용 여부 (USE_MOCK=false 와 함께 실사용 권장)
+const USE_MOCK = false; // 실제 API 사용
+const USE_COMMENT_API = true; // 댓글 POST/GET 사용 여부
 
-// ----- 실제 API 엔드포인트 (나중에 URL 주입) -----
-// const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.example.com';
-// const ENDPOINT = (postId: string) => `${API_BASE}/free-talk/${postId}`;
+// ----- 실제 API 엔드포인트 -----
+const API_BASE = 'https://classic-daramg.duckdns.org';
 
-// ----- 공용 어댑터 (백엔드 응답 -> FreeTalkPost) -----
-// interface FreeTalkPostApiResponse { ...백엔드 스키마... }
-// function adaptFreeTalkPost(res: FreeTalkPostApiResponse): FreeTalkPost { return { ... } }
+// ----- REAL FETCH -----
+async function fetchRealPost(postId: string): Promise<FreeTalkPost> {
+  const res = await fetch(`${API_BASE}/posts/${postId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('게시글 요청 실패');
+  const json = await res.json();
+  return json as FreeTalkPost;
+}
 
 // ----- MOCK 구현 -----
 async function fetchMockPost(postId: string): Promise<FreeTalkPost> {
   await new Promise(r => setTimeout(r, 200));
   return {
-    id: postId,
-    author: '익명다람쥐',
-    userId: 'user123',
+    id: parseInt(postId),
     title: `샘플 자유글 제목 ${postId}`,
     content: '이곳은 자유 토크룸 글 내용입니다. 백엔드 연동 후 실제 데이터가 표기됩니다.\n여러 줄도 정상적으로 표현됩니다.',
-    tags: ['#잡담', '#클래식', '#일상'],
+    hashtags: ['#잡담', '#클래식', '#일상'],
     createdAt: new Date().toISOString(),
-    likes: 5,
-    comments: 2,
-    hasImage: true,
-    images: ['/icons/img.svg']
+    updatedAt: new Date().toISOString(),
+    likeCount: 5,
+    commentCount: 2,
+    images: ['/icons/img.svg'],
+    videoUrl: null,
+    postStatus: 'PUBLISHED',
+    isBlocked: false,
+    writerNickname: '익명다람쥐',
+    type: 'FREE',
+    primaryComposer: null,
+    additionalComposers: null
   };
 }
-
-// ----- REAL FETCH (나중에 사용) -----
-// async function fetchRealPost(postId: string): Promise<FreeTalkPost> {
-//   const res = await fetch(ENDPOINT(postId), {
-//     method: 'GET',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       // 필요 시 인증 토큰 추가: Authorization: `Bearer ${token}`
-//     },
-//     // 캐시 전략 (SSR/ISR 고려 시 조정):
-//     // next: { revalidate: 60 }
-//   });
-//   if (!res.ok) throw new Error('게시글 요청 실패');
-//   const json = await res.json();
-//   // return adaptFreeTalkPost(json);
-//   // 임시: 백엔드 스키마 확정 전 직렬화 예시
-//   return json as FreeTalkPost; // (스키마 확정 후 어댑터 적용 권장)
-// }
 
 // ----- Unified Fetch Wrapper -----
 async function fetchPostDetail(postId: string): Promise<FreeTalkPost> {
   if (USE_MOCK) return fetchMockPost(postId);
-  // return fetchRealPost(postId);
-  return fetchMockPost(postId); // 안전장치 (실제 전환 시 위 라인 주석 해제)
+  return fetchRealPost(postId);
 }
 
 interface PageProps {
@@ -124,8 +124,8 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
         if (active) {
           setPost(data);
         }
-      } catch (e: any) {
-        if (active) setError(e.message || '게시글을 불러오지 못했습니다.');
+      } catch (e) {
+        if (active) setError(e instanceof Error ? e.message : '게시글을 불러오지 못했습니다.');
       } finally {
         if (active) setLoading(false);
       }
@@ -136,7 +136,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
   // 초기 Mock 댓글 세팅 (포스트 로드 후 1회)
   useEffect(() => {
     if (post) {
-      setLikesCount(post.likes);
+      setLikesCount(post.likeCount);
       // 샘플 댓글 8개 (답글 포함)
       const mock: CommentData[] = [
         { id: 1, author: '익명1', timestamp: '1분 전', content: '재밌는 글이네요!', isHeartSelected: false },
@@ -175,7 +175,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
       parentId: replyToId
     };
     setComments(prev => [...prev, optimistic]);
-    if (!isReply) setPost(p => p ? { ...p, comments: p.comments + 1 } : p);
+    if (!isReply) setPost(p => p ? { ...p, commentCount: p.commentCount + 1 } : p);
     setReplyMode(null);
 
     if (USE_COMMENT_API) {
@@ -198,7 +198,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
         console.error(e);
         // 롤백
         setComments(prev => prev.filter(c => c.id !== optimisticId));
-        if (!isReply) setPost(p => p ? { ...p, comments: Math.max(0, p.comments - 1) } : p);
+        if (!isReply) setPost(p => p ? { ...p, commentCount: Math.max(0, p.commentCount - 1) } : p);
         alert('댓글 전송에 실패했습니다. 다시 시도해주세요.');
       }
     }
@@ -241,16 +241,16 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
           </Link>
           <div className="flex-1 text-zinc-900 text-base font-semibold text-center">자유 토크룸</div>
           <div className="w-9 h-9 flex items-center justify-center -mr-2">
-            <ReportButton postId={post.id} composerId={post.userId} onOpenChange={(o)=> setHideInput(o)} />
+            <ReportButton postId={post.id.toString()} composerId="" onOpenChange={(o)=> setHideInput(o)} />
           </div>
         </div>
 
         {/* Writer Info */}
         <div className="px-5 pb-5 pt-4 flex flex-col gap-4">
           <div className="w-full flex items-start gap-2">
-            <Link href={`/writer-profile/${post.userId}`} className="w-8 h-8 rounded-md bg-zinc-300 flex-shrink-0" />
+            <Link href={`/writer-profile/${post.writerNickname}`} className="w-8 h-8 rounded-md bg-zinc-300 flex-shrink-0" />
             <div className="flex-1 flex flex-col">
-              <p className="text-neutral-600 text-sm font-semibold leading-none mb-1">{post.author}</p>
+              <p className="text-neutral-600 text-sm font-semibold leading-none mb-1">{post.writerNickname}</p>
               <p className="text-zinc-300 text-xs font-medium leading-none">{formattedDate}</p>
             </div>
             <div className="flex items-center gap-[3px]">
@@ -268,19 +268,25 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
 
           {/* Tags */}
           <div className="flex gap-1 flex-wrap text-zinc-300 text-sm font-medium">
-            {post.tags.map(tag => <span key={tag}>{tag}</span>)}
+            {post.hashtags.map((tag: string) => <span key={tag}>{tag}</span>)}
           </div>
 
           {/* Images */}
-          {post.images && post.images.length > 0 && (
-            <div className="flex gap-[5px]">
-              {post.images.slice(0,3).map((src, idx) => (
-                <div key={idx} className="w-36 h-36 bg-zinc-300 rounded-lg flex items-center justify-center overflow-hidden">
-                  <Image src={src} alt="이미지" width={60} height={60} className="opacity-30" />
-                </div>
-              ))}
-            </div>
-          )}
+          {(() => {
+            const validImages = post.images?.filter(src =>
+              src && (src.startsWith('/') || src.startsWith('http://') || src.startsWith('https://'))
+            ) || [];
+
+            return validImages.length > 0 && (
+              <div className="flex gap-[5px]">
+                {validImages.slice(0,3).map((src, idx) => (
+                  <div key={idx} className="w-36 h-36 bg-zinc-300 rounded-lg flex items-center justify-center overflow-hidden">
+                    <Image src={src} alt="이미지" width={60} height={60} className="opacity-30" />
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Reactions */}
           <div className="flex justify-between items-center mt-5">
@@ -309,10 +315,10 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
         <div className="bg-white">
           <div className="px-5 pt-5 pb-2 border-b border-neutral-100 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-zinc-900">댓글</h3>
-            <span className="text-[11px] text-zinc-400">총 {post.comments}개</span>
+            <span className="text-[11px] text-zinc-400">총 {post.commentCount}개</span>
           </div>
           <CommentList
-            composerId={post.userId}
+            composerId=""
             initialComments={comments.sort((a,b) => a.id - b.id)}
             onReply={handleReply}
             onReportOpen={handleReportOpen}

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useRegistrationStore } from '../../../../store/registrationStore';
@@ -101,11 +100,11 @@ const TermsAgreementPage = () => {
               이용약관 전문
               {'\n\n'}
               제1조 (목적)
-              이 약관은 클래식듣는다람쥐(이하 "회사")가 제공하는 서비스의 이용조건 및 절차, 회사와 회원의 권리, 의무, 책임사항과 기타 필요한 사항을 규정함을 목적으로 합니다.
+              이 약관은 클래식듣는다람쥐(이하 &quot;회사&quot;)가 제공하는 서비스의 이용조건 및 절차, 회사와 회원의 권리, 의무, 책임사항과 기타 필요한 사항을 규정함을 목적으로 합니다.
               {'\n\n'}
               제2조 (정의)
-              1. "서비스"라 함은 회사가 제공하는 모든 서비스를 의미합니다.
-              2. "회원"이라 함은 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객을 말합니다.
+              1. &quot;서비스&quot;라 함은 회사가 제공하는 모든 서비스를 의미합니다.
+              2. &quot;회원&quot;이라 함은 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객을 말합니다.
             </div>
           </div>
         </div>

@@ -37,6 +37,10 @@ export default function WriteForm({
         setShowComposerSearch(false);
     };
 
+    const handleCloseComposerSearch = () => {
+        setShowComposerSearch(false);
+    };
+
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
             setImageFile(event.target.files[0]);
@@ -85,7 +89,7 @@ export default function WriteForm({
                 <>
                     <SectionHeader title="작곡가 선택" />
                     {showComposerSearch ? (
-                        <ComposerSearch onSelectComposer={handleSelectComposer} />
+                        <ComposerSearch onSelectComposer={handleSelectComposer} onClose={handleCloseComposerSearch} />
                     ) : (
                         <div className="p-5 bg-white flex justify-between items-center">
                             <p className="font-semibold">{selectedComposer}</p>

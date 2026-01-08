@@ -10,7 +10,7 @@ export default function ComposerProfile() {
                 </div>
                 <p className="text-neutral-400 text-xs font-medium">남성 | 러시아 | 1873 - 1943</p>
                 <p className="text-zinc-400 text-xs font-medium whitespace-pre-line">
-                    Sergei Vasil'evich Rachmaninov{'\n'}Сергей Васильевич Рахманинов
+                    Sergei Vasil&apos;evich Rachmaninov{'\n'}Сергей Васильевич Рахманинов
                 </p>
             </div>
         </div>
