@@ -39,14 +39,14 @@ const ProfileSetupPage = () => {
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        const img = new Image();
-        img.onload = () => {
+        const imgElement = new window.Image();
+        imgElement.onload = () => {
           // 이미지 리사이징
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 400;
           const MAX_HEIGHT = 400;
-          let width = img.width;
-          let height = img.height;
+          let width = imgElement.width;
+          let height = imgElement.height;
 
           if (width > height) {
             if (width > MAX_WIDTH) {
@@ -63,7 +63,7 @@ const ProfileSetupPage = () => {
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
+          ctx?.drawImage(imgElement, 0, 0, width, height);
           
           // JPEG 품질 0.7로 압축
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
@@ -75,7 +75,7 @@ const ProfileSetupPage = () => {
           
           setProfileImage(compressedDataUrl);
         };
-        img.src = reader.result as string;
+        imgElement.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }

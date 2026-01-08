@@ -105,15 +105,13 @@ function PostItem({ post }: { post: (typeof mockPosts)[0] }) {
 // --- Main Page Component ---
 
 export default function WriterProfilePage({ params }: { params: Promise<{ id: string }> }) {
-	const [writerId, setWriterId] = useState<string | null>(null);
-
 	useEffect(() => {
-		params.then((resolvedParams) => {
-			setWriterId(resolvedParams.id);
+		params.then(() => {
+			// 나중에는 params.id를 사용해 실제 작성자 데이터를 가져옵니다.
 		});
 	}, [params]);
 
-	// 나중에는 writerId를 사용해 실제 작성자 데이터를 가져옵니다.
+	// 현재는 목 데이터 사용
 	const writer = mockWriterData;
 	const [isFollowing, setIsFollowing] = useState(writer.isFollowing);
 
