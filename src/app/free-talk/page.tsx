@@ -1,26 +1,18 @@
-'use client';
-
-import React from 'react';
 import Header from './components/Header';
 import InfoBanner from './components/InfoBanner';
 import SearchFilterBar from './components/SearchFilterBar';
 import PostList from './components/PostList';
 import WriteButton from '@/components/WriteButton';
 
-export default function FreeTalkPage({
+export default async function FreeTalkPage({
   searchParams,
 }: {
   searchParams?: Promise<{
     search?: string;
   }>;
 }) {
-  const [searchTerm, setSearchTerm] = React.useState('');
-
-  React.useEffect(() => {
-    searchParams?.then((params) => {
-      setSearchTerm(params?.search || '');
-    });
-  }, [searchParams]);
+  const params = await searchParams;
+  const searchTerm = params?.search || '';
 
   return (
     <div className="relative w-full max-w-md mx-auto bg-gray-100 min-h-screen overflow-hidden">
