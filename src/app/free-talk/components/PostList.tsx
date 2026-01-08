@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import PostItem from './PostItem';
 
 interface ApiPost {
+  id: number;
   title: string;
   content: string;
   hashtags: string[];
@@ -12,6 +13,7 @@ interface ApiPost {
   likeCount: number;
   commentCount: number;
   thumbnailImageUrl: string | null;
+  type: string;
 }
 
 interface ApiResponse {
@@ -34,11 +36,11 @@ function getRelativeTime(isoString: string): string {
 }
 
 export default function PostList({ searchTerm }: { searchTerm?: string }) {
-  const [posts, setPosts] = useState<Array<ApiPost & { id: number }>>([]);
+  const [posts, setPosts] = useState<ApiPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [filteredPosts, setFilteredPosts] = useState<Array<ApiPost & { id: number }>>([]);
+  const [filteredPosts, setFilteredPosts] = useState<ApiPost[]>([]);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // API에서 포스트 조회
@@ -61,15 +63,11 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
 
       if (response.ok) {
         const data: ApiResponse = await response.json();
-        const newPosts = data.content.map((post, index) => ({
-          ...post,
-          id: nextCursor ? posts.length + index : index,
-        }));
 
         if (nextCursor) {
-          setPosts(prev => [...prev, ...newPosts]);
+          setPosts(prev => [...prev, ...data.content]);
         } else {
-          setPosts(newPosts);
+          setPosts(data.content);
         }
 
         setCursor(data.nextCursor);
@@ -77,8 +75,8 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
       } else {
         console.error('Failed to fetch posts:', response.status);
       }
-    } catch {
-      console.error('Error fetching posts');
+    } catch (error) {
+      console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
     }

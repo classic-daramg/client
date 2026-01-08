@@ -69,51 +69,81 @@ export default function WritePage() {
         if (!isButtonEnabled) return;
 
         try {
-            // 이미지 파일을 base64로 변환
-            const imagePromises = imageFiles.map(file => {
-                return new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        const result = reader.result as string;
-                        resolve(result);
-                    };
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-            });
+            // 해시태그를 배열로 변환 (쉼표 또는 공백으로 구분)
+            const hashtagArray = hashtags
+                .trim()
+                .split(/[,\s]+/)
+                .filter(tag => tag.length > 0)
+                .map(tag => tag.startsWith('#') ? tag : `#${tag}`);
 
-            const imageBase64Array = await Promise.all(imagePromises);
-
-            // JSON 형식으로 데이터 구성
-            const postData = {
-                postType: selectedType,
-                composer: selectedType === '큐레이션 글' ? selectedComposer : null,
+            // OpenAPI spec에 맞춰 데이터 구성
+            const postData: Record<string, any> = {
                 title: title,
                 content: content,
-                hashtags: hashtags,
-                link: link,
-                images: imageBase64Array,
+                postStatus: 'PUBLISHED',
             };
+
+            // 이미지가 있으면 추가 (base64 형식으로 전송)
+            if (imageFiles.length > 0) {
+                const imagePromises = imageFiles.map(file => {
+                    return new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const result = reader.result as string;
+                            resolve(result);
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                });
+
+                const imageBase64Array = await Promise.all(imagePromises);
+                postData.images = imageBase64Array;
+            }
+
+            // 해시태그가 있으면 추가
+            if (hashtagArray.length > 0) {
+                postData.hashtags = hashtagArray;
+            }
+
+            // 비디오/링크가 있으면 추가
+            if (link && link.trim()) {
+                postData.videoUrl = link;
+            }
 
             console.log('--- JSON Data to be Sent ---');
             console.log(JSON.stringify(postData, null, 2));
             console.log('--------------------------');
 
-            const response = await fetch('/api/posts', {
+            const response = await fetch('https://classic-daramg.duckdns.org/posts/free', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify(postData),
             });
 
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Post created successfully:', result);
+            console.log('Response status:', response.status);
+            const text = await response.text();
+            console.log('Response body:', text);
+
+            if (response.ok || response.status === 201) {
+                try {
+                    const result = text ? JSON.parse(text) : null;
+                    console.log('Post created successfully:', result);
+                } catch (e) {
+                    console.log('Response is not JSON, but request succeeded');
+                }
                 alert('등록되었습니다.');
-                router.push('/composer-talk');
+                router.push('/free-talk');
             } else {
-                console.error('Failed to create post:', response.statusText);
+                try {
+                    const errorData = text ? JSON.parse(text) : null;
+                    console.error('Error response:', errorData);
+                } catch (e) {
+                    console.error('Error response (not JSON):', text);
+                }
                 alert('게시글 등록에 실패했습니다.');
             }
         } catch (error) {
