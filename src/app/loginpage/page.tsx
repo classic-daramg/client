@@ -7,7 +7,7 @@ import Link from 'next/link';
 import ToastNotification from '../../components/ToastNotification';
 import { useUserProfileStore } from '../../store/userProfileStore';
 
-const loginpage = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -32,8 +32,6 @@ const loginpage = () => {
     //보안위험**************
     if (email.trim() === 'admin@gmail.com' && password === 'admin1234!') {
       setToast({ show: true, message: '관리자 계정으로 로그인되었습니다.' });
-      // 임시 JWT (exp: 24시간 후)
-      const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24;
       // 유니코드 안전 base64 인코딩 함수
       function base64EncodeUnicode(str: string) {
         return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) =>
@@ -110,8 +108,16 @@ const loginpage = () => {
 
         // localStorage에서 저장된 프로필 데이터 확인
         const savedProfile = localStorage.getItem('user-profile-storage');
-        let profileData: any = null;
-        
+        interface ProfileData {
+          name?: string;
+          nickname?: string;
+          email?: string;
+          bio?: string;
+          profileImage?: string;
+          birthDate?: string;
+        }
+        let profileData: ProfileData | null = null;
+
         if (savedProfile) {
           try {
             const parsed = JSON.parse(savedProfile);
@@ -136,7 +142,10 @@ const loginpage = () => {
         }, 500);
       } else {
         // 로그인 실패 - 응답 본문이 있을 경우만 파싱
-        let data: any = {};
+        interface ErrorResponse {
+          message?: string;
+        }
+        let data: ErrorResponse = {};
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
           try {
@@ -307,4 +316,4 @@ const loginpage = () => {
   );
 };
 
-export default loginpage;
+export default LoginPage;

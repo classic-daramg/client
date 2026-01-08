@@ -77,8 +77,8 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
       } else {
         console.error('Failed to fetch posts:', response.status);
       }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
+    } catch {
+      console.error('Error fetching posts');
     } finally {
       setLoading(false);
     }
