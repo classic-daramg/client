@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Image from 'next/image';
 import HeartButton from './heart-button';
 import Link from 'next/link';
 import { useComposerTalk } from './context';
+import { useComposerStore } from '@/store/composerStore';
 
 const cards = [
     {
@@ -102,19 +103,39 @@ const cards = [
 
 export default function ComposerTalkPage() {
     const { searchTerm, filters } = useComposerTalk();
+    const { composers, setComposers, selectComposer } = useComposerStore();
 
-    const filteredCards = cards.filter((card) => {
+    // API 호출하여 작곡가 목록 가져오기
+    useEffect(() => {
+        const fetchComposers = async () => {
+            try {
+                const response = await fetch('https://classic-daramg.duckdns.org/composers');
+                const data = await response.json();
+                setComposers(data);
+            } catch (error) {
+                console.error('작곡가 목록 조회 실패:', error);
+            }
+        };
+        
+        fetchComposers();
+    }, [setComposers]);
+
+    // 실제 데이터가 있으면 사용, 없으면 mock 데이터 사용
+    const displayData = composers.length > 0 ? composers : cards;
+
+    const filteredCards = displayData.filter((card) => {
         // 검색어 필터링
+        const title = 'koreanName' in card ? card.koreanName : card.title;
         const matchesSearch = searchTerm === '' ||
-            card.title.toLowerCase().includes(searchTerm.toLowerCase());
+            title.toLowerCase().includes(searchTerm.toLowerCase());
 
-        // 시대별 필터링
-        const matchesEra = filters.era.length === 0 ||
-            filters.era.includes(card.era);
+        // 시대별 필터링 (API 데이터에는 없으므로 mock 데이터만 필터링)
+        const matchesEra = 'era' in card ? 
+            (filters.era.length === 0 || filters.era.includes(card.era)) : true;
 
-        // 대륙별 필터링
-        const matchesContinent = filters.continent.length === 0 ||
-            filters.continent.includes(card.continent);
+        // 대륙별 필터링 (API 데이터에는 없으므로 mock 데이터만 필터링)
+        const matchesContinent = 'continent' in card ?
+            (filters.continent.length === 0 || filters.continent.includes(card.continent)) : true;
 
         return matchesSearch && matchesEra && matchesContinent;
     });
@@ -140,17 +161,27 @@ export default function ComposerTalkPage() {
                         <p className='text-gray-500 text-sm'>검색 결과가 없습니다.</p>
                     </div>
                 ) : (
-                    filteredCards.map((card) => (
-                        <Link key={card.title} href={`/composer-talk-room/${card.id}`}>
-                            <div className="p-6 bg-white rounded-2xl shadow-sm flex justify-between items-center gap-5">
-                                <div className="flex flex-col gap-0.5 flex-grow">
-                                    <div className="text-stone-300 text-xs font-semibold">{card.description}</div>
-                                    <div className="text-zinc-900 text-xl font-semibold">{card.title}</div>
+                    filteredCards.map((card) => {
+                        const composerId = 'composerId' in card ? card.composerId : card.id;
+                        const title = 'koreanName' in card ? card.koreanName : card.title;
+                        const description = 'bio' in card ? card.bio : card.description;
+                        
+                        return (
+                            <Link 
+                                key={composerId} 
+                                href={`/composer-talk-room/${composerId}`}
+                                onClick={() => selectComposer(composerId)}
+                            >
+                                <div className="p-6 bg-white rounded-2xl shadow-sm flex justify-between items-center gap-5">
+                                    <div className="flex flex-col gap-0.5 flex-grow">
+                                        <div className="text-stone-300 text-xs font-semibold">{description}</div>
+                                        <div className="text-zinc-900 text-xl font-semibold">{title}</div>
+                                    </div>
+                                    <HeartButton />
                                 </div>
-                                <HeartButton />
-                            </div>
-                        </Link>
-                    ))
+                            </Link>
+                        );
+                    })
                 )}
             </div>
         </div>

@@ -1,4 +1,25 @@
 'use client'
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import ComposerProfile from './composer-profile';
+import FloatingButtons from './floating-buttons';
+import { useComposerStore } from '@/store/composerStore';
+
+// --- Type Definition for Post Data ---
+type Post = {
+  id: number;
+  category: string;
+  title: string;
+  content: string;
+  tags: string[];
+  likes: number;
+  comments: number;
+  author: string;
+  timestamp: string;
+  imageUrl?: string | null;
+};
+
 // --- Mock Data (for development before API connection) ---
 const mockPosts: Post[] = [
   {
@@ -62,25 +83,6 @@ const mockPosts: Post[] = [
     imageUrl: '/images/sample-cello.jpg',
   },
 ];
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import ComposerProfile from './composer-profile';
-import FloatingButtons from './floating-buttons';
-
-// --- Type Definition for Post Data ---
-type Post = {
-  id: number;
-  category: string;
-  title: string;
-  content: string;
-  tags: string[];
-  likes: number;
-  comments: number;
-  author: string;
-  timestamp: string;
-  imageUrl?: string | null;
-};
 
 // --- Reusable Icon Components ---
 const CategoryIcon = () => (
@@ -92,6 +94,9 @@ const LikeIcon = () => (
 const CommentIcon = () => (
   <Image src="/icons/message.svg" alt="댓글" width={12} height={12} />
 );
+
+// --- Helpers ---
+const formatTag = (tag: string) => (tag.length > 5 ? `${tag.slice(0, 4)}...` : tag);
 
 // --- Single Post Item Component ---
 function PostItem({ post }: { post: Post }) {
@@ -112,7 +117,7 @@ function PostItem({ post }: { post: Post }) {
             <div className="flex items-center gap-1.5">
               {post.tags.map((tag) => (
                 <span key={tag} className="text-zinc-400 text-xs font-medium">
-                  {tag}
+                  {formatTag(tag)}
                 </span>
               ))}
             </div>
@@ -155,27 +160,17 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
   const [id, setId] = useState<string>('');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const { selectedComposer, selectComposer } = useComposerStore();
 
   // params 처리
   useEffect(() => {
     params.then(({ id: composerId }) => {
       setId(composerId);
+      // URL의 ID로 작곡가 선택
+      selectComposer(Number(composerId));
     });
-  }, [params]);
+  }, [params, selectComposer]);
 
-  // API 연결 전에는 mockPosts를 사용하고, API 연결 시 아래 fetch 부분을 주석 해제하세요.
-  /*
-  useEffect(() => {
-    // 실제 API 엔드포인트로 변경 필요
-    fetch(`/api/composer-talk-room/${id}/posts`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPosts(data.posts); // API 응답 구조에 따라 수정
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [id]);
-  */
 
   // mock 데이터로 초기화 (API 연결 전용)
   useEffect(() => {
@@ -185,7 +180,7 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="px-5">
-      <ComposerProfile />
+      {selectedComposer && <ComposerProfile data={selectedComposer} />}
       <section>
         {loading ? (
           <div className="py-10 text-center text-zinc-400">불러오는 중...</div>
