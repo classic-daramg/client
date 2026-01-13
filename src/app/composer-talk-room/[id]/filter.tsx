@@ -10,6 +10,7 @@ type FilterProps = {
   onRemoveFilter: (filterId: string) => void;
   selectedCategory: string | null;
   onCategorySelect: (category: string | null) => void;
+  composerName?: string;
 };
 
 export default function RoomFilter({
@@ -19,9 +20,10 @@ export default function RoomFilter({
   onRemoveFilter,
   selectedCategory,
   onCategorySelect,
+  composerName,
 }: FilterProps) {
   const categories = [
-    { id: 'rachmaninoff', label: '라흐마니노프 이야기' },
+    { id: 'rachmaninoff', label: `${composerName ? composerName + ' ' : ''}이야기` },
     { id: 'curation', label: '큐레이션글' },
   ];
 

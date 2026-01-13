@@ -247,6 +247,7 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
           onRemoveFilter={handleRemoveFilter}
           selectedCategory={selectedCategory}
           onCategorySelect={handleCategorySelect}
+          composerName={selectedComposer?.koreanName}
         />
       </div>
     </>
