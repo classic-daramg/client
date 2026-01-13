@@ -166,12 +166,24 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { selectedComposer, selectComposer } = useComposerStore();
 
-  // params 처리
+  // params 처리 및 작곡가 데이터 가져오기
   useEffect(() => {
-    params.then(({ id: composerId }) => {
+    params.then(async ({ id: composerId }) => {
       setId(composerId);
-      // URL의 ID로 작곡가 선택
-      selectComposer(Number(composerId));
+      
+      // API에서 작곡가 데이터 가져오기
+      try {
+        const response = await fetch('https://classic-daramg.duckdns.org/composers');
+        if (response.ok) {
+          const composers = await response.json();
+          const composer = composers.find((c: any) => c.composerId === Number(composerId));
+          if (composer) {
+            selectComposer(composer);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch composer data:', error);
+      }
     });
   }, [params, selectComposer]);
 
@@ -208,9 +220,12 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
 
   return (
     <>
-      <RoomHeader onFilterClick={() => setIsFilterOpen(true)} />
+      <RoomHeader 
+        onFilterClick={() => setIsFilterOpen(true)} 
+        composerName={selectedComposer?.koreanName}
+      />
+      {selectedComposer && <ComposerProfile data={selectedComposer} />}
       <div className="px-5">
-        {selectedComposer && <ComposerProfile data={selectedComposer} />}
         <section>
           {loading ? (
             <div className="py-10 text-center text-zinc-400">불러오는 중...</div>
