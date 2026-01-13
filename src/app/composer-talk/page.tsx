@@ -105,11 +105,21 @@ export default function ComposerTalkPage() {
     const { searchTerm, filters } = useComposerTalk();
     const { composers, setComposers, selectComposer } = useComposerStore();
 
-    // API 호출하여 작곡가 목록 가져오기
+    // API 호출하여 작곡가 목록 가져오기 (필터 적용)
     useEffect(() => {
         const fetchComposers = async () => {
             try {
-                const response = await fetch('https://classic-daramg.duckdns.org/composers');
+                // 쿼리 파라미터 생성
+                const params = new URLSearchParams();
+                if (filters.era.length > 0) {
+                    params.append('eras', filters.era.join(','));
+                }
+                if (filters.continent.length > 0) {
+                    params.append('continents', filters.continent.join(','));
+                }
+                
+                const url = `https://classic-daramg.duckdns.org/composers${params.toString() ? '?' + params.toString() : ''}`;
+                const response = await fetch(url);
                 const data = await response.json();
                 setComposers(data);
             } catch (error) {
@@ -118,26 +128,14 @@ export default function ComposerTalkPage() {
         };
         
         fetchComposers();
-    }, [setComposers]);
+    }, [setComposers, filters]);
 
-    // 실제 데이터가 있으면 사용, 없으면 mock 데이터 사용
-    const displayData = composers.length > 0 ? composers : cards;
-
-    const filteredCards = displayData.filter((card) => {
+    // API에서 필터링된 데이터 사용 (검색어만 클라이언트에서 필터링)
+    const filteredCards = composers.filter((composer) => {
         // 검색어 필터링
-        const title = 'koreanName' in card ? card.koreanName : card.title;
         const matchesSearch = searchTerm === '' ||
-            title.toLowerCase().includes(searchTerm.toLowerCase());
-
-        // 시대별 필터링 (API 데이터에는 없으므로 mock 데이터만 필터링)
-        const matchesEra = 'era' in card ? 
-            (filters.era.length === 0 || filters.era.includes(card.era)) : true;
-
-        // 대륙별 필터링 (API 데이터에는 없으므로 mock 데이터만 필터링)
-        const matchesContinent = 'continent' in card ?
-            (filters.continent.length === 0 || filters.continent.includes(card.continent)) : true;
-
-        return matchesSearch && matchesEra && matchesContinent;
+            composer.koreanName.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSearch;
     });
 
     return (
@@ -161,31 +159,23 @@ export default function ComposerTalkPage() {
                         <p className='text-gray-500 text-sm'>검색 결과가 없습니다.</p>
                     </div>
                 ) : (
-                    filteredCards.map((card) => {
-                        const composerId = 'composerId' in card ? card.composerId : card.id;
-                        const title = 'koreanName' in card ? card.koreanName : card.title;
-                        const description = 'bio' in card ? card.bio : card.description;
-                        
-                        return (
-                            <Link 
-                                key={composerId} 
-                                href={`/composer-talk-room/${composerId}`}
-                                onClick={() => selectComposer(composerId)}
-                            >
-                                <div className="p-6 bg-white rounded-2xl shadow-sm flex justify-between items-center gap-5">
-                                    <div className="flex flex-col gap-0.5 flex-grow">
-                                        <div className="text-stone-300 text-xs font-semibold">{description}</div>
-                                        <div className="text-zinc-900 text-xl font-semibold">{title}</div>
-                                    </div>
-                                    <HeartButton />
+                    filteredCards.map((composer) => (
+                        <Link 
+                            key={composer.composerId} 
+                            href={`/composer-talk-room/${composer.composerId}`}
+                            onClick={() => selectComposer(composer.composerId)}
+                        >
+                            <div className="p-6 bg-white rounded-2xl shadow-sm flex justify-between items-center gap-5">
+                                <div className="flex flex-col gap-0.5 flex-grow">
+                                    <div className="text-stone-300 text-xs font-semibold">{composer.bio}</div>
+                                    <div className="text-zinc-900 text-xl font-semibold">{composer.koreanName}</div>
                                 </div>
-                            </Link>
-                        );
-                    })
+                                <HeartButton />
+                            </div>
+                        </Link>
+                    ))
                 )}
             </div>
         </div>
     )
 };
-//이제 데이터를 어떤식으로 받아야하는지 정해야함.
-//id를 기준으로 페이지를 넘길건지 slug를 통해 넘길지...

@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ComposerProfile from './composer-profile';
 import FloatingButtons from './floating-buttons';
+import RoomFilter from './filter';
+import RoomHeader from './header';
 import { useComposerStore } from '@/store/composerStore';
 
 // --- Type Definition for Post Data ---
@@ -160,6 +162,8 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
   const [id, setId] = useState<string>('');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { selectedComposer, selectComposer } = useComposerStore();
 
   // params 처리
@@ -178,23 +182,58 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
     setLoading(false);
   }, [id]);
 
+  // 필터 제거 핸들러
+  const handleRemoveFilter = (filterId: string) => {
+    if (selectedCategory === filterId) {
+      setSelectedCategory(null);
+    }
+  };
+
+  // 카테고리 선택 핸들러
+  const handleCategorySelect = (category: string | null) => {
+    setSelectedCategory(category);
+  };
+
+  // 활성 필터 목록
+  const activeFilters = selectedCategory ? [selectedCategory] : [];
+
+  // 필터링된 게시글
+  const filteredPosts = selectedCategory
+    ? posts.filter(post => {
+        if (selectedCategory === 'rachmaninoff') return post.category === '자유글';
+        if (selectedCategory === 'curation') return post.category === '큐레이션글';
+        return true;
+      })
+    : posts;
+
   return (
-    <div className="px-5">
-      {selectedComposer && <ComposerProfile data={selectedComposer} />}
-      <section>
-        {loading ? (
-          <div className="py-10 text-center text-zinc-400">불러오는 중...</div>
-        ) : posts.length === 0 ? (
-          <div className="py-10 text-center text-zinc-400">게시글이 없습니다.</div>
-        ) : (
-          posts.map((post) => (
-            <Link key={post.id} href={`/composer-talk-room/${id}/${post.id}`}>
-              <PostItem post={post} />
-            </Link>
-          ))
-        )}
-      </section>
-      <FloatingButtons />
-    </div>
+    <>
+      <RoomHeader onFilterClick={() => setIsFilterOpen(true)} />
+      <div className="px-5">
+        {selectedComposer && <ComposerProfile data={selectedComposer} />}
+        <section>
+          {loading ? (
+            <div className="py-10 text-center text-zinc-400">불러오는 중...</div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="py-10 text-center text-zinc-400">게시글이 없습니다.</div>
+          ) : (
+            filteredPosts.map((post) => (
+              <Link key={post.id} href={`/composer-talk-room/${id}/${post.id}`}>
+                <PostItem post={post} />
+              </Link>
+            ))
+          )}
+        </section>
+        <FloatingButtons />
+        <RoomFilter
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          activeFilters={activeFilters}
+          onRemoveFilter={handleRemoveFilter}
+          selectedCategory={selectedCategory}
+          onCategorySelect={handleCategorySelect}
+        />
+      </div>
+    </>
   );
 }

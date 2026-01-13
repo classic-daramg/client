@@ -92,9 +92,9 @@ function ComposerTalkHeader({ children }: { children: React.ReactNode }) {
                 </div>
             </header>
             <main className="w-[375px] px-5 flex-1 overflow-y-auto relative">
-                <Filter />
                 {children}
             </main>
+            <Filter />
         </div>
     );
 }
