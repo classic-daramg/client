@@ -317,7 +317,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
               <div className="flex gap-[5px]">
                 {validImages.slice(0,3).map((src, idx) => (
                   <div key={idx} className="w-36 h-36 bg-zinc-300 rounded-lg overflow-hidden relative">
-                    <Image src={src} alt="이미지" fill className="object-cover" />
+                    <Image src={src} alt="이미지" fill sizes="144px" className="object-cover" />
                   </div>
                 ))}
               </div>
