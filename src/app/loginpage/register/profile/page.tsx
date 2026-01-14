@@ -56,8 +56,8 @@ const ProfileSetupPage = () => {
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 400;
           const MAX_HEIGHT = 400;
-          let width = imgElement.width;
-          let height = imgElement.height;
+          let width = img.width;
+          let height = img.height;
 
           if (width > height) {
             if (width > MAX_WIDTH) {
