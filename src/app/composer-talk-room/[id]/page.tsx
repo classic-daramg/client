@@ -6,7 +6,7 @@ import ComposerProfile from './composer-profile';
 import FloatingButtons from './floating-buttons';
 import RoomFilter from './filter';
 import RoomHeader from './header';
-import { useComposerStore } from '@/store/composerStore';
+import { useComposerStore, type Composer } from '@/store/composerStore';
 
 // --- Type Definition for Post Data ---
 type Post = {
@@ -175,8 +175,8 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
       try {
         const response = await fetch('https://classic-daramg.duckdns.org/composers');
         if (response.ok) {
-          const composers = await response.json();
-          const composer = composers.find((c: any) => c.composerId === Number(composerId));
+          const composers: Composer[] = await response.json();
+          const composer = composers.find((c) => c.composerId === Number(composerId));
           if (composer) {
             selectComposer(composer);
           }

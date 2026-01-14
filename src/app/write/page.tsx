@@ -77,7 +77,15 @@ export default function WritePage() {
                 .map(tag => tag.startsWith('#') ? tag : `#${tag}`);
 
             // OpenAPI spec에 맞춰 데이터 구성
-            const postData: Record<string, any> = {
+            interface PostData {
+                title: string;
+                content: string;
+                postStatus: string;
+                images?: string[];
+                hashtags?: string[];
+                videoUrl?: string;
+            }
+            const postData: PostData = {
                 title: title,
                 content: content,
                 postStatus: 'PUBLISHED',
