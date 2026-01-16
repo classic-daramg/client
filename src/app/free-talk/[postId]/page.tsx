@@ -25,6 +25,7 @@ interface FreeTalkPost {
   type: string;
   primaryComposer: string | null;
   additionalComposers: string[] | null;
+  isLiked?: boolean;
 }
 
 interface CommentData {
@@ -137,6 +138,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
   useEffect(() => {
     if (post) {
       setLikesCount(post.likeCount);
+      setLiked(post.isLiked || false);
       // 샘플 댓글 8개 (답글 포함)
       const mock: CommentData[] = [
         { id: 1, author: '익명1', timestamp: '1분 전', content: '재밌는 글이네요!', isHeartSelected: false },
@@ -152,10 +154,44 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
     }
   }, [post]);
 
-  const handleToggleLike = () => {
-    setLiked(prev => !prev);
-    setLikesCount(c => (liked ? c - 1 : c + 1));
-    // TODO: backend sync
+  const handleToggleLike = async () => {
+    // Save previous state for rollback
+    const previousLiked = liked;
+    const previousCount = likesCount;
+
+    // Optimistic UI update (immediate feedback)
+    setLiked(!liked);
+    setLikesCount(c => liked ? c - 1 : c + 1);
+
+    try {
+      const res = await fetch(`${API_BASE}/posts/${postId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('좋아요 토글 실패');
+      }
+
+      const data = await res.json();
+
+      // Sync with actual server state
+      if (data && typeof data.isLiked === 'boolean') {
+        setLiked(data.isLiked);
+        setLikesCount(data.likeCount);
+      }
+    } catch (error) {
+      console.error('Like toggle error:', error);
+
+      // Rollback on failure
+      setLiked(previousLiked);
+      setLikesCount(previousCount);
+
+      alert('좋아요 처리에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleToggleBookmark = () => {
@@ -280,8 +316,8 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
             return validImages.length > 0 && (
               <div className="flex gap-[5px]">
                 {validImages.slice(0,3).map((src, idx) => (
-                  <div key={idx} className="w-36 h-36 bg-zinc-300 rounded-lg flex items-center justify-center overflow-hidden">
-                    <Image src={src} alt="이미지" width={60} height={60} className="opacity-30" />
+                  <div key={idx} className="w-36 h-36 bg-zinc-300 rounded-lg overflow-hidden relative">
+                    <Image src={src} alt="이미지" fill sizes="144px" className="object-cover" />
                   </div>
                 ))}
               </div>

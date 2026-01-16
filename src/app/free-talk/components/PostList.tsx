@@ -137,6 +137,7 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
             timeAgo={getRelativeTime(post.createdAt)}
             author={post.writerNickname}
             hasImage={post.thumbnailImageUrl !== null}
+            thumbnailUrl={post.thumbnailImageUrl}
           />
         ))
       )}

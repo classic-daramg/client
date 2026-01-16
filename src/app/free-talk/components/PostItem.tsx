@@ -13,18 +13,20 @@ interface PostItemProps {
   timeAgo: string;
   author: string;
   hasImage?: boolean;
+  thumbnailUrl?: string | null;
 }
 
-export default function PostItem({ 
-  id, 
-  title, 
-  content, 
-  tags, 
-  likes, 
-  comments, 
-  timeAgo, 
-  author, 
-  hasImage = true 
+export default function PostItem({
+  id,
+  title,
+  content,
+  tags,
+  likes,
+  comments,
+  timeAgo,
+  author,
+  hasImage = true,
+  thumbnailUrl
 }: PostItemProps) {
   return (
     <div className="self-stretch px-3 py-4 bg-white border-b border-gray-100">
@@ -77,14 +79,24 @@ export default function PostItem({
         </div>
 
         {hasImage && (
-          <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden ml-4 shrink-0">
-            <Image 
-              src="/icons/img.svg" 
-              alt="게시글 이미지" 
-              width={32} 
-              height={32} 
-              className="opacity-40"
-            />
+          <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden ml-4 shrink-0 relative">
+            {thumbnailUrl && thumbnailUrl.startsWith('http') ? (
+              <Image
+                src={thumbnailUrl}
+                alt="게시글 이미지"
+                fill
+                sizes="96px"
+                className="object-cover"
+              />
+            ) : (
+              <Image
+                src="/icons/img.svg"
+                alt="게시글 이미지"
+                width={32}
+                height={32}
+                className="opacity-40"
+              />
+            )}
           </div>
         )}
       </Link>

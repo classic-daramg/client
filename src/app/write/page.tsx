@@ -77,28 +77,51 @@ export default function WritePage() {
                 .map(tag => tag.startsWith('#') ? tag : `#${tag}`);
 
             // OpenAPI spec에 맞춰 데이터 구성
-            const postData: Record<string, any> = {
+            interface PostData {
+                title: string;
+                content: string;
+                postStatus: string;
+                images?: string[];
+                hashtags?: string[];
+                videoUrl?: string;
+            }
+            const postData: PostData = {
                 title: title,
                 content: content,
                 postStatus: 'PUBLISHED',
             };
 
-            // 이미지가 있으면 추가 (base64 형식으로 전송)
+            // 이미지가 있으면 먼저 S3에 업로드
             if (imageFiles.length > 0) {
-                const imagePromises = imageFiles.map(file => {
-                    return new Promise<string>((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            const result = reader.result as string;
-                            resolve(result);
-                        };
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
+                try {
+                    // FormData 생성
+                    const formData = new FormData();
+                    imageFiles.forEach(file => {
+                        formData.append('images', file);
                     });
-                });
 
-                const imageBase64Array = await Promise.all(imagePromises);
-                postData.images = imageBase64Array;
+                    // 이미지 업로드 API 호출
+                    const uploadRes = await fetch('https://classic-daramg.duckdns.org/images/upload', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData,
+                    });
+
+                    if (!uploadRes.ok) {
+                        throw new Error('이미지 업로드 실패');
+                    }
+
+                    const uploadData = await uploadRes.json();
+
+                    // S3 URL 배열을 postData에 추가
+                    postData.images = uploadData.imageUrls;
+
+                    console.log('Uploaded image URLs:', uploadData.imageUrls);
+                } catch (error) {
+                    console.error('Image upload error:', error);
+                    alert('이미지 업로드에 실패했습니다.');
+                    return; // 이미지 업로드 실패 시 게시글 생성 중단
+                }
             }
 
             // 해시태그가 있으면 추가
