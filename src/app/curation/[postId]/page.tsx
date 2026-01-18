@@ -7,69 +7,29 @@ import CommentInput from './comment-input';
 import { ReportButton } from './report-button';
 import { useState, useEffect } from 'react';
 
-// Mock Data - postId에 따라 다른 데이터를 반환
-const getMockPostData = (postId: string) => {
-  const posts = {
-    '1': {
-      userId: '123',
-      composer: '큐레이션',
-      author: 'Username',
-      timestamp: '25/08/28 14:26',
-      category: '큐레이션글',
-      postType: '큐레이션',
-      title: '제목이 들어갈 자리입니다',
-      content: '글 내용이 들어갈 자리입니다. 글자수는 아 이게몇개냐\n가나다라마바사아자차카타파하가나다라마바사아자차카타파하\n28자입니다 최대',
-      tags: ['#태그01', '#태그02', '#태그03'],
-      images: ['/images/placeholder-1.png', '/images/placeholder-2.png'],
-      likes: 12,
-      scraps: 3,
-    },
-    '2': {
-      userId: '456',
-      composer: '큐레이션',
-      author: '음악애호가',
-      timestamp: '25/08/29 10:15',
-      category: '큐레이션글',
-      postType: '큐레이션',
-      title: '라흐마니노프의 피아노 협주곡 2번',
-      content: '오늘은 제가 정말 사랑하는 클래식 음악에 대해 이야기해보려고 합니다.\n라흐마니노프의 피아노 협주곡 2번은 정말 감동적인 곡입니다.',
-      tags: ['#라흐마니노프', '#피아노협주곡', '#클래식'],
-      images: ['/images/placeholder-3.png'],
-      likes: 25,
-      scraps: 8,
-    },
-    '3': {
-      userId: '789',
-      composer: '큐레이션',
-      author: '클래식러버',
-      timestamp: '25/08/30 16:45',
-      category: '큐레이션글',
-      postType: '큐레이션',
-      title: '베토벤 교향곡 9번 합창 추천',
-      content: '베토벤의 교향곡 9번 합창은 클래식 음악의 최고 걸작 중 하나입니다.\n특히 4악장의 환희의 송가는 정말 압도적입니다.',
-      tags: ['#베토벤', '#교향곡', '#합창'],
-      images: [],
-      likes: 18,
-      scraps: 5,
-    }
-  };
-  
-  return posts[postId as keyof typeof posts] || posts['1'];
-};
+interface PostData {
+  id: number;
+  userId: string;
+  author: string;
+  timestamp: string;
+  category: string;
+  postType: string;
+  title: string;
+  content: string;
+  tags: string[];
+  images: string[];
+  likes: number;
+  scraps: number;
+}
 
-const mockComments = [
-    { id: 1, author: 'Username', timestamp: '25/08/28 14:26', content: '댓글내용을 입력하는 곳입니다. 최대는 마찬가지로 28자 근데 띄어쓰기랑 문장부호는 어떻게 세나요?', isHeartSelected: false, isReply: false },
-    { id: 2, author: 'Username', timestamp: '25/08/28 14:26', content: '댓글내용을 입력하는 곳입니다. 최대는 마찬가지로 28자 근데 띄어쓰기랑 문장부호는 어떻게 세나요?', isHeartSelected: true, isReply: true },
-    { id: 3, author: 'Username', timestamp: '25/08/28 14:26', content: '댓글내용을 입력하는 곳입니다. 최대는 마찬가지로 28자 근데 띄어쓰기랑 문장부호는 어떻게 세나요?', isHeartSelected: true, isReply: false },
-    { id: 4, author: 'Username', timestamp: '25/08/28 14:26', content: '댓글내용을 입력하는 곳입니다. 최대는 마찬가지로 28자 근데 띄어쓰기랑 문장부호는 어떻게 세나요?', isHeartSelected: false, isReply: false },
-    { id: 5, author: 'Username', timestamp: '25/08/28 14:26', content: '추가 댓글입니다. 스크롤을 내려 확인해보세요.', isHeartSelected: false, isReply: false },
-    { id: 6, author: 'Username', timestamp: '25/08/28 14:27', content: '새로운 댓글이 로드되었습니다.', isHeartSelected: false, isReply: false },
-    { id: 7, author: 'Username', timestamp: '25/08/28 14:28', content: '무한 스크롤 테스트 중입니다.', isHeartSelected: false, isReply: true },
-    { id: 8, author: 'Username', timestamp: '25/08/28 14:29', content: '여기까지 보인다면 성공입니다.', isHeartSelected: false, isReply: false },
-    { id: 9, author: 'Username', timestamp: '25/08/28 14:30', content: '마지막 댓글입니다.', isHeartSelected: false, isReply: false },
-];
-
-type Comment = (typeof mockComments)[0];
+interface Comment {
+  id: number;
+  author: string;
+  timestamp: string;
+  content: string;
+  isHeartSelected: boolean;
+  isReply: boolean;
+}
 
 type PostDetailPageProps = {
   params: Promise<{
@@ -78,9 +38,11 @@ type PostDetailPageProps = {
 };
 
 export default function CurationPostDetail({ params }: PostDetailPageProps) {
-  const [currentComments, setCurrentComments] = useState(mockComments);
+  const [currentComments, setCurrentComments] = useState<Comment[]>([]);
   const [postId, setPostId] = useState('');
-  const [mockPostData, setMockPostData] = useState(getMockPostData('1'));
+  const [mockPostData, setMockPostData] = useState<PostData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [replyMode, setReplyMode] = useState<{
     isReply: boolean;
     replyToId: number;
@@ -88,13 +50,70 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
   } | undefined>(undefined);
   const [showCommentInput, setShowCommentInput] = useState(true);
 
-  // params 처리
+  // params 처리 및 포스트 데이터 로드
   useEffect(() => {
-    params.then(({ postId: pId }) => {
+    params.then(async ({ postId: pId }) => {
       setPostId(pId);
-      setMockPostData(getMockPostData(pId));
+      try {
+        setLoading(true);
+        const response = await fetch(`https://classic-daramg.duckdns.org/posts/${pId}`);
+        if (!response.ok) {
+          throw new Error('포스트를 불러올 수 없습니다.');
+        }
+        const data = await response.json();
+        
+        // API 응답을 PostData 형식으로 변환
+        const formattedData: PostData = {
+          id: data.id,
+          userId: data.author?.id || '',
+          author: data.author?.nickname || 'Unknown',
+          timestamp: formatDateTime(data.createdAt),
+          category: '큐레이션글',
+          postType: '큐레이션',
+          title: data.title,
+          content: data.content,
+          tags: data.tags?.map((tag: string) => `#${tag}`) || [],
+          images: data.images || [],
+          likes: data.likeCount || 0,
+          scraps: data.scrapCount || 0,
+        };
+        
+        setMockPostData(formattedData);
+        
+        // 댓글 데이터 로드
+        const commentsResponse = await fetch(`https://classic-daramg.duckdns.org/posts/${pId}/comments`);
+        if (commentsResponse.ok) {
+          const commentsData = await commentsResponse.json();
+          const formattedComments = commentsData.content?.map((comment: any) => ({
+            id: comment.id,
+            author: comment.author?.nickname || 'Unknown',
+            timestamp: formatDateTime(comment.createdAt),
+            content: comment.content,
+            isHeartSelected: comment.isLiked || false,
+            isReply: comment.isReply || false,
+          })) || [];
+          setCurrentComments(formattedComments);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
+        console.error('Error fetching post:', err);
+      } finally {
+        setLoading(false);
+      }
     });
   }, [params]);
+
+  // 날짜 포맷팅 함수
+  const formatDateTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR', {
+      year: '2-digit',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).replace(/\. /g, '/').replace('.', '');
+  };
 
   const handleAddComment = (content: string, isReply: boolean = false, replyToId?: number) => {
     const newComment: Comment = {
@@ -113,22 +132,18 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
     };
 
     if (isReply && replyToId) {
-      // 답글인 경우, 원댓글 바로 다음에 삽입
       const replyToIndex = currentComments.findIndex(c => c.id === replyToId);
       if (replyToIndex !== -1) {
         const newComments = [...currentComments];
         newComments.splice(replyToIndex + 1, 0, newComment);
         setCurrentComments(newComments);
       } else {
-        // 원댓글을 찾지 못한 경우 맨 위에 추가
         setCurrentComments([newComment, ...currentComments]);
       }
     } else {
-      // 일반 댓글인 경우 맨 위에 추가
       setCurrentComments([newComment, ...currentComments]);
     }
     
-    // 답글 모드 해제
     if (replyMode) {
       setReplyMode(undefined);
     }
@@ -147,14 +162,28 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
   };
 
   const handleReportOpen = () => {
-    // 신고 모달 열렸을 때 댓글 입력창 숨기기
     setShowCommentInput(false);
   };
 
   const handleReportClose = () => {
-    // 신고 모달 닫혔을 때 댓글 입력창 다시 보이기
     setShowCommentInput(true);
   };
+
+  if (loading) {
+    return (
+      <div className="bg-[#f4f5f7] min-h-screen flex items-center justify-center">
+        <p className="text-zinc-400">로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (error || !mockPostData) {
+    return (
+      <div className="bg-[#f4f5f7] min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{error || '포스트를 불러올 수 없습니다.'}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#f4f5f7] min-h-screen">

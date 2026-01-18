@@ -14,6 +14,7 @@ interface PostItemProps {
   author: string;
   hasImage?: boolean;
   thumbnailUrl?: string | null;
+  videoUrl?: string | null;
 }
 
 export default function PostItem({
@@ -26,7 +27,8 @@ export default function PostItem({
   timeAgo,
   author,
   hasImage = true,
-  thumbnailUrl
+  thumbnailUrl,
+  videoUrl
 }: PostItemProps) {
   return (
     <div className="self-stretch px-3 py-4 bg-white border-b border-gray-100">
@@ -78,7 +80,7 @@ export default function PostItem({
           </div>
         </div>
 
-        {hasImage && (
+        {(hasImage || videoUrl) && (
           <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden ml-4 shrink-0 relative">
             {thumbnailUrl && thumbnailUrl.startsWith('http') ? (
               <Image
@@ -88,6 +90,16 @@ export default function PostItem({
                 sizes="96px"
                 className="object-cover"
               />
+            ) : videoUrl ? (
+              <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                <Image
+                  src="/icons/music.svg"
+                  alt="영상"
+                  width={32}
+                  height={32}
+                  className="opacity-70"
+                />
+              </div>
             ) : (
               <Image
                 src="/icons/img.svg"

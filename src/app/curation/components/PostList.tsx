@@ -1,46 +1,101 @@
-import PostItem from './PostItem';
+'use client';
 
-const mockPosts = [
-  {
-    id: 1,
-    title: '제목이 들어갈 자리입니다',
-    content: '글 내용이 들어갈 자리입니다. 글 내용은 한줄 제한을 할까말까 두줄도 괜찮은 것 같고',
-    tags: ['태그01', '태그02', '태그03'],
-    likes: 3,
-    comments: 5,
-    author: '글쓴이',
-    createdAt: '3초전',
-    imageUrl: 'https://via.placeholder.com/96',
-  },
-  {
-    id: 2,
-    title: '두 번째 큐레이션 글 제목',
-    content: '글 미리보기 내용이 들어갈 자리입니다.',
-    tags: ['클래식', '피아노', '쇼팽'],
-    likes: 12,
-    comments: 8,
-    author: '다람쥐',
-    createdAt: '1분전',
-    imageUrl: 'https://via.placeholder.com/96',
-  },
-  {
-    id: 3,
-    title: '세 번째 글입니다',
-    content: '이 글은 이미지가 없습니다.',
-    tags: ['바이올린', '협주곡'],
-    likes: 7,
-    comments: 2,
-    author: '큐레이터',
-    createdAt: '5분전',
-  },
-];
+import PostItem from './PostItem';
+import { useState, useEffect } from 'react';
+
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  tags: string[];
+  likes: number;
+  comments: number;
+  author: string;
+  createdAt: string;
+  imageUrl?: string;
+}
 
 export default function PostList() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('https://classic-daramg.duckdns.org/posts/curation');
+        if (!response.ok) {
+          throw new Error('포스트 목록을 불러올 수 없습니다.');
+        }
+        const data = await response.json();
+        
+        // API 응답을 PostItem 형식으로 변환
+        const formattedPosts = data.content?.map((post: any) => ({
+          id: post.id,
+          title: post.title,
+          content: post.content,
+          tags: post.tags || [],
+          likes: post.likeCount || 0,
+          comments: post.commentCount || 0,
+          author: post.author?.nickname || 'Unknown',
+          createdAt: formatTimeAgo(post.createdAt),
+          imageUrl: post.images?.[0],
+        })) || [];
+        
+        setPosts(formattedPosts);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
+        console.error('Error fetching posts:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  // 시간 포맷팅 함수
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return `${seconds}초전`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}분전`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}시간전`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}일전`;
+    
+    return date.toLocaleDateString('ko-KR');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-8 bg-white">
+        <p className="text-zinc-400">로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center py-8 bg-white">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col bg-white">
-      {mockPosts.map((post, index) => (
-        <PostItem key={post.id} post={post} isFirst={index === 0} />
-      ))}
+      {posts.length === 0 ? (
+        <div className="flex justify-center items-center py-8">
+          <p className="text-zinc-400">포스트가 없습니다.</p>
+        </div>
+      ) : (
+        posts.map((post, index) => (
+          <PostItem key={post.id} post={post} isFirst={index === 0} />
+        ))
+      )}
     </div>
   );
 }

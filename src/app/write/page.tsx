@@ -21,9 +21,9 @@ export default function WritePage() {
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [selectedType, setSelectedType] = useState('라흐마니노프 이야기');
-    const postTypes = ['큐레이션 글', '라흐마니노프 이야기'];
-    const [selectedComposer, setSelectedComposer] = useState<string | null>(null);
+    const [selectedType, setSelectedType] = useState('자유 글');
+    const postTypes = ['자유 글', '큐레이션 글'];
+    const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
 
     // draft-edit 데이터가 있으면 제목/내용에 자동 입력
@@ -40,8 +40,8 @@ export default function WritePage() {
         }
     }, []);
 
-    const handleSelectComposer = (composerName: string) => {
-        setSelectedComposer(composerName);
+    const handleSelectComposer = (composers: Array<{ id: number; name: string }>) => {
+        setSelectedComposers(composers);
     };
 
     const handleOpenComposerSearch = () => {
@@ -63,7 +63,7 @@ export default function WritePage() {
         fileInputRef.current?.click();
     };
 
-    const isButtonEnabled = title.trim() !== '' && content.trim() !== '';
+    const isButtonEnabled = title.trim() !== '' && content.trim() !== '' && (selectedType !== '큐레이션 글' || selectedComposers.length > 0);
 
     const handleRegister = async () => {
         if (!isButtonEnabled) return;
@@ -74,10 +74,21 @@ export default function WritePage() {
                 .trim()
                 .split(/[,\s]+/)
                 .filter(tag => tag.length > 0)
-                .map(tag => tag.startsWith('#') ? tag : `#${tag}`);
+                .map(tag => tag.startsWith('#') ? tag.slice(1) : tag);
 
-            // OpenAPI spec에 맞춰 데이터 구성
-            interface PostData {
+            // 포스트 타입에 따라 데이터 구성
+            interface CurationPostData {
+                title: string;
+                content: string;
+                postStatus: string;
+                primaryComposerId: number;
+                additionalComposerIds?: number[];
+                images?: string[];
+                hashtags?: string[];
+                videoUrl?: string;
+            }
+            
+            interface FreePostData {
                 title: string;
                 content: string;
                 postStatus: string;
@@ -85,24 +96,45 @@ export default function WritePage() {
                 hashtags?: string[];
                 videoUrl?: string;
             }
-            const postData: PostData = {
+
+            const isCuration = selectedType === '큐레이션 글';
+            const postData: CurationPostData | FreePostData = {
                 title: title,
                 content: content,
                 postStatus: 'PUBLISHED',
             };
 
+            // 큐레이션 글인 경우 작곡가 ID 추가
+            if (isCuration && selectedComposers.length > 0) {
+                (postData as CurationPostData).primaryComposerId = selectedComposers[0].id;
+                // 추가 작곡가가 있으면 추가
+                if (selectedComposers.length > 1) {
+                    (postData as CurationPostData).additionalComposerIds = selectedComposers.slice(1).map(c => c.id);
+                }
+            }
+
             // 이미지가 있으면 먼저 S3에 업로드
             if (imageFiles.length > 0) {
                 try {
+                    // localStorage에서 토큰 가져오기
+                    // const authToken = localStorage.getItem('authToken');
+                    
                     // FormData 생성
                     const formData = new FormData();
                     imageFiles.forEach(file => {
                         formData.append('images', file);
                     });
 
+                    // Authorization 헤더 설정 (토큰이 있으면 포함)
+                    // const uploadHeaders: HeadersInit = {};
+                    // if (authToken) {
+                    //     uploadHeaders['Authorization'] = `Bearer ${authToken}`;
+                    // }
+
                     // 이미지 업로드 API 호출
                     const uploadRes = await fetch('https://classic-daramg.duckdns.org/images/upload', {
                         method: 'POST',
+                        // headers: uploadHeaders,
                         credentials: 'include',
                         body: formData,
                     });
@@ -134,11 +166,28 @@ export default function WritePage() {
                 postData.videoUrl = link;
             }
 
+            // API 엔드포인트 결정
+            const apiEndpoint = isCuration 
+                ? 'https://classic-daramg.duckdns.org/posts/curation'
+                : 'https://classic-daramg.duckdns.org/posts/free';
+
             console.log('--- JSON Data to be Sent ---');
             console.log(JSON.stringify(postData, null, 2));
             console.log('--------------------------');
 
-            const response = await fetch('https://classic-daramg.duckdns.org/posts/free', {
+            // localStorage에서 토큰 가져오기
+            // const authToken = localStorage.getItem('authToken');
+            
+            // Authorization 헤더 설정 (토큰이 있으면 포함, 없으면 쿠키 기반 인증 사용)
+            // const headers: HeadersInit = {
+            //     'Content-Type': 'application/json',
+            // };
+            // 
+            // if (authToken) {
+            //     headers['Authorization'] = `Bearer ${authToken}`;
+            // }
+
+            const response = await fetch(apiEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -159,7 +208,7 @@ export default function WritePage() {
                     console.log('Response is not JSON, but request succeeded');
                 }
                 alert('등록되었습니다.');
-                router.push('/free-talk');
+                router.push(isCuration ? '/curation' : '/free-talk');
             } else {
                 try {
                     const errorData = text ? JSON.parse(text) : null;
@@ -178,7 +227,7 @@ export default function WritePage() {
     const handleSaveDraft = () => {
         const draft = {
             postType: selectedType,
-            composer: selectedComposer,
+            composers: selectedComposers,
             title,
             content,
             hashtags,
@@ -274,9 +323,13 @@ export default function WritePage() {
                                     className="flex-1 bg-[#f4f5f7] rounded-full px-5 py-2.5 text-left"
                                 >
                                     <span className={`text-sm font-medium font-['Pretendard'] ${
-                                        selectedComposer ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'
+                                        selectedComposers.length > 0 ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'
                                     }`}>
-                                        {selectedComposer || '작곡가명 검색'}
+                                        {selectedComposers.length > 0 
+                                            ? selectedComposers.length === 1
+                                                ? selectedComposers[0].name
+                                                : `${selectedComposers[0].name} 외 ${selectedComposers.length - 1}명`
+                                            : '작곡가명 검색'}
                                     </span>
                                 </button>
                                 <button className="w-[30px] h-[30px] flex items-center justify-center flex-shrink-0">
@@ -383,7 +436,7 @@ export default function WritePage() {
                 <ComposerSearch 
                     onSelectComposer={handleSelectComposer}
                     onClose={handleCloseComposerSearch}
-                    initialSelected={selectedComposer ? [selectedComposer] : []}
+                    initialSelected={selectedComposers.map(c => c.name)}
                 />
             )}
         </div>

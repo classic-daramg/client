@@ -2,27 +2,13 @@
 
 import { useState, useEffect } from 'react';
 
-// Mock data - 나중에 API로 교체 예정
-const MOCK_COMPOSERS = [
-    { id: 1, name: '작곡가명01' },
-    { id: 2, name: '작곡가명02' },
-    { id: 3, name: '작곡가명03' },
-    { id: 4, name: '작곡가명04' },
-    { id: 5, name: '작곡가명05' },
-    { id: 6, name: '작곡가명06' },
-    { id: 7, name: '작곡가명07' },
-    { id: 8, name: '작곡가명08' },
-    { id: 9, name: '작곡가명09' },
-    { id: 10, name: '작곡가명10' },
-];
-
 interface Composer {
     id: number;
     name: string;
 }
 
 interface ComposerSearchProps {
-    onSelectComposer: (composerName: string) => void;
+    onSelectComposer: (composers: Array<{ id: number; name: string }>) => void;
     onClose: () => void;
     initialSelected?: string[];
 }
@@ -34,23 +20,42 @@ export default function ComposerSearch({
 }: ComposerSearchProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedComposers, setSelectedComposers] = useState<string[]>(initialSelected);
-    const [composers] = useState<Composer[]>(MOCK_COMPOSERS);
+    const [composers, setComposers] = useState<Composer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // TODO: API 연결 - 작곡가 목록 가져오기
+    // API 연결 - 작곡가 목록 가져오기
     useEffect(() => {
-        // 나중에 아래 주석을 해제하고 실제 API 호출로 대체
-        /*
         const fetchComposers = async () => {
             try {
-                const response = await fetch('/api/composers');
+                setLoading(true);
+                const response = await fetch('https://classic-daramg.duckdns.org/composers', {
+                    credentials: 'include',
+                });
+                
+                if (!response.ok) {
+                    throw new Error('작곡가 목록을 불러올 수 없습니다.');
+                }
+                
                 const data = await response.json();
-                setComposers(data);
-            } catch (error) {
-                console.error('작곡가 목록 가져오기 실패:', error);
+                
+                // API 응답을 Composer 형식으로 변환
+                const formattedComposers = data.map((composer: any) => ({
+                    id: composer.composerId,
+                    name: composer.koreanName || composer.englishName || '알 수 없음',
+                }));
+                
+                setComposers(formattedComposers);
+                setError(null);
+            } catch (err) {
+                console.error('작곡가 목록 가져오기 실패:', err);
+                setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
+            } finally {
+                setLoading(false);
             }
         };
+        
         fetchComposers();
-        */
     }, []);
 
     const filteredComposers = composers.filter(composer =>
@@ -67,10 +72,13 @@ export default function ComposerSearch({
 
     const handleComplete = () => {
         if (selectedComposers.length > 0) {
-            const displayText = selectedComposers.length === 1 
-                ? selectedComposers[0] 
-                : `${selectedComposers[0]} 외 ${selectedComposers.length - 1}인`;
-            onSelectComposer(displayText);
+            const selected = selectedComposers
+                .map(name => composers.find(c => c.name === name))
+                .filter((c): c is Composer => c !== undefined);
+            
+            if (selected.length > 0) {
+                onSelectComposer(selected);
+            }
         }
         onClose();
     };
@@ -114,26 +122,40 @@ export default function ComposerSearch({
 
                 {/* 작곡가 리스트 */}
                 <div className="bg-white flex-1 overflow-y-auto">
-                    {filteredComposers.map((composer, index) => (
-                        <button
-                            key={composer.id}
-                            onClick={() => handleComposerClick(composer.name)}
-                            className={`w-full px-6 py-[18px] flex items-center justify-between border-t border-[#d9d9d9] ${
-                                index === 0 ? 'border-t-0' : ''
-                            } hover:bg-[#f4f5f7] transition-colors`}
-                        >
-                            <span className="text-[#1a1a1a] text-sm font-semibold font-['Pretendard']">
-                                {composer.name}
-                            </span>
-                            {selectedComposers.includes(composer.name) && (
-                                <div className="w-3 h-3 bg-[#293a92] rounded-full flex items-center justify-center">
-                                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                </div>
-                            )}
-                        </button>
-                    ))}
+                    {loading ? (
+                        <div className="flex justify-center items-center h-full">
+                            <p className="text-zinc-400 text-sm">로딩 중...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="flex justify-center items-center h-full">
+                            <p className="text-red-500 text-sm">{error}</p>
+                        </div>
+                    ) : filteredComposers.length === 0 ? (
+                        <div className="flex justify-center items-center h-full">
+                            <p className="text-zinc-400 text-sm">작곡가를 찾을 수 없습니다.</p>
+                        </div>
+                    ) : (
+                        filteredComposers.map((composer, index) => (
+                            <button
+                                key={composer.id}
+                                onClick={() => handleComposerClick(composer.name)}
+                                className={`w-full px-6 py-[18px] flex items-center justify-between border-t border-[#d9d9d9] ${
+                                    index === 0 ? 'border-t-0' : ''
+                                } hover:bg-[#f4f5f7] transition-colors`}
+                            >
+                                <span className="text-[#1a1a1a] text-sm font-semibold font-['Pretendard']">
+                                    {composer.name}
+                                </span>
+                                {selectedComposers.includes(composer.name) && (
+                                    <div className="w-3 h-3 bg-[#293a92] rounded-full flex items-center justify-center">
+                                        <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </div>
+                                )}
+                            </button>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

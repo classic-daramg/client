@@ -13,6 +13,7 @@ interface ApiPost {
   likeCount: number;
   commentCount: number;
   thumbnailImageUrl: string | null;
+  videoUrl?: string | null;
   type: string;
 }
 
@@ -138,6 +139,7 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
             author={post.writerNickname}
             hasImage={post.thumbnailImageUrl !== null}
             thumbnailUrl={post.thumbnailImageUrl}
+            videoUrl={post.videoUrl}
           />
         ))
       )}

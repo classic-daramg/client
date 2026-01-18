@@ -91,6 +91,7 @@ const LoginPage = () => {
         setToast({ show: true, message: '로그인되었습니다.' });
 
         let userInfo = null;
+        let token = null;
 
         // 응답 본문이 있는지 확인 후 파싱 시도
         const contentType = response.headers.get('content-type');
@@ -101,9 +102,23 @@ const LoginPage = () => {
             if (data.user) {
               userInfo = data.user;
             }
+            // JWT 토큰 저장 (응답에서 accessToken 또는 token 필드를 확인)
+            if (data.accessToken) {
+              token = data.accessToken;
+            } else if (data.token) {
+              token = data.token;
+            }
           } catch (error) {
             console.log('응답 본문이 비어있거나 JSON 파싱 실패:', error);
           }
+        }
+
+        // JWT 토큰을 localStorage에 저장
+        if (token) {
+          localStorage.setItem('authToken', token);
+          console.log('JWT 토큰 저장됨');
+        } else {
+          console.warn('JWT 토큰이 응답에 포함되지 않음 - 쿠키 기반 인증 사용');
         }
 
         // localStorage에서 저장된 프로필 데이터 확인
