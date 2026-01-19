@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ComposerSearch from './composer-search';
+import { useAuthStore } from '@/store/authStore';
+import apiClient from '@/lib/apiClient';
 
 // Section Header Component
 const SectionHeader = ({ title }: { title: string }) => (
@@ -14,6 +16,7 @@ const SectionHeader = ({ title }: { title: string }) => (
 
 export default function WritePage() {
     const router = useRouter();
+    const { accessToken, isAuthenticated } = useAuthStore();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [hashtags, setHashtags] = useState('');
@@ -68,6 +71,13 @@ export default function WritePage() {
     const handleRegister = async () => {
         if (!isButtonEnabled) return;
 
+        // 로그인 확인
+        if (!isAuthenticated()) {
+            alert('로그인이 필요합니다.');
+            router.push('/loginpage');
+            return;
+        }
+
         try {
             // 해시태그를 배열로 변환 (쉼표 또는 공백으로 구분)
             const hashtagArray = hashtags
@@ -116,39 +126,23 @@ export default function WritePage() {
             // 이미지가 있으면 먼저 S3에 업로드
             if (imageFiles.length > 0) {
                 try {
-                    // localStorage에서 토큰 가져오기
-                    // const authToken = localStorage.getItem('authToken');
-                    
                     // FormData 생성
                     const formData = new FormData();
                     imageFiles.forEach(file => {
                         formData.append('images', file);
                     });
 
-                    // Authorization 헤더 설정 (토큰이 있으면 포함)
-                    // const uploadHeaders: HeadersInit = {};
-                    // if (authToken) {
-                    //     uploadHeaders['Authorization'] = `Bearer ${authToken}`;
-                    // }
-
-                    // 이미지 업로드 API 호출
-                    const uploadRes = await fetch('https://classic-daramg.duckdns.org/images/upload', {
-                        method: 'POST',
-                        // headers: uploadHeaders,
-                        credentials: 'include',
-                        body: formData,
+                    // Axios로 이미지 업로드 (자동으로 토큰 포함됨)
+                    const uploadRes = await apiClient.post('/images/upload', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
                     });
 
-                    if (!uploadRes.ok) {
-                        throw new Error('이미지 업로드 실패');
-                    }
-
-                    const uploadData = await uploadRes.json();
-
                     // S3 URL 배열을 postData에 추가
-                    postData.images = uploadData.imageUrls;
+                    postData.images = uploadRes.data.imageUrls;
 
-                    console.log('Uploaded image URLs:', uploadData.imageUrls);
+                    console.log('Uploaded image URLs:', uploadRes.data.imageUrls);
                 } catch (error) {
                     console.error('Image upload error:', error);
                     alert('이미지 업로드에 실패했습니다.');
@@ -168,59 +162,59 @@ export default function WritePage() {
 
             // API 엔드포인트 결정
             const apiEndpoint = isCuration 
-                ? 'https://classic-daramg.duckdns.org/posts/curation'
-                : 'https://classic-daramg.duckdns.org/posts/free';
+                ? '/posts/curation'
+                : '/posts/free';
 
             console.log('--- JSON Data to be Sent ---');
             console.log(JSON.stringify(postData, null, 2));
             console.log('--------------------------');
 
-            // localStorage에서 토큰 가져오기
-            // const authToken = localStorage.getItem('authToken');
-            
-            // Authorization 헤더 설정 (토큰이 있으면 포함, 없으면 쿠키 기반 인증 사용)
-            // const headers: HeadersInit = {
-            //     'Content-Type': 'application/json',
-            // };
-            // 
-            // if (authToken) {
-            //     headers['Authorization'] = `Bearer ${authToken}`;
-            // }
-
-            const response = await fetch(apiEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(postData),
-            });
+            // Axios를 사용하여 POST 요청 (자동으로 토큰 포함 및 401 에러 처리)
+            const response = await apiClient.post(apiEndpoint, postData);
 
             console.log('Response status:', response.status);
-            const text = await response.text();
-            console.log('Response body:', text);
+            console.log('Response data:', response.data);
 
-            if (response.ok || response.status === 201) {
-                try {
-                    const result = text ? JSON.parse(text) : null;
-                    console.log('Post created successfully:', result);
-                } catch (e) {
-                    console.log('Response is not JSON, but request succeeded');
-                }
+            if (response.status === 200 || response.status === 201) {
+                console.log('Post created successfully:', response.data);
                 alert('등록되었습니다.');
                 router.push(isCuration ? '/curation' : '/free-talk');
-            } else {
-                try {
-                    const errorData = text ? JSON.parse(text) : null;
-                    console.error('Error response:', errorData);
-                } catch (e) {
-                    console.error('Error response (not JSON):', text);
-                }
-                alert('게시글 등록에 실패했습니다.');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('An error occurred while creating the post:', error);
-            alert('오류가 발생했습니다.');
+            
+            // Axios 에러 처리
+            if (error.response) {
+                let errorMessage = '게시글 등록에 실패했습니다.';
+                
+                const errorData = error.response.data;
+                if (errorData?.message) {
+                    errorMessage = errorData.message;
+                }
+
+                // 상태 코드별 에러 메시지
+                switch (error.response.status) {
+                    case 400:
+                        errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
+                        break;
+                    case 401:
+                        errorMessage = '로그인이 필요합니다.';
+                        break;
+                    case 403:
+                        errorMessage = '권한이 없습니다.';
+                        break;
+                    case 404:
+                        errorMessage = '요청한 리소스를 찾을 수 없습니다.';
+                        break;
+                    case 500:
+                        errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                        break;
+                }
+                
+                alert(errorMessage);
+            } else {
+                alert('오류가 발생했습니다.');
+            }
         }
     };
 

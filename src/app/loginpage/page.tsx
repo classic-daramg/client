@@ -6,6 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ToastNotification from '../../components/ToastNotification';
 import { useUserProfileStore } from '../../store/userProfileStore';
+import { useAuthStore } from '../../store/authStore';
+import apiClient from '../../lib/apiClient';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +17,44 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setProfile = useUserProfileStore((state) => state.setProfile);
+  const { setTokens } = useAuthStore();
+
+  // JWT 토큰 디코딩 및 만료 확인 함수
+  const checkTokenExpiration = (token: string): { isExpired: boolean; expiresAt?: Date; payload?: any } => {
+    try {
+      // JWT는 header.payload.signature 형식
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        console.error('Invalid JWT format');
+        return { isExpired: true };
+      }
+
+      // payload 디코딩 (base64)
+      const payload = JSON.parse(atob(parts[1]));
+      console.log('Decoded JWT payload:', payload);
+
+      // exp 필드 확인 (Unix timestamp in seconds)
+      if (payload.exp) {
+        const expirationDate = new Date(payload.exp * 1000); // 밀리초로 변환
+        const now = new Date();
+        const isExpired = now >= expirationDate;
+
+        console.log('Token issued at (iat):', payload.iat ? new Date(payload.iat * 1000).toLocaleString() : 'N/A');
+        console.log('Token expires at (exp):', expirationDate.toLocaleString());
+        console.log('Current time:', now.toLocaleString());
+        console.log('Time until expiration:', isExpired ? 'EXPIRED' : `${Math.floor((expirationDate.getTime() - now.getTime()) / 1000 / 60)} minutes`);
+        console.log('Is token expired?', isExpired ? '❌ YES' : '✅ NO');
+
+        return { isExpired, expiresAt: expirationDate, payload };
+      } else {
+        console.warn('No expiration (exp) field in token - assuming valid');
+        return { isExpired: false, payload };
+      }
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return { isExpired: true };
+    }
+  };
 
   const handleLogin = async () => {
     // 입력 검증
@@ -28,99 +68,48 @@ const LoginPage = () => {
       return;
     }
 
-    // 관리자 임시 로그인 우회
-    //보안위험**************
-    if (email.trim() === 'admin@gmail.com' && password === 'admin1234!') {
-      setToast({ show: true, message: '관리자 계정으로 로그인되었습니다.' });
-      // 유니코드 안전 base64 인코딩 함수
-      function base64EncodeUnicode(str: string) {
-        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) =>
-          String.fromCharCode(parseInt(p1, 16))
-        ));
-      }
-
-      const adminJwt = [
-        base64EncodeUnicode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })),
-        base64EncodeUnicode(JSON.stringify({
-          email: 'admin@gmail.com',
-          name: '관리자',
-          nickname: 'admin',
-        })),
-        'signature'
-      ].join('.')
-      localStorage.setItem('authToken', adminJwt);
-      setProfile({
-        name: '관리자',
-        nickname: 'admin',
-        email: 'admin@gmail.com',
-        bio: '관리자 계정',
-        profileImage: '/icons/profile.svg',
-        birthDate: '',
-      });
-      // 상태 확인용 콘솔 출력
-      // setTimeout(() => {
-      //   const profileState = useUserProfileStore.getState().profile;
-      //   console.log('localStorage user-profile-storage:', localStorage.getItem('user-profile-storage'));
-      //   console.log('profile 상태:', profileState);
-      //   console.log('isLoggedIn (profile !== null):', profileState !== null);
-      // }, 100);
-      setIsLoading(false);
-      setTimeout(() => {
-        router.push('/');
-      }, 500);
-      return;
-    }
-    //*********보안 위험*********//
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://classic-daramg.duckdns.org/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // 쿠키 인증을 위해 필요
-        body: JSON.stringify({
-          email: email.trim(),
-          password: password,
-        }),
+      const response = await apiClient.post('/auth/login', {
+        email: email.trim(),
+        password: password,
       });
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         // 로그인 성공
-        setToast({ show: true, message: '로그인되었습니다.' });
-
-        let userInfo = null;
-        let token = null;
-
-        // 응답 본문이 있는지 확인 후 파싱 시도
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            const data = await response.json();
-            
-            if (data.user) {
-              userInfo = data.user;
-            }
-            // JWT 토큰 저장 (응답에서 accessToken 또는 token 필드를 확인)
-            if (data.accessToken) {
-              token = data.accessToken;
-            } else if (data.token) {
-              token = data.token;
-            }
-          } catch (error) {
-            console.log('응답 본문이 비어있거나 JSON 파싱 실패:', error);
-          }
+        const data = response.data;
+        
+        // JWT 토큰 추출 및 저장
+        const accessToken = data.accessToken || data.token;
+        const refreshToken = data.refreshToken;
+        
+        if (!accessToken) {
+          setToast({ show: true, message: '토큰을 받지 못했습니다. 다시 시도해주세요.' });
+          setIsLoading(false);
+          return;
         }
 
-        // JWT 토큰을 localStorage에 저장
-        if (token) {
-          localStorage.setItem('authToken', token);
-          console.log('JWT 토큰 저장됨');
-        } else {
-          console.warn('JWT 토큰이 응답에 포함되지 않음 - 쿠키 기반 인증 사용');
+        // Zustand store에 토큰 저장 (메모리에 보관)
+        setTokens(accessToken, refreshToken || null);
+        
+        console.log('=== JWT Token Saved to Memory ===');
+        console.log('Access Token length:', accessToken.length);
+        console.log('Refresh Token:', refreshToken ? 'Present' : 'Not present (using cookie)');
+        
+        // 토큰 만료 정보 확인
+        const tokenStatus = checkTokenExpiration(accessToken);
+        if (tokenStatus.isExpired) {
+          console.error('⚠️ Warning: Received token is already expired!');
+        } else if (tokenStatus.expiresAt) {
+          const minutesUntilExpiry = Math.floor((tokenStatus.expiresAt.getTime() - new Date().getTime()) / 1000 / 60);
+          console.log(`✅ Token is valid for ${minutesUntilExpiry} minutes`);
         }
+        console.log('=================================');
 
+        // 사용자 정보 처리
+        const userInfo = data.user || {};
+        
         // localStorage에서 저장된 프로필 데이터 확인
         const savedProfile = localStorage.getItem('user-profile-storage');
         interface ProfileData {
@@ -143,34 +132,33 @@ const LoginPage = () => {
         }
 
         // 프로필 설정: 저장된 데이터 우선, 없으면 응답 데이터 사용
-        setProfile({
+        const profileToSet = {
           name: profileData?.name || userInfo?.name || '',
           nickname: profileData?.nickname || userInfo?.nickname || '',
           email: profileData?.email || userInfo?.email || email.trim(),
           bio: profileData?.bio || userInfo?.bio || '',
           profileImage: profileData?.profileImage || userInfo?.profileImage || '/icons/DefaultImage.svg',
           birthDate: profileData?.birthDate || userInfo?.birthdate || '',
-        });
+        };
+
+        setProfile(profileToSet);
+
+        setToast({ show: true, message: '로그인되었습니다.' });
+        setIsLoading(false);
 
         setTimeout(() => {
           router.push('/my-page');
         }, 500);
-      } else {
-        // 로그인 실패 - 응답 본문이 있을 경우만 파싱
-        interface ErrorResponse {
-          message?: string;
-        }
-        let data: ErrorResponse = {};
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            data = await response.json();
-          } catch (error) {
-            console.log('에러 응답 파싱 실패:', error);
-          }
-        }
-        // 로그인 실패
-        switch (response.status) {
+      }
+    } catch (error: any) {
+      console.error('로그인 오류:', error);
+      
+      // Axios 에러 처리
+      if (error.response) {
+        const status = error.response.status;
+        const errorData = error.response.data;
+
+        switch (status) {
           case 401:
             setToast({ show: true, message: '이메일 또는 비밀번호가 일치하지 않습니다.' });
             break;
@@ -181,13 +169,11 @@ const LoginPage = () => {
             setToast({ show: true, message: '너무 많은 로그인 시도입니다. 잠시 후 다시 시도해주세요.' });
             break;
           default:
-            setToast({ show: true, message: data.message || '로그인에 실패했습니다.' });
+            setToast({ show: true, message: errorData?.message || '로그인에 실패했습니다.' });
         }
+      } else {
+        setToast({ show: true, message: '네트워크 오류가 발생했습니다.' });
       }
-    } catch (error) {
-      console.error('로그인 오류:', error);
-      setToast({ show: true, message: '네트워크 오류가 발생했습니다.' });
-    } finally {
       setIsLoading(false);
     }
   };
