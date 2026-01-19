@@ -220,9 +220,17 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
             </div>
 
             {mockPostData.images.length > 0 && (
-              <div className="flex gap-1.5 mb-4">
+              <div className="flex flex-wrap gap-1.5 mb-4">
                   {mockPostData.images.map((src, index) => (
-                      <div key={index} className="w-[151px] h-[151px] bg-zinc-300 rounded-lg" />
+                      <div key={index} className="relative w-[151px] h-[151px] bg-zinc-300 rounded-lg overflow-hidden">
+                          <Image
+                              src={src}
+                              alt={`Post image ${index + 1}`}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              className="object-cover"
+                          />
+                      </div>
                   ))}
               </div>
             )}

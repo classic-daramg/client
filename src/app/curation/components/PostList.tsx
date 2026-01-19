@@ -2,6 +2,7 @@
 
 import PostItem from './PostItem';
 import { useState, useEffect } from 'react';
+import apiClient from '@/lib/apiClient';
 
 interface Post {
   id: number;
@@ -24,11 +25,13 @@ export default function PostList() {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('https://classic-daramg.duckdns.org/posts/curation');
-        if (!response.ok) {
+        const response = await apiClient.get('/posts/curation');
+        
+        // Axios는 response.ok 대신 status로 성공 여부 판단
+        if (response.status !== 200) {
           throw new Error('포스트 목록을 불러올 수 없습니다.');
         }
-        const data = await response.json();
+        const data = response.data;
         
         // API 응답을 PostItem 형식으로 변환
         const formattedPosts = data.content?.map((post: any) => ({
