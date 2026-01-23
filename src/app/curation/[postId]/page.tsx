@@ -5,12 +5,15 @@ import Link from 'next/link';
 import CommentList from './comment-list';
 import CommentInput from './comment-input';
 import { ReportButton } from './report-button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { apiClient } from '@/lib/apiClient';
 
 interface PostData {
   id: number;
   userId: string;
   author: string;
+  profileImage: string;
+  isLiked: boolean;
   timestamp: string;
   category: string;
   postType: string;
@@ -41,6 +44,8 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
   const [currentComments, setCurrentComments] = useState<Comment[]>([]);
   const [postId, setPostId] = useState('');
   const [mockPostData, setMockPostData] = useState<PostData | null>(null);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [replyMode, setReplyMode] = useState<{
@@ -49,6 +54,7 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
     replyToAuthor: string;
   } | undefined>(undefined);
   const [showCommentInput, setShowCommentInput] = useState(true);
+  const likeDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // params 처리 및 포스트 데이터 로드
   useEffect(() => {
@@ -56,17 +62,16 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
       setPostId(pId);
       try {
         setLoading(true);
-        const response = await fetch(`https://classic-daramg.duckdns.org/posts/${pId}`);
-        if (!response.ok) {
-          throw new Error('포스트를 불러올 수 없습니다.');
-        }
-        const data = await response.json();
+        const response = await apiClient.get(`/posts/${pId}`);
+        const data = response.data;
         
         // API 응답을 PostData 형식으로 변환
         const formattedData: PostData = {
           id: data.id,
-          userId: data.author?.id || '',
-          author: data.author?.nickname || 'Unknown',
+          userId: data.authorId || '',
+          author: data.writerNickname || 'Unknown',
+          profileImage: data.writerProfileImage || '/icons/DefaultImage.svg',
+          isLiked: Boolean(data.isLiked),
           timestamp: formatDateTime(data.createdAt),
           category: '큐레이션글',
           postType: '큐레이션',
@@ -79,21 +84,19 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
         };
         
         setMockPostData(formattedData);
+        setLikeCount(formattedData.likes);
+        setIsLiked(formattedData.isLiked);
         
-        // 댓글 데이터 로드
-        const commentsResponse = await fetch(`https://classic-daramg.duckdns.org/posts/${pId}/comments`);
-        if (commentsResponse.ok) {
-          const commentsData = await commentsResponse.json();
-          const formattedComments = commentsData.content?.map((comment: any) => ({
-            id: comment.id,
-            author: comment.author?.nickname || 'Unknown',
-            timestamp: formatDateTime(comment.createdAt),
-            content: comment.content,
-            isHeartSelected: comment.isLiked || false,
-            isReply: comment.isReply || false,
-          })) || [];
-          setCurrentComments(formattedComments);
-        }
+        // 댓글 데이터는 포스트 응답에 포함되어 있음
+        const formattedComments = data.comments?.map((comment: any) => ({
+          id: comment.id,
+          author: comment.writerNickname || 'Unknown',
+          timestamp: formatDateTime(comment.createdAt),
+          content: comment.content,
+          isHeartSelected: comment.isLiked || false,
+          isReply: comment.parentCommentId !== null,
+        })) || [];
+        setCurrentComments(formattedComments);
       } catch (err) {
         setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
         console.error('Error fetching post:', err);
@@ -102,6 +105,15 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
       }
     });
   }, [params]);
+
+  // cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (likeDebounceRef.current) {
+        clearTimeout(likeDebounceRef.current);
+      }
+    };
+  }, []);
 
   // 날짜 포맷팅 함수
   const formatDateTime = (dateString: string): string => {
@@ -161,6 +173,32 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
     setReplyMode(undefined);
   };
 
+  const syncLikeStatus = async () => {
+    if (!postId) return;
+    try {
+      const response = await apiClient.post(`/posts/${postId}/like`);
+      console.log('✅ Like synced successfully:', response.data);
+    } catch (err) {
+      // 낙관적 유지, 오류만 로깅
+      console.error('Failed to sync like status:', err);
+    }
+  };
+
+  const handleToggleLike = () => {
+    const nextLiked = !isLiked;
+    const delta = nextLiked ? 1 : -1;
+
+    // optimistic update
+    setIsLiked(nextLiked);
+    setLikeCount((prev) => Math.max(prev + delta, 0));
+
+    // debounce API call
+    if (likeDebounceRef.current) clearTimeout(likeDebounceRef.current);
+    likeDebounceRef.current = setTimeout(() => {
+      syncLikeStatus();
+    }, 350);
+  };
+
   const handleReportOpen = () => {
     setShowCommentInput(false);
   };
@@ -187,74 +225,108 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
 
   return (
     <div className="bg-[#f4f5f7] min-h-screen">
-      <div className="bg-white w-[375px] mx-auto">
+      <div className="bg-white w-full max-w-md mx-auto">
+        {/* Header with title and edit button */}
+        <div className="px-5 py-3 flex items-center gap-1 border-b border-[#f4f5f7]">
+          <Link href="/curation" className="flex-shrink-0">
+            <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
+          </Link>
+          <h1 className="flex-1 text-center text-[#1a1a1a] text-base font-semibold">라흐마니노프 토크룸</h1>
+          <button className="px-3 py-1.5 bg-white rounded-full border border-[#d9d9d9] text-[#a6a6a6] text-xs font-semibold flex-shrink-0">
+            수정
+          </button>
+        </div>
+
         {/* Post Content */}
-        <div className="px-5 pb-5 pt-4">
-            <div className="flex items-start gap-2 mb-4">
-                <Link href={`/writer-profile/${mockPostData.userId}`}>
-                    <div className="w-[31px] h-[31px] bg-zinc-300 rounded-md" />
-                </Link>
-                <div className="flex-1">
-                    <p className="font-semibold text-sm text-zinc-700">{mockPostData.author}</p>
-                    <p className="text-xs text-zinc-400">{mockPostData.timestamp} · {mockPostData.category}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-xs text-zinc-500 font-semibold">
-                        <Image src="/icons/music.svg" alt="" width={12} height={12} />
-                        <span>{mockPostData.postType}</span>
-                    </div>
-                    <ReportButton postId={postId} composerId="curation" />
-                </div>
-            </div>
-
-            <div className="mb-2">
-                <h2 className="text-sm font-semibold text-zinc-900">{mockPostData.title}</h2>
-            </div>
-
-            <div className="text-sm text-zinc-500 mb-2" style={{ whiteSpace: 'pre-wrap' }}>
-                {mockPostData.content}
-            </div>
-
-            <div className="flex gap-1 text-sm text-zinc-400 mb-4">
-                {mockPostData.tags.map(tag => <span key={tag}>{tag}</span>)}
-            </div>
-
-            {mockPostData.images.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                  {mockPostData.images.map((src, index) => (
-                      <div key={index} className="relative w-[151px] h-[151px] bg-zinc-300 rounded-lg overflow-hidden">
-                          <Image
-                              src={src}
-                              alt={`Post image ${index + 1}`}
-                              fill
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                              className="object-cover"
-                          />
-                      </div>
-                  ))}
+        <div className="px-5 py-5 flex flex-col gap-4">
+          {/* Author info */}
+          <div className="flex items-start gap-2">
+            <Link href={`/writer-profile/${mockPostData.userId}`}>
+              <div className="w-[31px] h-[31px] bg-[#d9d9d9] rounded-md flex-shrink-0 overflow-hidden relative">
+                <Image 
+                  src={mockPostData.profileImage} 
+                  alt={mockPostData.author}
+                  width={31}
+                  height={31}
+                  className="object-cover"
+                />
               </div>
-            )}
-
-            <div className="flex justify-between items-center">
-                <div className="flex gap-3">
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                        <Image src="/icons/heart.svg" alt="likes" width={24} height={24} />
-                        <span>좋아요</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                        <Image src="/icons/logo.svg" alt="scraps" width={24} height={24} />
-                        <span>스크랩</span>
-                    </div>
-                </div>
-                <button>
-                    <Image src="/icons/music.svg" alt="share" width={24} height={24} />
-                </button>
+            </Link>
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-[#4c4c4c]">{mockPostData.author}</p>
+              <p className="font-medium text-xs text-[#d9d9d9]">{mockPostData.timestamp}</p>
             </div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#d9d9d9] flex-shrink-0">
+              <Image src="/icons/check.svg" alt="type" width={12} height={12} />
+              <span>{mockPostData.postType}</span>
+            </div>
+          </div>
+
+          {/* Title */}
+          <div>
+            <h2 className="text-base font-semibold text-[#1a1a1a]">{mockPostData.title}</h2>
+          </div>
+
+          {/* Content */}
+          <div className="font-medium text-sm text-[#a6a6a6] leading-relaxed" style={{ whiteSpace: 'pre-wrap' }}>
+            {mockPostData.content}
+          </div>
+
+          {/* Tags */}
+          {mockPostData.tags.length > 0 && (
+            <div className="flex gap-1 font-medium text-xs text-[#d9d9d9]">
+              {mockPostData.tags.map(tag => <span key={tag}>{tag}</span>)}
+            </div>
+          )}
+
+          {/* Images */}
+          {mockPostData.images.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto">
+              {mockPostData.images.map((src, index) => (
+                <div key={index} className="relative w-[151px] h-[151px] bg-[#d9d9d9] rounded-lg overflow-hidden flex-shrink-0">
+                  <Image
+                    src={src}
+                    alt={`Post image ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex items-center justify-between pt-2 border-t border-[#f4f5f7]">
+            <div className="flex gap-3">
+              <button
+                onClick={handleToggleLike}
+                className="flex items-center gap-1.5 font-medium text-xs text-[#a6a6a6]"
+              >
+                <Image
+                  src={isLiked ? '/icons/heart_selected.svg' : '/icons/heart_gray.svg'}
+                  alt="좋아요"
+                  width={24}
+                  height={24}
+                />
+                <span>{likeCount}</span>
+              </button>
+              <button className="flex items-center gap-1.5 font-medium text-xs text-[#a6a6a6]">
+                <Image src="/icons/bookmark_gray.svg" alt="스크랩" width={24} height={24} />
+                <span>스크랩</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <button>
+                <Image src="/icons/upload.svg" alt="공유" width={24} height={24} />
+              </button>
+              <ReportButton postId={postId} composerId="curation" />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Comments Section */}
-      <div className={`mt-1.5 flex flex-col gap-1.5 w-[375px] mx-auto ${showCommentInput ? 'pb-32' : 'pb-8'}`}>
+      <div className={`mt-1.5 flex flex-col gap-1.5 w-full max-w-md mx-auto ${showCommentInput ? 'pb-32' : 'pb-8'}`}>
         <CommentList 
           composerId="curation"
           initialComments={currentComments}

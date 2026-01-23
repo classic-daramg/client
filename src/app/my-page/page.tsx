@@ -138,14 +138,22 @@ export default function MyPage() {
 
         if (response.ok) {
           const data = await response.json();
-          setProfile({
-            name: data.name ?? '',
-            nickname: data.nickname ?? '',
-            email: data.email ?? '',
-            bio: data.bio ?? '',
-            profileImage: data.profileImage ?? '/icons/DefaultImage.svg',
-            birthDate: data.birthDate ?? '',
+          useUserProfileStore.setState({
+            profile: {
+              name: data.name ?? '',
+              nickname: data.nickname ?? '',
+              email: data.email ?? '',
+              bio: data.bio ?? '',
+              profileImage: data.profileImage ?? '/icons/DefaultImage.svg',
+              birthDate: data.birthDate ?? '',
+            },
           });
+        } else if (response.status === 401) {
+          // 인증 실패 - 토큰 만료 또는 유효하지 않음
+          console.error('인증이 만료되었습니다. 다시 로그인 해주세요.');
+          localStorage.removeItem('authToken');
+          useUserProfileStore.setState({ profile: null });
+          router.push('/loginpage');
         } else {
           console.error('프로필 조회 실패:', response.status);
         }
@@ -155,7 +163,7 @@ export default function MyPage() {
     };
 
     fetchUserProfile();
-  }, [setProfile]);
+  }, [router]);
 
   const handleLogout = async () => {
     try {

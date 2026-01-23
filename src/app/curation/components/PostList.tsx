@@ -11,7 +11,8 @@ interface Post {
   tags: string[];
   likes: number;
   comments: number;
-  author: string;
+  author: string; // This will store the nickname
+  writerNickname: string; // Add writerNickname to the interface
   createdAt: string;
   imageUrl?: string;
 }
@@ -41,9 +42,16 @@ export default function PostList() {
           tags: post.tags || [],
           likes: post.likeCount || 0,
           comments: post.commentCount || 0,
-          author: post.author?.nickname || 'Unknown',
+          author: post.writerNickname || 'Unknown',
+          writerNickname: post.writerNickname || 'Unknown',
           createdAt: formatTimeAgo(post.createdAt),
-          imageUrl: post.images?.[0],
+          // thumbnailImageUrl 우선, 없으면 다른 필드 순회
+          imageUrl:
+            post.thumbnailImageUrl ||
+            post.imageUrl ||
+            post.imageUrls?.[0] ||
+            post.images?.[0]?.url ||
+            post.images?.[0],
         })) || [];
         
         setPosts(formattedPosts);
@@ -75,7 +83,7 @@ export default function PostList() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8 bg-white">
-        <p className="text-zinc-400">로딩 중...</p>
+        <p className="font-medium text-xs text-[#a6a6a6]">로딩 중...</p>
       </div>
     );
   }
@@ -83,7 +91,7 @@ export default function PostList() {
   if (error) {
     return (
       <div className="flex justify-center items-center py-8 bg-white">
-        <p className="text-red-500">{error}</p>
+        <p className="font-medium text-xs text-red-500">{error}</p>
       </div>
     );
   }
@@ -92,7 +100,7 @@ export default function PostList() {
     <div className="flex flex-col bg-white">
       {posts.length === 0 ? (
         <div className="flex justify-center items-center py-8">
-          <p className="text-zinc-400">포스트가 없습니다.</p>
+          <p className="font-medium text-xs text-[#a6a6a6]">포스트가 없습니다.</p>
         </div>
       ) : (
         posts.map((post, index) => (

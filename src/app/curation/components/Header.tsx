@@ -11,7 +11,7 @@ export default function Header() {
         <button onClick={() => router.back()}>
           <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
         </button>
-        <h1 className="ml-4 text-base font-semibold text-zinc-900">
+        <h1 className="ml-4 text-base font-semibold text-zinc-900 text-left flex-1">
           다람쥐의 큐레이션
         </h1>
       </div>

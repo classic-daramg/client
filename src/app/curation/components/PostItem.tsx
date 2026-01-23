@@ -24,7 +24,10 @@ export default function PostItem({ post, isFirst = false }: PostItemProps) {
   }`;
 
   return (
-    <Link href={`/curation/${post.id}`} className={`${containerClasses} hover:bg-gray-50 cursor-pointer transition-colors`}>
+    <Link
+      href={`/curation/${post.id}`}
+      className={`${containerClasses} hover:bg-gray-50 cursor-pointer transition-colors font-['Pretendard']`}
+    >
       <div className="w-60 flex flex-col justify-start items-start gap-2">
         <div className="inline-flex justify-start items-center gap-1.5 text-[#d9d9d9] text-[11px] font-semibold">
           <Image src="/icons/white_check.svg" alt="선택" width={16} height={16} />
@@ -65,13 +68,11 @@ export default function PostItem({ post, isFirst = false }: PostItemProps) {
         </div>
       </div>
       {post.imageUrl && (
-        <div className="relative w-24 h-24 bg-[#d9d9d9] rounded-[8px] ml-4 flex items-center justify-center overflow-hidden">
-          <Image
+        <div className="relative w-[100px] h-[100px] bg-[#d9d9d9] rounded-[8px] ml-4 flex items-center justify-center overflow-hidden">
+          <img
             src={post.imageUrl}
             alt={post.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="rounded-lg object-cover"
+            className="w-full h-full object-cover"
           />
         </div>
       )}
