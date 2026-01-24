@@ -92,10 +92,16 @@ const LoginPage = () => {
 
         // Zustand store에 토큰 저장 (메모리에 보관)
         setTokens(accessToken, refreshToken || null);
-        
-        console.log('=== JWT Token Saved to Memory ===');
+
+        // 쿠키에 access token 저장 (백엔드가 cookieAuth로 인증하므로 필수)
+        if (typeof document !== 'undefined') {
+          document.cookie = `access_token=${accessToken}; path=/; SameSite=Lax`;
+        }
+
+        console.log('=== JWT Token Saved to Memory & Cookie ===');
         console.log('Access Token length:', accessToken.length);
         console.log('Refresh Token:', refreshToken ? 'Present' : 'Not present (using cookie)');
+        console.log('✅ Saved access_token to cookie for API requests');
         
         // 토큰 만료 정보 확인
         const tokenStatus = checkTokenExpiration(accessToken);

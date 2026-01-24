@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface AuthState {
   accessToken: string | null;
@@ -10,32 +11,40 @@ interface AuthState {
   isAuthenticated: () => boolean;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  accessToken: null,
-  refreshToken: null,
+export const useAuthStore = create<AuthState>(
+  persist(
+    (set, get) => ({
+      accessToken: null,
+      refreshToken: null,
 
-  setAccessToken: (token) => set({ accessToken: token }),
-  
-  setRefreshToken: (token) => set({ refreshToken: token }),
+      setAccessToken: (token) => set({ accessToken: token }),
 
-  setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
+      setRefreshToken: (token) => set({ refreshToken: token }),
 
-  clearTokens: () => set({ accessToken: null, refreshToken: null }),
+      setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
 
-  isAuthenticated: () => {
-    const token = get().accessToken;
-    if (!token) return false;
+      clearTokens: () => set({ accessToken: null, refreshToken: null }),
 
-    try {
-      // JWT 토큰 디코딩하여 만료 시간 확인
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.exp) {
-        const now = Math.floor(Date.now() / 1000);
-        return payload.exp > now;
-      }
-      return true;
-    } catch {
-      return false;
+      isAuthenticated: () => {
+        const token = get().accessToken;
+        if (!token) return false;
+
+        try {
+          // JWT 토큰 디코딩하여 만료 시간 확인
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.exp) {
+            const now = Math.floor(Date.now() / 1000);
+            return payload.exp > now;
+          }
+          return true;
+        } catch {
+          return false;
+        }
+      },
+    }),
+    {
+      name: 'auth-store', // localStorage 키 이름
+      partialize: (state) => ({ accessToken: state.accessToken, refreshToken: state.refreshToken }), // 토큰만 저장
     }
-  },
-}));
+  )
+);

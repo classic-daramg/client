@@ -15,11 +15,12 @@ export default function WriteButton({ board }: WriteButtonProps) {
         className="px-6 py-3 bg-[#293A92] hover:bg-[#1f2d7a] rounded-[100px] shadow-lg inline-flex justify-center items-center gap-1.5 transition-all duration-300 group"
       >
         <div className="w-6 h-6 relative">
-          <Image 
-            src="/icons/write-white.svg" 
-            alt="글쓰기" 
-            layout="fill"
-            className="group-hover:scale-110 transition-transform"
+          <Image
+            src="/icons/write-white.svg"
+            alt="글쓰기"
+            fill
+            sizes="24px"
+            className="group-hover:scale-110 transition-transform object-contain"
           />
         </div>
         <div className="text-white text-base font-semibold font-['Pretendard']">글쓰기</div>

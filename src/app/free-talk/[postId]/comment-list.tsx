@@ -11,9 +11,11 @@ interface CommentListProps {
   onReply?: (commentId: number, author: string) => void;
   onReportOpen?: () => void;
   onReportClose?: () => void;
+  onLikeChange?: (commentId: number, isLiked: boolean, likeCount: number) => void;
+  onDelete?: (commentId: number) => void;
 }
 
-export default function CommentList({ composerId, initialComments, onReply, onReportOpen, onReportClose }: CommentListProps) {
+export default function CommentList({ composerId, initialComments, onReply, onReportOpen, onReportClose, onLikeChange, onDelete }: CommentListProps) {
   const [comments, setComments] = useState<CommentData[]>(initialComments.slice(0, COMMENTS_PER_PAGE));
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialComments.length > COMMENTS_PER_PAGE);
@@ -48,7 +50,7 @@ export default function CommentList({ composerId, initialComments, onReply, onRe
   return (
     <>
       {comments.map(c => (
-        <CommentItem key={c.id} comment={c} composerId={composerId} onReply={onReply} onReportOpen={onReportOpen} onReportClose={onReportClose} />
+        <CommentItem key={c.id} comment={c} composerId={composerId} onReply={onReply} onReportOpen={onReportOpen} onReportClose={onReportClose} onLikeChange={onLikeChange} onDelete={onDelete} />
       ))}
       {hasMore && <div ref={loader} className="py-4 text-center text-zinc-500">댓글을 불러오는 중...</div>}
     </>

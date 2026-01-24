@@ -1,13 +1,29 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import CommentInput from './comment-input';
 import CommentList from './comment-list';
 import { ReportButton } from './report-button';
+import { useAuthStore } from '@/store/authStore';
+import { useUserProfileStore } from '@/store/userProfileStore';
 
 // API 응답 타입 (OpenAPI 스펙 기준)
+interface ApiComment {
+  id: number;
+  content: string;
+  isDeleted: boolean;
+  likeCount: number;
+  childCommentCount: number;
+  createdAt: string;
+  writerNickname: string;
+  writerProfileImage?: string;
+  isLiked: boolean;
+  childComments?: ApiComment[];
+}
+
 interface FreeTalkPost {
   id: number;
   title: string;
@@ -26,6 +42,7 @@ interface FreeTalkPost {
   primaryComposer: string | null;
   additionalComposers: string[] | null;
   isLiked?: boolean;
+  comments?: ApiComment[]; // API에서 받은 댓글 데이터
 }
 
 interface CommentData {
@@ -103,6 +120,9 @@ interface PageProps {
 }
 
 export default function FreeTalkPostDetail({ params }: PageProps) {
+  const router = useRouter();
+  const { accessToken } = useAuthStore();
+  const { profile } = useUserProfileStore();
   const [post, setPost] = useState<FreeTalkPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,23 +154,50 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
     return () => { active = false; };
   }, [params]);
 
-  // 초기 Mock 댓글 세팅 (포스트 로드 후 1회)
+  // 상대 시간 포맷팅 함수
+  const getRelativeTime = (isoString: string): string => {
+    const date = new Date(isoString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return '방금 전';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}분 전`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}시간 전`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}일 전`;
+    return date.toLocaleDateString('ko-KR');
+  };
+
+  // API 댓글을 CommentData로 변환 (childComments 포함)
+  const transformComments = (apiCommentList: any[]): CommentData[] => {
+    return apiCommentList.map((comment: any) => ({
+      id: comment.id,
+      author: comment.writerNickname,
+      timestamp: getRelativeTime(comment.createdAt),
+      content: comment.content,
+      isHeartSelected: comment.isLiked || false,
+      isReply: false,
+      parentId: undefined,
+      likeCount: comment.likeCount || 0,
+      // 대댓글 재귀 처리
+      childComments: comment.childComments && comment.childComments.length > 0
+        ? transformComments(comment.childComments)
+        : undefined
+    }));
+  };
+
+  // 포스트에서 댓글 데이터 가져오기
   useEffect(() => {
     if (post) {
       setLikesCount(post.likeCount);
       setLiked(post.isLiked || false);
-      // 샘플 댓글 8개 (답글 포함)
-      const mock: CommentData[] = [
-        { id: 1, author: '익명1', timestamp: '1분 전', content: '재밌는 글이네요!', isHeartSelected: false },
-        { id: 2, author: '익명2', timestamp: '3분 전', content: '동의합니다 ㅎㅎ', isHeartSelected: true },
-        { id: 3, author: '익명3', timestamp: '5분 전', content: '클래식은 언제나 옳죠', isHeartSelected: false },
-        { id: 4, author: '익명4', timestamp: '10분 전', content: '좋은 하루 되세요', isHeartSelected: false },
-        { id: 5, author: '익명5', timestamp: '15분 전', content: '저도 비슷한 경험!', isHeartSelected: false },
-        { id: 6, author: '익명6', timestamp: '20분 전', content: '답글 예시', isHeartSelected: false, isReply: true, parentId: 2 },
-        { id: 7, author: '익명7', timestamp: '25분 전', content: '또 다른 댓글', isHeartSelected: false },
-        { id: 8, author: '익명8', timestamp: '30분 전', content: '또 다른 답글', isHeartSelected: false, isReply: true, parentId: 7 }
-      ];
-      setComments(mock);
+
+      // API에서 받은 댓글이 있으면 사용, 없으면 빈 배열
+      if (post.comments && Array.isArray(post.comments)) {
+        const apiComments = transformComments(post.comments);
+        setComments(apiComments);
+      } else {
+        setComments([]);
+      }
     }
   }, [post]);
 
@@ -199,12 +246,53 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
     // TODO: backend sync
   };
 
+  const handleCommentLikeChange = (commentId: number, isLiked: boolean, likeCount: number) => {
+    // 댓글 좋아요 변경 시 comments 배열 업데이트
+    setComments(prev => prev.map(c =>
+      c.id === commentId ? { ...c, isHeartSelected: isLiked, likeCount } : c
+    ));
+  };
+
+  const handleCommentDelete = (commentId: number) => {
+    // 댓글 삭제 후 포스트 데이터 새로고침
+    const refreshPost = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/posts/${postId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          const updatedPost = await res.json();
+          setPost(updatedPost);
+
+          // 최신 댓글 데이터로 업데이트
+          if (updatedPost.comments && Array.isArray(updatedPost.comments)) {
+            const apiComments = transformComments(updatedPost.comments);
+            setComments(apiComments);
+            console.log('✅ Comments updated after deletion');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to refresh after deletion:', error);
+      }
+    };
+
+    refreshPost();
+  };
+
   const handleAddComment = async (content: string, isReply?: boolean, replyToId?: number) => {
+    // 현재 사용자 닉네임 (없으면 '익명다람쥐')
+    const currentUserNickname = profile?.nickname || '익명다람쥐';
+
     // 낙관적 UI 반영
     const optimisticId = Date.now();
     const optimistic: CommentData = {
       id: optimisticId,
-      author: '익명다람쥐',
+      author: currentUserNickname,
       timestamp: '방금',
       content,
       isReply: !!isReply,
@@ -216,22 +304,67 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
 
     if (USE_COMMENT_API) {
       try {
-        const res = await fetch(`/api/free-talk/${postId}/comments`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content, parentId: replyToId })
-        });
-        if (res.ok) {
-          const json = await res.json();
-          if (json?.comment) {
-            // 낙관적 항목 교체
-            setComments(prev => prev.map(c => c.id === optimisticId ? { ...json.comment, timestamp: '방금' } : c));
-          }
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+
+        // Bearer token을 Authorization 헤더에 추가 (Zustand store에서 가져옴)
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+          console.log('✅ Comment API request with Bearer token');
         } else {
-          throw new Error('댓글 전송 실패');
+          console.warn('⚠️ No access token available, using credentials: include only');
+        }
+
+        // 대댓글과 댓글 구분
+        const apiUrl = isReply
+          ? `${API_BASE}/comments/${replyToId}/replies`
+          : `${API_BASE}/posts/${postId}/comments`;
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers,
+          credentials: 'include', // 쿠키도 함께 전송
+          body: JSON.stringify({ content }),
+        });
+
+        if (!res.ok) {
+          console.error(`Comment API error: ${res.status} ${res.statusText}`);
+          const errorText = await res.text();
+          console.error('Error response:', errorText);
+          throw new Error(`댓글 전송 실패 (${res.status})`);
+        }
+
+        // 댓글 생성 성공 후 post 데이터 새로고침
+        console.log('✅ Comment created successfully, refreshing post data...');
+        try {
+          const refreshRes = await fetch(`${API_BASE}/posts/${postId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          });
+
+          if (refreshRes.ok) {
+            const updatedPost = await refreshRes.json();
+            setPost(updatedPost);
+
+            // API에서 받은 댓글들로 state 업데이트
+            if (updatedPost.comments && Array.isArray(updatedPost.comments)) {
+              const apiComments = transformComments(updatedPost.comments);
+              setComments(apiComments);
+              console.log('✅ Comments updated from API (including child comments)');
+            }
+          } else {
+            console.warn('Post refresh failed, keeping optimistic UI');
+          }
+        } catch (refreshError) {
+          console.warn('Could not refresh post data:', refreshError);
+          // 새로고침 실패해도 낙관적 댓글은 유지됨
         }
       } catch (e) {
-        console.error(e);
+        console.error('Comment submission error:', e);
         // 롤백
         setComments(prev => prev.filter(c => c.id !== optimisticId));
         if (!isReply) setPost(p => p ? { ...p, commentCount: Math.max(0, p.commentCount - 1) } : p);
@@ -270,11 +403,11 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
       <div className="bg-white w-96 mx-auto shadow-[0_0_0_1px_rgba(0,0,0,0.02)]">
         {/* Header */}
         <div className="h-14 flex items-center gap-1 px-5 border-b border-neutral-100">
-          <Link href="/free-talk" className="w-9 h-9 -ml-2 flex items-center justify-center rounded-full hover:bg-neutral-100 active:bg-neutral-200" aria-label="뒤로가기">
+          <button onClick={() => router.back()} className="w-9 h-9 -ml-2 flex items-center justify-center rounded-full hover:bg-neutral-100 active:bg-neutral-200" aria-label="뒤로가기">
             <svg width="18" height="18" viewBox="0 0 30 30" fill="none" aria-hidden="true">
               <path d="M18 22L11 14.5L18 7" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </Link>
+          </button>
           <div className="flex-1 text-zinc-900 text-base font-semibold text-center">자유 토크룸</div>
           <div className="w-9 h-9 flex items-center justify-center -mr-2">
             <ReportButton postId={post.id.toString()} composerId="" onOpenChange={(o)=> setHideInput(o)} />
@@ -304,7 +437,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
 
           {/* Tags */}
           <div className="flex gap-1 flex-wrap text-zinc-300 text-sm font-medium">
-            {post.hashtags.map((tag: string) => <span key={tag}>{tag}</span>)}
+            {post.hashtags.map((tag: string, idx: number) => <span key={`${tag}-${idx}`}>{tag}</span>)}
           </div>
 
           {/* Images */}
@@ -355,10 +488,12 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
           </div>
           <CommentList
             composerId=""
-            initialComments={comments.sort((a,b) => a.id - b.id)}
+            initialComments={[...comments].sort((a,b) => a.id - b.id)}
             onReply={handleReply}
             onReportOpen={handleReportOpen}
             onReportClose={handleReportClose}
+            onLikeChange={handleCommentLikeChange}
+            onDelete={handleCommentDelete}
           />
         </div>
       </div>
