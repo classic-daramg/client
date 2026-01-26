@@ -193,7 +193,7 @@ export default function MyPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-gray-100 min-h-screen">
+    <div className="w-full max-w-md mx-auto bg-gray-100 min-h-screen font-['Pretendard']">
       <Header />
       <UserProfileSection />
 
@@ -210,7 +210,7 @@ export default function MyPage() {
 
         <SectionHeader title="이용안내-" />
         <ListItem title="이용 제한 내역-" href="/my-page/restrictions" />
-        <ListItem title="FAQ 및 문의하기-" href="/my-page/faq" />
+        <ListItem title="FAQ 및 문의하기" href="/my-page/faq" />
         <ListItem title="공지사항-" href="/my-page/notices" />
         <ListItem title="서비스 이용약관" href="/my-page/terms" />
         <ListItem title="개인정보 처리방침" href="/my-page/privacy" />

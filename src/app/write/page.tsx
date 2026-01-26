@@ -23,6 +23,7 @@ export default function WritePage() {
     const [hashtags, setHashtags] = useState('');
     const [link, setLink] = useState('');
     const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
@@ -95,13 +96,33 @@ export default function WritePage() {
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const newFiles = Array.from(event.target.files);
+            const newUrls = newFiles.map(file => URL.createObjectURL(file));
+            
             setImageFiles([...imageFiles, ...newFiles]);
+            setImagePreviewUrls([...imagePreviewUrls, ...newUrls]);
         }
     };
 
     const handleImageUploadClick = () => {
         fileInputRef.current?.click();
     };
+
+    const handleRemoveImage = (index: number) => {
+        // 메모리 누수 방지: Blob URL 해제
+        if (imagePreviewUrls[index]) {
+            URL.revokeObjectURL(imagePreviewUrls[index]);
+        }
+        
+        setImageFiles(imageFiles.filter((_, i) => i !== index));
+        setImagePreviewUrls(imagePreviewUrls.filter((_, i) => i !== index));
+    };
+
+    // 컴포넌트 언마운트 시 모든 Blob URL 정리
+    useEffect(() => {
+        return () => {
+            imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, [imagePreviewUrls]);
 
     // PostType 판단
     const isComposerTalkRoom = selectedType.includes('이야기');
@@ -435,13 +456,14 @@ export default function WritePage() {
                                     className="relative aspect-square bg-[#f4f5f7] rounded-[10px] overflow-hidden"
                                 >
                                     <Image 
-                                        src={URL.createObjectURL(file)} 
+                                        src={imagePreviewUrls[index]} 
                                         alt={`업로드된 이미지 ${index + 1}`}
                                         fill
+                                        unoptimized
                                         className="object-cover"
                                     />
                                     <button
-                                        onClick={() => setImageFiles(imageFiles.filter((_, i) => i !== index))}
+                                        onClick={() => handleRemoveImage(index)}
                                         className="absolute top-1 right-1 w-6 h-6 bg-black bg-opacity-50 rounded-full flex items-center justify-center text-white text-xs"
                                     >
                                         ×
