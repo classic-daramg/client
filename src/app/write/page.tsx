@@ -48,6 +48,9 @@ export default function WritePage() {
 
     const [selectedType, setSelectedType] = useState<string>(getSelectedType());
     const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+    
+    // 큐레이션 옵션 모드 ('{composer} 이야기'일 때만 사용)
+    const [curationMode, setCurationMode] = useState<'none' | 'curation' | null>(null);
 
     // draft-edit 데이터가 있으면 제목/내용에 자동 입력
     useEffect(() => {
@@ -62,6 +65,19 @@ export default function WritePage() {
             }
         }
     }, []);
+
+    // postType 변경 시 curationMode 초기화 로직
+    useEffect(() => {
+        const isComposerTalkPostType = selectedType.includes('이야기');
+        
+        if (isComposerTalkPostType) {
+            // {composer} 이야기로 변경되면 기본값 'none'으로 설정
+            setCurationMode('none');
+        } else {
+            // 다른 postType으로 변경되면 null로 초기화 (드롭다운 미표시)
+            setCurationMode(null);
+        }
+    }, [selectedType]);
 
     const handleSelectComposer = (composers: Array<{ id: number; name: string }>) => {
         setSelectedComposers(composers);
@@ -88,8 +104,11 @@ export default function WritePage() {
     };
 
     // PostType 판단
-    const isComposerTalkRoom = selectedType === '작곡가 이야기';
+    const isComposerTalkRoom = selectedType.includes('이야기');
     const isCurationPost = selectedType === '큐레이션 글';
+    
+    // 큐레이션 모드가 'curation'일 때만 큐레이션 포스트로 간주
+    const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
     
     const isButtonEnabled = title.trim() !== '' && content.trim() !== '' && selectedComposers.length > 0;
 
@@ -132,14 +151,14 @@ export default function WritePage() {
                 videoUrl?: string;
             }
 
-            const isCuration = isCurationPost || isComposerTalkRoom;
+            const isCuration = isCurationPost || isCurationWithComposer;
             const postData: CurationPostData | FreePostData = {
                 title: title,
                 content: content,
                 postStatus: 'PUBLISHED',
             };
 
-            // 큐레이션 글 또는 작곡가별 토크룸인 경우 작곡가 ID 추가
+            // 큐레이션 글 또는 {composer} 이야기이면서 curationMode가 'curation'일 때만 작곡가 ID 추가
             if (isCuration && selectedComposers.length > 0) {
                 (postData as CurationPostData).primaryComposerId = selectedComposers[0].id;
                 // 추가 작곡가가 있으면 추가
@@ -301,8 +320,25 @@ export default function WritePage() {
                     <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">{selectedType}</p>
                 </div>
 
-                {/* 작곡가 선택 (큐레이션 글 또는 {작곡가} 이야기일 때만 표시) */}
-                {(isCurationPost || isComposerTalkRoom) && (
+                {/* 큐레이션 옵션 드롭다운 ({composer} 이야기일 때만 렌더링) */}
+                {isComposerTalkRoom && curationMode !== null && (
+                    <>
+                        <SectionHeader title="큐레이션 옵션을 추가할까요?" />
+                        <div className="bg-white px-6 py-[18px] w-full">
+                            <select
+                                value={curationMode}
+                                onChange={(e) => setCurationMode(e.target.value as 'none' | 'curation')}
+                                className="w-full px-4 py-2.5 bg-[#f4f5f7] rounded-[10px] text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none border border-transparent"
+                            >
+                                <option value="none">{selectedType.replace(' 이야기', '')}</option>
+                                <option value="curation">{selectedType.replace(' 이야기', '')}의 큐레이션</option>
+                            </select>
+                        </div>
+                    </>
+                )}
+
+                {/* 작곡가 선택 (큐레이션 글 또는 {composer} 이야기이면서 curationMode가 'curation'일 때 표시) */}
+                {(isCurationPost || isCurationWithComposer) && (
                     <>
                         <SectionHeader title="작곡가 선택" />
                         <div className="w-full px-6 py-[18px] bg-white">
