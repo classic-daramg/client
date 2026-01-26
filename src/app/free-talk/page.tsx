@@ -24,7 +24,7 @@ export default async function FreeTalkPage({
         <SearchFilterBar />
         <PostList searchTerm={searchTerm} />
       </div>
-      <WriteButton board="free-talk" />
+      <WriteButton board="free" />
     </div>
   );
 }

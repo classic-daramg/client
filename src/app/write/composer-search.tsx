@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import apiClient from '@/lib/apiClient';
 
 interface Composer {
     id: number;
@@ -29,16 +30,8 @@ export default function ComposerSearch({
         const fetchComposers = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('https://classic-daramg.duckdns.org/composers', {
-                    credentials: 'include',
-                });
-                
-                if (!response.ok) {
-                    throw new Error('작곡가 목록을 불러올 수 없습니다.');
-                }
-                
-                const data = await response.json();
-                
+                const { data } = await apiClient.get('/composers');
+
                 // API 응답을 Composer 형식으로 변환
                 const formattedComposers = data.map((composer: any) => ({
                     id: composer.composerId,

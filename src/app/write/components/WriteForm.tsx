@@ -18,22 +18,21 @@ interface WriteFormProps {
     imageFile: File | null;
     setImageFile: (file: File | null) => void;
     selectedType: string;
-    setSelectedType: (type: string) => void;
     selectedComposer: string | null;
     setSelectedComposer: (composer: string | null) => void;
 }
 
 export default function WriteForm({
     title, setTitle, content, setContent, hashtags, setHashtags, link, setLink,
-    imageFile, setImageFile, selectedType, setSelectedType, selectedComposer, setSelectedComposer
+    imageFile, setImageFile, selectedType, selectedComposer, setSelectedComposer
 }: WriteFormProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const postTypes = ['큐레이션 글', '라흐마니노프 이야기'];
     const [showComposerSearch, setShowComposerSearch] = useState(true);
 
-    const handleSelectComposer = (composerName: string) => {
-        setSelectedComposer(composerName);
+    const handleSelectComposer = (composers: Array<{ id: number; name: string }>) => {
+        if (composers.length > 0) {
+            setSelectedComposer(composers[0].name);
+        }
         setShowComposerSearch(false);
     };
 
@@ -54,35 +53,8 @@ export default function WriteForm({
     return (
         <main>
             <SectionHeader title="게시글 유형" />
-            <div className="relative">
-                <button
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full self-stretch px-6 py-4 bg-white flex justify-between items-center gap-2 text-left"
-                >
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex items-center justify-center">
-                            <Image src="/icons/write-blue.svg" alt="post type" width={16} height={16} />
-                        </div>
-                        <p className="text-zinc-900 text-sm font-semibold">{selectedType}</p>
-                    </div>
-                    <Image src="/icons/back.svg" alt="dropdown" width={16} height={16} className={`transform transition-transform ${isDropdownOpen ? 'rotate-90' : '-rotate-90'}`} />
-                </button>
-                {isDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 bg-white border-x border-b rounded-b-lg shadow-lg z-20">
-                        {postTypes.map((type) => (
-                            <div
-                                key={type}
-                                onClick={() => {
-                                    setSelectedType(type);
-                                    setIsDropdownOpen(false);
-                                }}
-                                className="px-6 py-3 hover:bg-gray-100 cursor-pointer text-sm font-medium"
-                            >
-                                {type}
-                            </div>
-                        ))}
-                    </div>
-                )}
+            <div className="p-5 bg-white flex justify-between items-center">
+                <p className="font-semibold">{selectedType}</p>
             </div>
 
             {selectedType === '큐레이션 글' && (

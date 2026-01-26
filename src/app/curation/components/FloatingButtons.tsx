@@ -14,7 +14,7 @@ export default function FloatingButtons() {
       {/* 글쓰기 버튼 - 중앙 하단 */}
       <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-10">
         <button 
-          onClick={() => router.push('/write')}
+          onClick={() => router.push('/write?type=curation')}
           className="px-6 py-3 bg-blue-900 rounded-full shadow-lg flex items-center gap-1.5"
         >
           <Image src="/icons/write-white.svg" alt="글쓰기" width={24} height={24} />

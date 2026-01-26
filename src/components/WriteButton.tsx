@@ -8,10 +8,22 @@ interface WriteButtonProps {
 }
 
 export default function WriteButton({ board }: WriteButtonProps) {
+  // board 값에 따라 query parameter 결정
+  const getHref = () => {
+    switch (board) {
+      case 'free':
+        return '/write?type=free';
+      case 'curation':
+        return '/write?type=curation';
+      default:
+        return '/write';
+    }
+  };
+
   return (
     <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
       <Link 
-        href={`/write?board=${board}`}
+        href={getHref()}
         className="px-6 py-3 bg-[#293A92] hover:bg-[#1f2d7a] rounded-[100px] shadow-lg inline-flex justify-center items-center gap-1.5 transition-all duration-300 group"
       >
         <div className="w-6 h-6 relative">

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ComposerSearch from './composer-search';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
@@ -16,6 +16,7 @@ const SectionHeader = ({ title }: { title: string }) => (
 
 export default function WritePage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { accessToken, isAuthenticated } = useAuthStore();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -24,10 +25,29 @@ export default function WritePage() {
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [selectedType, setSelectedType] = useState('자유 글');
-    const postTypes = ['자유 글', '큐레이션 글'];
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
+    
+    // URL query parameter에서 postType 결정
+    const composerName = searchParams.get('composer');
+    const postTypeParam = searchParams.get('type'); // 'curation', 'free'
+    
+    // PostType 자동 설정
+    const getSelectedType = (): string => {
+        if (composerName) {
+            return `${composerName} 이야기`;
+        }
+        if (postTypeParam === 'curation') {
+            return '큐레이션 글';
+        }
+        if (postTypeParam === 'free') {
+            return '자유 글';
+        }
+        return '자유 글'; // 기본값
+    };
+
+    const [selectedType, setSelectedType] = useState<string>(getSelectedType());
+    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
 
     // draft-edit 데이터가 있으면 제목/내용에 자동 입력
     useEffect(() => {
@@ -45,6 +65,7 @@ export default function WritePage() {
 
     const handleSelectComposer = (composers: Array<{ id: number; name: string }>) => {
         setSelectedComposers(composers);
+        setShowComposerSearch(false);
     };
 
     const handleOpenComposerSearch = () => {
@@ -66,7 +87,11 @@ export default function WritePage() {
         fileInputRef.current?.click();
     };
 
-    const isButtonEnabled = title.trim() !== '' && content.trim() !== '' && (selectedType !== '큐레이션 글' || selectedComposers.length > 0);
+    // PostType 판단
+    const isComposerTalkRoom = selectedType === '작곡가 이야기';
+    const isCurationPost = selectedType === '큐레이션 글';
+    
+    const isButtonEnabled = title.trim() !== '' && content.trim() !== '' && selectedComposers.length > 0;
 
     const handleRegister = async () => {
         if (!isButtonEnabled) return;
@@ -107,14 +132,14 @@ export default function WritePage() {
                 videoUrl?: string;
             }
 
-            const isCuration = selectedType === '큐레이션 글';
+            const isCuration = isCurationPost || isComposerTalkRoom;
             const postData: CurationPostData | FreePostData = {
                 title: title,
                 content: content,
                 postStatus: 'PUBLISHED',
             };
 
-            // 큐레이션 글인 경우 작곡가 ID 추가
+            // 큐레이션 글 또는 작곡가별 토크룸인 경우 작곡가 ID 추가
             if (isCuration && selectedComposers.length > 0) {
                 (postData as CurationPostData).primaryComposerId = selectedComposers[0].id;
                 // 추가 작곡가가 있으면 추가
@@ -264,50 +289,20 @@ export default function WritePage() {
             <main>
                 {/* 게시글 유형 */}
                 <SectionHeader title="게시글 유형" />
-                <div className="relative bg-white">
-                    <button
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="w-full px-6 py-[18px] bg-white flex items-center gap-2"
-                    >
-                        <div className="w-3 h-3 flex-shrink-0">
-                            <Image 
-                                src="/icons/write-blue.svg" 
-                                alt="post type" 
-                                width={12} 
-                                height={12} 
-                            />
-                        </div>
-                        <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">{selectedType}</p>
-                        <div className={`w-4 h-4 flex-shrink-0 transform transition-transform ${isDropdownOpen ? '' : 'rotate-90'}`}>
-                            <Image 
-                                src="/icons/back.svg" 
-                                alt="dropdown" 
-                                width={16} 
-                                height={16} 
-                                className="rotate-[-90deg]"
-                            />
-                        </div>
-                    </button>
-                    {isDropdownOpen && (
-                        <div className="absolute top-full left-0 right-0 bg-white border-t border-[#f4f5f7] shadow-lg z-20">
-                            {postTypes.map((type) => (
-                                <div
-                                    key={type}
-                                    onClick={() => {
-                                        setSelectedType(type);
-                                        setIsDropdownOpen(false);
-                                    }}
-                                    className="px-6 py-[18px] hover:bg-[#f4f5f7] cursor-pointer text-sm font-semibold font-['Pretendard'] text-[#1a1a1a]"
-                                >
-                                    {type}
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                <div className="bg-white px-6 py-[18px] flex items-center gap-2">
+                    <div className="w-3 h-3 flex-shrink-0">
+                        <Image 
+                            src="/icons/write-blue.svg" 
+                            alt="post type" 
+                            width={12} 
+                            height={12} 
+                        />
+                    </div>
+                    <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">{selectedType}</p>
                 </div>
 
-                {/* 작곡가 선택 (큐레이션 글일 때만 표시) */}
-                {selectedType === '큐레이션 글' && (
+                {/* 작곡가 선택 (큐레이션 글 또는 {작곡가} 이야기일 때만 표시) */}
+                {(isCurationPost || isComposerTalkRoom) && (
                     <>
                         <SectionHeader title="작곡가 선택" />
                         <div className="w-full px-6 py-[18px] bg-white">
@@ -325,9 +320,6 @@ export default function WritePage() {
                                                 : `${selectedComposers[0].name} 외 ${selectedComposers.length - 1}명`
                                             : '작곡가명 검색'}
                                     </span>
-                                </button>
-                                <button className="w-[30px] h-[30px] flex items-center justify-center flex-shrink-0">
-                                    <Image src="/icons/search.svg" alt="search" width={30} height={30} />
                                 </button>
                             </div>
                         </div>
