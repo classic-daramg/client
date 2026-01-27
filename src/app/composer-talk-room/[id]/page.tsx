@@ -11,85 +11,21 @@ import { useComposerStore, type Composer } from '@/store/composerStore';
 // --- Type Definition for Post Data ---
 type Post = {
   id: number;
-  category: string;
   title: string;
   content: string;
-  tags: string[];
-  likes: number;
-  comments: number;
-  author: string;
-  timestamp: string;
-  imageUrl?: string | null;
+  hashtags: string[];
+  createdAt: string;
+  writerNickname: string;
+  likeCount: number;
+  commentCount: number;
+  thumbnailImageUrl?: string | null;
+  type: string;
+  isLiked: boolean;
+  isScrapped: boolean;
 };
 
-// --- Mock Data (for development before API connection) ---
-const mockPosts: Post[] = [
-  {
-    id: 5,
-    category: '자유글',
-    title: '라흐마니노프 피아노 협주곡 2번이 인생곡인 분?',
-    content: '오늘처럼 비 오는 날에 들으니 감성이 폭발하네요... 저만 그런가요? 이 곡에 얽힌 추억이 있다면 공유해주세요.',
-    tags: ['#라흐마니노프', '#피아노협주곡', '#클래식추천'],
-    likes: 28,
-    comments: 7,
-    author: '낭만피아노',
-    timestamp: '3분 전',
-    imageUrl: '/images/sample-album-cover.jpg',
-  },
-  {
-    id: 4,
-    category: '질문',
-    title: '라흐마니노프 교향곡 2번 3악장 연주 팁 좀 주세요!',
-    content: '아다지오 부분을 정말 아름답게 연주하고 싶은데, 감정 표현이 너무 어렵습니다. 선배님들의 조언을 구합니다.',
-    tags: ['#연주팁', '#교향곡2번', '#질문있어요'],
-    likes: 15,
-    comments: 5,
-    author: '열정클라리넷',
-    timestamp: '1시간 전',
-    imageUrl: null,
-  },
-  {
-    id: 3,
-    category: '정보',
-    title: '2025년 라흐마니노프 특별 연주회 정보',
-    content: '내년 3월 예술의전당에서 라흐마니노프 스페셜 갈라 콘서트가 열린다고 합니다. 티켓팅은 다음 주 월요일 오전 10시!',
-    tags: ['#연주회', '#정보공유', '#예술의전당'],
-    likes: 42,
-    comments: 11,
-    author: '클래식인포',
-    timestamp: '5시간 전',
-    imageUrl: '/images/sample-concert-hall.jpg',
-  },
-  {
-    id: 2,
-    category: '자유글',
-    title: '그의 손은 얼마나 컸을까?',
-    content: '라흐마니노프의 손이 엄청나게 커서 13도를 넘게 잡을 수 있었다는 얘기를 들었어요. 정말 대단하지 않나요?',
-    tags: ['#잡담', '#TMI'],
-    likes: 8,
-    comments: 2,
-    author: '호기심천국',
-    timestamp: '1일 전',
-    imageUrl: null,
-  },
-  {
-    id: 1,
-    category: '감상',
-    title: '보칼리제 들으면서 힐링 중',
-    content: '첼로 버전으로 듣고 있는데 마음이 편안해지네요. 여러분의 최애 보칼리제 연주자는 누구인가요?',
-    tags: ['#보칼리제', '#감상평', '#힐링'],
-    likes: 19,
-    comments: 6,
-    author: '첼로사랑',
-    timestamp: '2일 전',
-    imageUrl: '/images/sample-cello.jpg',
-  },
-];
 
 // --- Reusable Icon Components ---
-const CategoryIcon = () => (
-  <Image src="/icons/write.svg" alt="카테고리" width={12} height={12} />
-);
 const LikeIcon = () => (
   <Image src="/icons/heart.svg" alt="좋아요" width={15} height={15} />
 );
@@ -100,6 +36,18 @@ const CommentIcon = () => (
 // --- Helpers ---
 const formatTag = (tag: string) => (tag.length > 5 ? `${tag.slice(0, 4)}...` : tag);
 
+const getRelativeTime = (isoString: string): string => {
+  const date = new Date(isoString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return '방금 전';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}분 전`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}시간 전`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}일 전`;
+  return date.toLocaleDateString('ko-KR');
+};
+
 // --- Single Post Item Component ---
 function PostItem({ post }: { post: Post }) {
   return (
@@ -107,18 +55,14 @@ function PostItem({ post }: { post: Post }) {
       <div className="flex justify-between items-start gap-4">
         {/* Post Content */}
         <div className="flex flex-col gap-2 flex-1">
-          <div className="flex items-center gap-1 text-zinc-400 text-xs font-semibold">
-            <CategoryIcon />
-            <span>{post.category}</span>
-          </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-zinc-900 text-sm font-semibold">{post.title}</h2>
             <p className="text-neutral-500 text-xs font-medium line-clamp-2">{post.content}</p>
           </div>
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5">
-              {post.tags.map((tag) => (
-                <span key={tag} className="text-zinc-400 text-xs font-medium">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {post.hashtags.map((tag, idx) => (
+                <span key={`${tag}-${idx}`} className="text-zinc-400 text-xs font-medium">
                   {formatTag(tag)}
                 </span>
               ))}
@@ -126,25 +70,25 @@ function PostItem({ post }: { post: Post }) {
             <div className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
               <div className="flex items-center gap-0.3 text-blue-900">
                 <LikeIcon />
-                <span>{post.likes}</span>
+                <span>{post.likeCount}</span>
               </div>
               <div className="flex items-center gap-0.5 text-blue-900">
                 <CommentIcon />
-                <span>{post.comments}</span>
+                <span>{post.commentCount}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span>{post.timestamp}</span>
+                <span>{getRelativeTime(post.createdAt)}</span>
                 <div className="w-px h-2 bg-zinc-300"></div>
-                <span>{post.author}</span>
+                <span>{post.writerNickname}</span>
               </div>
             </div>
           </div>
         </div>
         {/* Post Image (conditionally rendered) */}
-        {post.imageUrl && (
+        {post.thumbnailImageUrl && (
           <div className="w-24 h-24 flex-shrink-0">
             <Image
-              src={post.imageUrl}
+              src={post.thumbnailImageUrl}
               alt="Post image"
               width={96}
               height={96}
@@ -166,33 +110,61 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { selectedComposer, selectComposer } = useComposerStore();
 
-  // params 처리 및 작곡가 데이터 가져오기
+  // params 처리 및 작곡가 데이터 + 포스트 가져오기
   useEffect(() => {
     params.then(async ({ id: composerId }) => {
       setId(composerId);
-      
-      // API에서 작곡가 데이터 가져오기
+      setLoading(true);
+
+      // API에서 작곡가 정보 + 포스트 목록 함께 가져오기
       try {
-        const response = await fetch('https://classic-daramg.duckdns.org/composers');
-        if (response.ok) {
-          const composers: Composer[] = await response.json();
-          const composer = composers.find((c) => c.composerId === Number(composerId));
-          if (composer) {
-            selectComposer(composer);
+        const response = await fetch(
+          `https://classic-daramg.duckdns.org/composers/${composerId}/posts`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
           }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // 작곡가 정보 저장
+          if (data.composer) {
+            selectComposer(data.composer);
+          }
+
+          // 포스트 목록 저장
+          if (data.posts && data.posts.content) {
+            const formattedPosts: Post[] = data.posts.content.map((post: any) => ({
+              id: post.id,
+              title: post.title,
+              content: post.content,
+              hashtags: post.hashtags || [],
+              createdAt: post.createdAt,
+              writerNickname: post.writerNickname,
+              likeCount: post.likeCount,
+              commentCount: post.commentCount,
+              thumbnailImageUrl: post.thumbnailImageUrl,
+              type: post.type,
+              isLiked: post.isLiked || false,
+              isScrapped: post.isScrapped || false,
+            }));
+            setPosts(formattedPosts);
+            console.log('✅ Composer posts loaded:', formattedPosts);
+          }
+        } else {
+          console.error(`Failed to fetch composer posts: ${response.status}`);
         }
       } catch (error) {
         console.error('Failed to fetch composer data:', error);
+      } finally {
+        setLoading(false);
       }
     });
   }, [params, selectComposer]);
-
-
-  // mock 데이터로 초기화 (API 연결 전용)
-  useEffect(() => {
-    setPosts(mockPosts);
-    setLoading(false);
-  }, [id]);
 
   // 필터 제거 핸들러
   const handleRemoveFilter = (filterId: string) => {
@@ -212,8 +184,8 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
   // 필터링된 게시글
   const filteredPosts = selectedCategory
     ? posts.filter(post => {
-        if (selectedCategory === 'rachmaninoff') return post.category === '자유글';
-        if (selectedCategory === 'curation') return post.category === '큐레이션글';
+        if (selectedCategory === 'rachmaninoff') return post.type === 'STORY';
+        if (selectedCategory === 'curation') return post.type === 'CURATION';
         return true;
       })
     : posts;
