@@ -6,15 +6,26 @@ import { ReportModal } from './report-modal';
 interface ReportButtonProps {
   postId: string;
   composerId: string;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
-export function ReportButton({ postId, composerId }: ReportButtonProps) {
+export function ReportButton({ postId, composerId, onOpenChange }: ReportButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+    onOpenChange?.(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    onOpenChange?.(false);
+  };
 
   return (
     <>
       <button
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleOpenModal}
         className="p-1 hover:bg-gray-100 rounded-full transition-colors"
         aria-label="신고하기"
       >
@@ -25,11 +36,11 @@ export function ReportButton({ postId, composerId }: ReportButtonProps) {
           />
         </svg>
       </button>
-      
+
       {isModalOpen && (
         <ReportModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={handleCloseModal}
           postId={postId}
           composerId={composerId}
         />

@@ -7,7 +7,6 @@ import CommentList from './comment-list';
 import CommentInput from './comment-input';
 import { ReportButton } from './report-button';
 import { useState, useEffect } from 'react';
-import LikeButton from '@/components/LikeButton';
 import ScrapButton from '@/components/ScrapButton';
 import { useAuthStore } from '@/store/authStore';
 import { useUserProfileStore } from '@/store/userProfileStore';
@@ -82,6 +81,8 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     replyToAuthor: string;
   } | undefined>(undefined);
   const [showCommentInput, setShowCommentInput] = useState(true);
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
 
   // 상대 시간 포맷팅
   const getRelativeTime = (isoString: string): string => {
@@ -94,6 +95,48 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}시간 전`;
     if (seconds < 604800) return `${Math.floor(seconds / 86400)}일 전`;
     return date.toLocaleDateString('ko-KR');
+  };
+
+  // 포스트 좋아요 토글
+  const handleToggleLike = async () => {
+    // 이전 상태 저장 (롤백용)
+    const previousLiked = liked;
+    const previousCount = likesCount;
+
+    // 낙관적 UI 업데이트 (즉시 피드백)
+    setLiked(!liked);
+    setLikesCount(c => liked ? c - 1 : c + 1);
+
+    try {
+      const res = await fetch(`${API_BASE}/posts/${postId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('좋아요 토글 실패');
+      }
+
+      const data = await res.json();
+
+      // 서버 상태와 동기화
+      if (data && typeof data.isLiked === 'boolean') {
+        setLiked(data.isLiked);
+        setLikesCount(data.likeCount);
+        setPost(p => p ? { ...p, isLiked: data.isLiked, likeCount: data.likeCount } : p);
+      }
+    } catch (error) {
+      console.error('Like toggle error:', error);
+
+      // 실패 시 롤백
+      setLiked(previousLiked);
+      setLikesCount(previousCount);
+
+      alert('좋아요 처리에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   // API 댓글을 CommentData로 변환
@@ -131,6 +174,8 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
         if (res.ok) {
           const data = await res.json();
           setPost(data);
+          setLikesCount(data.likeCount);
+          setLiked(data.isLiked || false);
 
           // 댓글 변환 및 저장
           if (data.comments && Array.isArray(data.comments)) {
@@ -229,6 +274,13 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
       }
       alert('댓글 전송에 실패했습니다. 다시 시도해주세요.');
     }
+  };
+
+  const handleCommentLikeChange = (commentId: number, isLiked: boolean, likeCount: number) => {
+    // 댓글 좋아요 변경 시 comments 배열 업데이트
+    setComments(prev => prev.map(c =>
+      c.id === commentId ? { ...c, isHeartSelected: isLiked, likeCount } : c
+    ));
   };
 
   const handleCommentDelete = (commentId: number) => {
@@ -358,11 +410,13 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
             <div className="flex justify-between items-center">
                 <div className="flex gap-3">
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                      <LikeButton defaultSelected={post.isLiked || false} size={30} />
+                    <button onClick={handleToggleLike} className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-700" aria-pressed={liked}>
+                      <div className="flex items-center justify-center">
+                        <Image src={liked ? '/icons/heart_selected.svg' : '/icons/heart_image.svg'} alt="좋아요" width={20} height={20} />
+                      </div>
                       <span>좋아요</span>
-                      <span>{post.likeCount}</span>
-                    </div>
+                      <span>{likesCount}</span>
+                    </button>
                     <div className="flex items-center gap-1.5 text-xs text-zinc-500">
                       <ScrapButton defaultSelected={post.isScrapped || false} size={24} />
                       <span>스크랩</span>
@@ -384,7 +438,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           onReply={handleReply}
           onReportOpen={handleReportOpen}
           onReportClose={handleReportClose}
-          onDelete={handleCommentDelete}
+          onLikeChange={handleCommentLikeChange}
         />
       </div>
 

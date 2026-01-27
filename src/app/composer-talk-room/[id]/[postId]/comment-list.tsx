@@ -1,31 +1,21 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import CommentItem from './comment-item';
-// Comment type definition
-type Comment = {
-  id: number;
-  author: string;
-  timestamp: string;
-  content: string;
-  isHeartSelected: boolean;
-  isReply: boolean;
-};
-
+import CommentItem, { CommentData } from './comment-item';
 
 const COMMENTS_PER_PAGE = 5;
 
 interface CommentListProps {
   composerId?: string;
-  initialComments: Comment[];
-  onAddComment?: (content: string, isReply?: boolean, replyToId?: number) => void;
+  initialComments: CommentData[];
   onReply?: (commentId: number, author: string) => void;
   onReportOpen?: () => void;
   onReportClose?: () => void;
+  onLikeChange?: (commentId: number, isLiked: boolean, likeCount: number) => void;
 }
 
-export default function CommentList({ composerId, initialComments, onReply, onReportOpen, onReportClose }: CommentListProps) {
-  const [comments, setComments] = useState<Comment[]>(initialComments.slice(0, COMMENTS_PER_PAGE));
+export default function CommentList({ composerId, initialComments, onReply, onReportOpen, onReportClose, onLikeChange }: CommentListProps) {
+  const [comments, setComments] = useState<CommentData[]>(initialComments.slice(0, COMMENTS_PER_PAGE));
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialComments.length > COMMENTS_PER_PAGE);
   const loader = useRef(null);
@@ -78,14 +68,14 @@ export default function CommentList({ composerId, initialComments, onReply, onRe
   return (
     <>
       {comments.map((comment) => (
-        <CommentItem 
-          key={comment.id} 
-          comment={comment} 
-          isReply={comment.isReply} 
+        <CommentItem
+          key={comment.id}
+          comment={comment}
           composerId={composerId}
           onReply={onReply}
           onReportOpen={onReportOpen}
           onReportClose={onReportClose}
+          onLikeChange={onLikeChange}
         />
       ))}
       {hasMore && (
