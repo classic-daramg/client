@@ -131,7 +131,11 @@ export default function WritePage() {
     // 큐레이션 모드가 'curation'일 때만 큐레이션 포스트로 간주
     const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
     
-    const isButtonEnabled = title.trim() !== '' && content.trim() !== '' && selectedComposers.length > 0;
+    // 작곡가 선택 필수 여부 (큐레이션 글 또는 {composer}이야기 + 큐레이션 모드)
+    const composerSelectionRequired = isCurationPost || isCurationWithComposer;
+    
+    const isButtonEnabled = title.trim() !== '' && content.trim() !== '' && 
+        (composerSelectionRequired ? selectedComposers.length > 0 : true);
 
     const handleRegister = async () => {
         if (!isButtonEnabled) return;
