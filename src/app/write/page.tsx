@@ -287,17 +287,129 @@ export default function WritePage() {
         }
     };
 
-    const handleSaveDraft = () => {
-        const draft = {
-            postType: selectedType,
-            composers: selectedComposers,
-            title,
-            content,
-            hashtags,
-            link,
-        };
-        localStorage.setItem('draft-edit', JSON.stringify(draft));
-        alert('임시저장 되었습니다.');
+    const handleSaveDraft = async () => {
+        // 로그인 확인
+        if (!isAuthenticated()) {
+            alert('로그인이 필요합니다.');
+            router.push('/loginpage');
+            return;
+        }
+
+        try {
+            // 해시태그를 배열로 변환 (쉼표 또는 공백으로 구분)
+            const hashtagArray = hashtags
+                .trim()
+                .split(/[,\s]+/)
+                .filter(tag => tag.length > 0)
+                .map(tag => tag.startsWith('#') ? tag.slice(1) : tag);
+
+            // #draft 태그 자동 추가
+            if (!hashtagArray.includes('draft')) {
+                hashtagArray.push('draft');
+            }
+
+            // 포스트 타입에 따라 데이터 구성
+            interface DraftPostData {
+                title: string;
+                content: string;
+                postStatus: string;
+                primaryComposerId?: number;
+                additionalComposerIds?: number[];
+                images?: string[];
+                hashtags?: string[];
+                videoUrl?: string;
+            }
+
+            const isCuration = isCurationPost || isCurationWithComposer;
+            const draftData: DraftPostData = {
+                title: title,
+                content: content,
+                postStatus: 'DRAFT',
+            };
+
+            // 큐레이션 글 또는 {composer} 이야기이면서 curationMode가 'curation'일 때만 작곡가 ID 추가
+            if (isCuration && selectedComposers.length > 0) {
+                draftData.primaryComposerId = selectedComposers[0].id;
+                // 추가 작곡가가 있으면 추가
+                if (selectedComposers.length > 1) {
+                    draftData.additionalComposerIds = selectedComposers.slice(1).map(c => c.id);
+                }
+            }
+
+            // 이미지가 있으면 먼저 S3에 업로드
+            if (imageFiles.length > 0) {
+                try {
+                    // FormData 생성
+                    const formData = new FormData();
+                    imageFiles.forEach(file => {
+                        formData.append('images', file);
+                    });
+
+                    // Axios로 이미지 업로드 (자동으로 토큰 포함됨)
+                    const uploadRes = await apiClient.post('/images/upload', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+
+                    // S3 URL 배열을 draftData에 추가
+                    draftData.images = uploadRes.data.imageUrls;
+                } catch (error) {
+                    console.error('Image upload error:', error);
+                    alert('이미지 업로드에 실패했습니다.');
+                    return;
+                }
+            }
+
+            // 해시태그가 있으면 추가
+            if (hashtagArray.length > 0) {
+                draftData.hashtags = hashtagArray;
+            }
+
+            // 비디오/링크가 있으면 추가
+            if (link && link.trim()) {
+                draftData.videoUrl = link;
+            }
+
+            // API 엔드포인트 결정
+            const apiEndpoint = isCuration
+                ? '/posts/curation'
+                : '/posts/free';
+
+            console.log('--- Draft Data to be Sent ---');
+            console.log(JSON.stringify(draftData, null, 2));
+            console.log('--------------------------');
+
+            // Axios를 사용하여 POST 요청 (자동으로 토큰 포함 및 401 에러 처리)
+            const response = await apiClient.post(apiEndpoint, draftData);
+
+            if (response.status === 200 || response.status === 201) {
+                console.log('Draft created successfully:', response.data);
+
+                // localStorage에도 저장 (빠른 편집용)
+                const localDraft = {
+                    postType: selectedType,
+                    composers: selectedComposers,
+                    title,
+                    content,
+                    hashtags,
+                    link,
+                };
+                localStorage.setItem('draft-edit', JSON.stringify(localDraft));
+
+                alert('임시저장 되었습니다.');
+            }
+        } catch (error: any) {
+            console.error('Draft save error:', error);
+
+            if (error.response?.status === 400) {
+                alert('잘못된 요청입니다. 입력 내용을 확인해주세요.');
+            } else if (error.response?.status === 401) {
+                alert('로그인이 필요합니다.');
+            } else {
+                alert('임시저장에 실패했습니다.');
+            }
+        }
     };
 
     return (

@@ -83,6 +83,8 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const [showCommentInput, setShowCommentInput] = useState(true);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [scrapped, setScrapped] = useState(false);
+  const [scrapsCount, setScrapsCount] = useState(0);
 
   // 상대 시간 포맷팅
   const getRelativeTime = (isoString: string): string => {
@@ -139,6 +141,48 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     }
   };
 
+  // 포스트 스크랩 토글
+  const handleToggleScrap = async (isNowScrapped: boolean) => {
+    // 이전 상태 저장 (롤백용)
+    const previousScrapped = scrapped;
+    const previousCount = scrapsCount;
+
+    // 낙관적 UI 업데이트 (즉시 피드백)
+    setScrapped(isNowScrapped);
+    setScrapsCount(c => isNowScrapped ? c + 1 : Math.max(0, c - 1));
+
+    try {
+      const res = await fetch(`${API_BASE}/posts/${postId}/scrap`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('스크랩 토글 실패');
+      }
+
+      const data = await res.json();
+
+      // 서버 상태와 동기화
+      if (data && typeof data.isScrapped === 'boolean') {
+        setScrapped(data.isScrapped);
+        setScrapsCount(data.scrapCount || 0);
+        setPost(p => p ? { ...p, isScrapped: data.isScrapped, scrapCount: data.scrapCount } : p);
+      }
+    } catch (error) {
+      console.error('Scrap toggle error:', error);
+
+      // 실패 시 롤백
+      setScrapped(previousScrapped);
+      setScrapsCount(previousCount);
+
+      alert('스크랩 처리에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
   // API 댓글을 CommentData로 변환
   const transformComments = (apiCommentList: any[]): CommentData[] => {
     return apiCommentList.map((comment: any) => ({
@@ -176,6 +220,9 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           setPost(data);
           setLikesCount(data.likeCount);
           setLiked(data.isLiked || false);
+          setScrapped(data.isScrapped || false);
+          setScrapsCount(data.scrapCount || 0);
+
 
           // 댓글 변환 및 저장
           if (data.comments && Array.isArray(data.comments)) {
@@ -184,8 +231,6 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           } else {
             setComments([]);
           }
-
-          console.log('✅ Composer post loaded:', data);
         } else {
           console.error(`Failed to fetch post: ${res.status}`);
         }
@@ -259,7 +304,6 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           if (updatedPost.comments && Array.isArray(updatedPost.comments)) {
             const apiComments = transformComments(updatedPost.comments);
             setComments(apiComments);
-            console.log('✅ Comments updated from API');
           }
         }
       } catch (refreshError) {
@@ -302,7 +346,6 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           if (updatedPost.comments && Array.isArray(updatedPost.comments)) {
             const apiComments = transformComments(updatedPost.comments);
             setComments(apiComments);
-            console.log('✅ Comments updated after deletion');
           }
         }
       } catch (error) {
@@ -418,9 +461,9 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
                       <span>{likesCount}</span>
                     </button>
                     <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                      <ScrapButton defaultSelected={post.isScrapped || false} size={24} />
+                      <ScrapButton defaultSelected={scrapped} onToggle={handleToggleScrap} size={24} />
                       <span>스크랩</span>
-                      <span>0</span>
+                      <span>{scrapsCount}</span>
                     </div>
                 </div>
                 <button>

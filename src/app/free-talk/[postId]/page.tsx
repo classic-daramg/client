@@ -42,6 +42,7 @@ interface FreeTalkPost {
   primaryComposer: string | null;
   additionalComposers: string[] | null;
   isLiked?: boolean;
+  isScrapped?: boolean;
   comments?: ApiComment[]; // API에서 받은 댓글 데이터
 }
 
@@ -190,6 +191,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
     if (post) {
       setLikesCount(post.likeCount);
       setLiked(post.isLiked || false);
+      setBookmarked(post.isScrapped || false);
 
       // API에서 받은 댓글이 있으면 사용, 없으면 빈 배열
       if (post.comments && Array.isArray(post.comments)) {
@@ -241,9 +243,40 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
     }
   };
 
-  const handleToggleBookmark = () => {
-    setBookmarked(prev => !prev);
-    // TODO: backend sync
+  const handleToggleBookmark = async () => {
+    // Save previous state for rollback
+    const previousBookmarked = bookmarked;
+
+    // Optimistic UI update (immediate feedback)
+    setBookmarked(!bookmarked);
+
+    try {
+      const res = await fetch(`${API_BASE}/posts/${postId}/scrap`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('스크랩 토글 실패');
+      }
+
+      const data = await res.json();
+
+      // Sync with actual server state
+      if (data && typeof data.isScrapped === 'boolean') {
+        setBookmarked(data.isScrapped);
+      }
+    } catch (error) {
+      console.error('Scrap toggle error:', error);
+
+      // Rollback on failure
+      setBookmarked(previousBookmarked);
+
+      alert('스크랩 처리에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleCommentLikeChange = (commentId: number, isLiked: boolean, likeCount: number) => {

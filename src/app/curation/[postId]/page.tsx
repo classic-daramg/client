@@ -14,6 +14,7 @@ interface PostData {
   author: string;
   profileImage: string;
   isLiked: boolean;
+  isScrapped?: boolean;
   timestamp: string;
   category: string;
   postType: string;
@@ -46,6 +47,7 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
   const [mockPostData, setMockPostData] = useState<PostData | null>(null);
   const [likeCount, setLikeCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [isScrapped, setIsScrapped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [replyMode, setReplyMode] = useState<{
@@ -72,6 +74,7 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
           author: data.writerNickname || 'Unknown',
           profileImage: data.writerProfileImage || '/icons/DefaultImage.svg',
           isLiked: Boolean(data.isLiked),
+          isScrapped: Boolean(data.isScrapped),
           timestamp: formatDateTime(data.createdAt),
           category: '큐레이션글',
           postType: '큐레이션',
@@ -86,6 +89,7 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
         setMockPostData(formattedData);
         setLikeCount(formattedData.likes);
         setIsLiked(formattedData.isLiked);
+        setIsScrapped(formattedData.isScrapped || false);
         
         // 댓글 데이터는 포스트 응답에 포함되어 있음
         const formattedComments = data.comments?.map((comment: any) => ({
@@ -199,6 +203,42 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
     }, 350);
   };
 
+  const handleToggleScrap = async () => {
+    // Save previous state for rollback
+    const previousScrapped = isScrapped;
+
+    // Optimistic UI update (immediate feedback)
+    setIsScrapped(!isScrapped);
+
+    try {
+      const res = await fetch(`https://classic-daramg.duckdns.org/posts/${postId}/scrap`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('스크랩 토글 실패');
+      }
+
+      const data = await res.json();
+
+      // Sync with actual server state
+      if (data && typeof data.isScrapped === 'boolean') {
+        setIsScrapped(data.isScrapped);
+      }
+    } catch (error) {
+      console.error('Scrap toggle error:', error);
+
+      // Rollback on failure
+      setIsScrapped(previousScrapped);
+
+      alert('스크랩 처리에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
   const handleReportOpen = () => {
     setShowCommentInput(false);
   };
@@ -310,8 +350,16 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
                 />
                 <span>{likeCount}</span>
               </button>
-              <button className="flex items-center gap-1.5 font-medium text-xs text-[#a6a6a6]">
-                <Image src="/icons/bookmark_gray.svg" alt="스크랩" width={24} height={24} />
+              <button
+                onClick={handleToggleScrap}
+                className="flex items-center gap-1.5 font-medium text-xs text-[#a6a6a6]"
+              >
+                <Image
+                  src={isScrapped ? '/icons/bookmark-on.svg' : '/icons/bookmark_gray.svg'}
+                  alt="스크랩"
+                  width={24}
+                  height={24}
+                />
                 <span>스크랩</span>
               </button>
             </div>

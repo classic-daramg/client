@@ -1,17 +1,58 @@
 
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useUserProfileStore } from "@/store/userProfileStore";
+import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
+
+const API_BASE = 'https://classic-daramg.duckdns.org';
 
 export default function EditProfilePage() {
 	const { profile, updateProfile, setProfileImage, resetToDefaultImage, getProfileImage } = useUserProfileStore();
+	const { accessToken } = useAuthStore();
 	const [nickname, setNickname] = useState(profile?.nickname || "");
 	const [bio, setBio] = useState(profile?.bio || "");
 
 		const [saving, setSaving] = useState(false);
 		const [showPhotoPopup, setShowPhotoPopup] = useState(false);
 		const fileInputRef = useRef<HTMLInputElement>(null);
+		const [saveMessage, setSaveMessage] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+	// 프로필 데이터 로드
+	useEffect(() => {
+		const loadProfile = async () => {
+			try {
+				const headers: Record<string, string> = {
+					'Content-Type': 'application/json',
+				};
+
+				if (accessToken) {
+					headers['Authorization'] = `Bearer ${accessToken}`;
+				}
+
+				const res = await fetch(`${API_BASE}/users`, {
+					method: 'GET',
+					headers,
+					credentials: 'include',
+				});
+
+				if (res.ok) {
+					const data = await res.json();
+					setNickname(data.nickname || "");
+					setBio(data.bio || "");
+					if (data.profileImage) {
+						setProfileImage(data.profileImage);
+					}
+				} else {
+					console.error('Failed to load profile:', res.status);
+				}
+			} catch (error) {
+				console.error('Failed to load profile:', error);
+			}
+		};
+
+		loadProfile();
+	}, [accessToken, setProfileImage]);
 
 	// 색상 팔레트: DefaultImage.svg의 연한 회색(#F4F5F7), 진한 파랑(#293A92), 흰색, 연회색(#E5E7EB)
 	const mainBg = "#F4F5F7";
@@ -67,10 +108,57 @@ export default function EditProfilePage() {
 			setShowPhotoPopup(false);
 		};
 
-	const handleSave = () => {
+	const handleSave = async () => {
 		setSaving(true);
-		updateProfile({ nickname, bio });
-		setTimeout(() => setSaving(false), 800);
+		setSaveMessage(null);
+		try {
+			const headers: Record<string, string> = {
+				'Content-Type': 'application/json',
+			};
+
+			if (accessToken) {
+				headers['Authorization'] = `Bearer ${accessToken}`;
+			}
+
+			const res = await fetch(`${API_BASE}/users/profile`, {
+				method: 'PUT',
+				headers,
+				credentials: 'include',
+				body: JSON.stringify({
+					nickname: nickname,
+					bio: bio,
+					profileImageUrl: getProfileImage() !== '/icons/DefaultImage.svg' ? getProfileImage() : null,
+				}),
+			});
+
+			if (!res.ok) {
+				const errorData = await res.text();
+				console.error('Profile save error:', errorData);
+				setSaveMessage({
+					message: '프로필 저장에 실패했습니다. 다시 시도해주세요.',
+					type: 'error'
+				});
+				return;
+			}
+
+			// 로컬 상태 업데이트
+			updateProfile({ nickname, bio });
+			setSaveMessage({
+				message: '프로필이 성공적으로 저장되었습니다.',
+				type: 'success'
+			});
+
+			// 3초 후 메시지 숨기기
+			setTimeout(() => setSaveMessage(null), 3000);
+		} catch (error) {
+			console.error('Profile save error:', error);
+			setSaveMessage({
+				message: '프로필 저장에 실패했습니다. 다시 시도해주세요.',
+				type: 'error'
+			});
+		} finally {
+			setSaving(false);
+		}
 	};
 
 	return (
@@ -176,6 +264,13 @@ export default function EditProfilePage() {
 					</div>
 				</div>
 			</div>
+			{saveMessage && (
+				<div className={`fixed bottom-5 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg text-white font-semibold text-sm max-w-[300px] z-50 ${
+					saveMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+				}`}>
+					{saveMessage.message}
+				</div>
+			)}
 		</div>
 	);
 }

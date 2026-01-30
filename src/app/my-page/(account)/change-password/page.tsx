@@ -1,6 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useAuthStore } from '@/store/authStore';
+
+const API_BASE = 'https://classic-daramg.duckdns.org';
 
 function Popup({ message, onClose }: { message: string; onClose: () => void }) {
 	return (
@@ -14,57 +17,148 @@ function Popup({ message, onClose }: { message: string; onClose: () => void }) {
 }
 
 export default function ChangePassword() {
+	const { accessToken } = useAuthStore();
+
 	// 상태 관리
 	const [step, setStep] = useState<'current'|'new'|'confirm'|'done'>('current');
+	const [userEmail, setUserEmail] = useState('');
 	const [currentPw, setCurrentPw] = useState('');
 	const [newPw, setNewPw] = useState('');
 	const [confirmPw, setConfirmPw] = useState('');
 	const [message, setMessage] = useState('');
 	const [popup, setPopup] = useState<string|null>(null);
+	const [isLoading, setIsLoading] = useState(false);
 
-	// 임시 백엔드 함수
-	const fakeServerCheckCurrentPw = async (pw: string) => {
-		// 실제로는 서버에서 현재 비밀번호 확인
-		return pw === 'QWER1234';
-	};
-	const fakeServerCheckNewPw = async (pw: string) => {
+	// 초기 로드: 사용자 이메일 불러오기
+	useEffect(() => {
+		const loadUserEmail = async () => {
+			try {
+				const headers: Record<string, string> = {
+					'Content-Type': 'application/json',
+				};
+
+				if (accessToken) {
+					headers['Authorization'] = `Bearer ${accessToken}`;
+				}
+
+				const res = await fetch(`${API_BASE}/users`, {
+					method: 'GET',
+					headers,
+					credentials: 'include',
+				});
+
+				if (res.ok) {
+					const data = await res.json();
+					if (data.email) {
+						setUserEmail(data.email);
+					}
+				} else {
+					console.error('Failed to load user email:', res.status);
+				}
+			} catch (error) {
+				console.error('Failed to load user email:', error);
+			}
+		};
+
+		loadUserEmail();
+	}, [accessToken]);
+
+	// 비밀번호 유효성 검증
+	const validatePassword = (pw: string): boolean => {
 		// 비밀번호 규칙: 8자 이상, 영문+숫자
-		if (!/^.*(?=.{8,})(?=.*\d)(?=.*[a-zA-Z]).*$/.test(pw)) return false;
-		// 예시: 사용할 수 없는 비밀번호
-		if (pw === 'abcdefg') return false;
-		return true;
-	};
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const fakeServerChangePw = async (pw: string) => {
-		// 실제로는 서버에 비밀번호 변경 요청
-		return true;
+		return /^.*(?=.{8,})(?=.*\d)(?=.*[a-zA-Z]).*$/.test(pw);
 	};
 
 	// 이벤트 핸들러
 	const handleCheckCurrentPw = async () => {
-		if (await fakeServerCheckCurrentPw(currentPw)) {
-			setMessage('기존 비밀번호와 일치합니다');
-			setStep('new');
-		} else {
-			setMessage('기존 비밀번호와 일치하지 않습니다');
+		if (!userEmail) {
+			setMessage('사용자 정보를 로드할 수 없습니다');
+			return;
+		}
+
+		setIsLoading(true);
+		try {
+			const headers: Record<string, string> = {
+				'Content-Type': 'application/json',
+			};
+
+			const res = await fetch(`${API_BASE}/auth/login`, {
+				method: 'POST',
+				headers,
+				credentials: 'include',
+				body: JSON.stringify({
+					email: userEmail,
+					password: currentPw,
+				}),
+			});
+
+			if (res.ok) {
+				setMessage('기존 비밀번호와 일치합니다');
+				setStep('new');
+			} else {
+				setMessage('기존 비밀번호와 일치하지 않습니다');
+			}
+		} catch (error) {
+			console.error('Password check error:', error);
+			setMessage('비밀번호 확인 중 오류가 발생했습니다');
+		} finally {
+			setIsLoading(false);
 		}
 	};
+
 	const handleCheckNewPw = async () => {
-		if (await fakeServerCheckNewPw(newPw)) {
+		if (validatePassword(newPw)) {
 			setMessage('사용 가능한 비밀번호입니다');
 			setStep('confirm');
 		} else {
-			setMessage('사용할 수 없는 비밀번호입니다');
+			setMessage('사용할 수 없는 비밀번호입니다 (8자 이상, 영문+숫자 필수)');
 		}
 	};
+
 	const handleCheckConfirmPw = async () => {
-		if (newPw === confirmPw) {
-			await fakeServerChangePw(newPw);
-			setMessage('입력한 비밀번호가 일치합니다');
-			setStep('done');
-			setPopup('비밀번호가 성공적으로 변경되었습니다.');
-		} else {
+		if (newPw !== confirmPw) {
 			setMessage('입력한 비밀번호가 일치하지 않습니다');
+			return;
+		}
+
+		setIsLoading(true);
+		try {
+			const headers: Record<string, string> = {
+				'Content-Type': 'application/json',
+			};
+
+			if (accessToken) {
+				headers['Authorization'] = `Bearer ${accessToken}`;
+			}
+
+			const res = await fetch(`${API_BASE}/auth/password-reset`, {
+				method: 'PUT',
+				headers,
+				credentials: 'include',
+				body: JSON.stringify({
+					email: userEmail,
+					password: newPw,
+				}),
+			});
+
+			if (res.ok) {
+				setMessage('입력한 비밀번호가 일치합니다');
+				setStep('done');
+				setPopup('비밀번호가 성공적으로 변경되었습니다.');
+				// 상태 초기화
+				setCurrentPw('');
+				setNewPw('');
+				setConfirmPw('');
+			} else {
+				const errorData = await res.text();
+				console.error('Password change error:', errorData);
+				setMessage('비밀번호 변경에 실패했습니다');
+			}
+		} catch (error) {
+			console.error('Password change error:', error);
+			setMessage('비밀번호 변경 중 오류가 발생했습니다');
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -93,13 +187,13 @@ export default function ChangePassword() {
 							placeholder="기존 비밀번호를 입력해주세요"
 							value={currentPw}
 							onChange={e => setCurrentPw(e.target.value)}
-							disabled={step !== 'current'}
+							disabled={step !== 'current' || isLoading}
 						/>
 						<button
-							className={`rounded-[6px] px-[14px] py-[10px] text-[12px] font-medium min-w-[94px] border-none cursor-pointer ${isCurrentPwValid && step === 'current' ? 'bg-blue-900 text-white' : 'bg-[#f4f5f7] text-[#a6a6a6]'}`}
+							className={`rounded-[6px] px-[14px] py-[10px] text-[12px] font-medium min-w-[94px] border-none cursor-pointer ${isCurrentPwValid && step === 'current' && !isLoading ? 'bg-blue-900 text-white' : 'bg-[#f4f5f7] text-[#a6a6a6]'}`}
 							onClick={handleCheckCurrentPw}
-							disabled={!isCurrentPwValid || step !== 'current'}
-						>확인</button>
+							disabled={!isCurrentPwValid || step !== 'current' || isLoading}
+						>{isLoading ? '확인 중...' : '확인'}</button>
 					</div>
 					{/* 새 비밀번호 입력 */}
 					<div className="flex gap-[10px] items-end mb-[6px]">
@@ -109,12 +203,12 @@ export default function ChangePassword() {
 							placeholder="새로운 비밀번호를 입력해주세요"
 							value={newPw}
 							onChange={e => setNewPw(e.target.value)}
-							disabled={step !== 'new'}
+							disabled={step !== 'new' || isLoading}
 						/>
 						<button
-							className={`rounded-[6px] px-[14px] py-[10px] text-[12px] font-medium min-w-[94px] border-none cursor-pointer ${isNewPwValid && step === 'new' ? 'bg-blue-900 text-white' : 'bg-[#f4f5f7] text-[#a6a6a6]'}`}
+							className={`rounded-[6px] px-[14px] py-[10px] text-[12px] font-medium min-w-[94px] border-none cursor-pointer ${isNewPwValid && step === 'new' && !isLoading ? 'bg-blue-900 text-white' : 'bg-[#f4f5f7] text-[#a6a6a6]'}`}
 							onClick={handleCheckNewPw}
-							disabled={!isNewPwValid || step !== 'new'}
+							disabled={!isNewPwValid || step !== 'new' || isLoading}
 						>확인</button>
 					</div>
 					{/* 새 비밀번호 재입력 */}
@@ -125,13 +219,13 @@ export default function ChangePassword() {
 							placeholder="비밀번호를 한번 더 입력해주세요"
 							value={confirmPw}
 							onChange={e => setConfirmPw(e.target.value)}
-							disabled={step !== 'confirm'}
+							disabled={step !== 'confirm' || isLoading}
 						/>
 						<button
-							className={`rounded-[6px] px-[14px] py-[10px] text-[12px] font-medium min-w-[94px] border-none cursor-pointer ${isConfirmPwValid && step === 'confirm' ? 'bg-blue-900 text-white' : 'bg-[#f4f5f7] text-[#a6a6a6]'}`}
+							className={`rounded-[6px] px-[14px] py-[10px] text-[12px] font-medium min-w-[94px] border-none cursor-pointer ${isConfirmPwValid && step === 'confirm' && !isLoading ? 'bg-blue-900 text-white' : 'bg-[#f4f5f7] text-[#a6a6a6]'}`}
 							onClick={handleCheckConfirmPw}
-							disabled={!isConfirmPwValid || step !== 'confirm'}
-						>확인</button>
+							disabled={!isConfirmPwValid || step !== 'confirm' || isLoading}
+						>{isLoading ? '확인 중...' : '확인'}</button>
 					</div>
 					{/* 메시지 */}
 					{message && <div className="text-xs text-blue-900 mt-2 min-h-[18px]">{message}</div>}

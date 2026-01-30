@@ -8,7 +8,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-20 bg-white">
       <div className="flex items-center h-14 px-5 py-3">
-        <button onClick={() => router.back()}>
+        <button onClick={() => router.push('/')}>
           <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
         </button>
         <h1 className="ml-4 text-base font-semibold text-zinc-900 text-left flex-1">

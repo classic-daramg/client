@@ -1,91 +1,190 @@
-'use client';
-
-import React from 'react';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/authStore";
+import apiClient from "@/lib/apiClient";
 
 // Local SVG assets
-const backIcon = '/icons/back.svg';
-const scrapIcon = '/icons/scrap.svg';
+const backIcon = "/icons/back.svg";
+const curationIcon = "/icons/write-blue.svg";
+
+interface Scrap {
+	id: number;
+	title: string;
+	content: string;
+	hashtags: string[];
+	createdAt: string;
+	writerNickname: string;
+	likeCount: number;
+	commentCount: number;
+	thumbnailImageUrl: string | null;
+	type: string;
+	isLiked: boolean | null;
+	isScrapped: boolean | null;
+}
+
+interface ScrapsResponse {
+	content: Scrap[];
+	nextCursor: string | null;
+	hasNext: boolean;
+}
 
 export default function Scraps() {
-	// 샘플 데이터 (디자인용)
-	const scraps = [
-		{
-			id: 1,
-			title: '제목이 들어갈 자리입니다',
-			content: '글 내용이 들어갈 자리입니다. 글 내용은 한줄 제한을 할까말까 두줄도 괜찮은 것 같고',
-			tags: ['#태그01', '#태그02', '#태그03'],
-			scrapedAt: '25/08/28 14:26',
-		},
-		{
-			id: 2,
-			title: '제목이 들어갈 자리입니다',
-			content: '글 내용이 들어갈 자리입니다. 글 내용은 한줄 제한을 할까말까 두줄도 괜찮은 것 같고',
-			tags: ['#태그01', '#태그02', '#태그03'],
-			scrapedAt: '25/08/28 14:26',
-		},
-		{
-			id: 3,
-			title: '제목이 들어갈 자리입니다',
-			content: '글 내용이 들어갈 자리입니다. 글 내용은 한줄 제한을 할까말까 두줄도 괜찮은 것 같고',
-			tags: ['#태그01', '#태그02', '#태그03'],
-			scrapedAt: '25/08/28 14:26',
-		},
-	];
+	const router = useRouter();
+	const { accessToken, userId: storedUserId, getUserIdFromToken } = useAuthStore();
+	const [scraps, setScraps] = useState<Scrap[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const [cursor, setCursor] = useState<string | null>(null);
+	const [hasNext, setHasNext] = useState(false);
+
+	// 초기 로드: 스크랩한 글 불러오기
+	useEffect(() => {
+		const loadScraps = async () => {
+			// userId 가져오기 (저장된 값 또는 토큰에서 추출)
+			const userId = storedUserId || getUserIdFromToken();
+
+			if (!userId || !accessToken) {
+				setError('사용자 정보를 확인할 수 없습니다');
+				setIsLoading(false);
+				return;
+			}
+
+			try {
+				setIsLoading(true);
+
+				const params: Record<string, string | number> = { size: 10 };
+				if (cursor) {
+					params.cursor = cursor;
+				}
+
+				const response = await apiClient.get<ScrapsResponse>(`/posts/${userId}/scraps`, {
+					params,
+				});
+
+				const data = response.data;
+				setScraps(cursor ? [...scraps, ...data.content] : data.content);
+				setCursor(data.nextCursor);
+				setHasNext(data.hasNext);
+			} catch (error) {
+				console.error('Failed to load scraps:', error);
+				setError('스크랩한 글을 불러오는 중 오류가 발생했습니다');
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		loadScraps();
+	}, [accessToken, storedUserId, getUserIdFromToken]);
+
+	const formatDate = (dateString: string): string => {
+		try {
+			const date = new Date(dateString);
+			const year = String(date.getFullYear()).slice(-2);
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+			const hours = String(date.getHours()).padStart(2, '0');
+			const minutes = String(date.getMinutes()).padStart(2, '0');
+			return `${year}/${month}/${day} ${hours}:${minutes}`;
+		} catch {
+			return dateString;
+		}
+	};
+
+	const getTypeIcon = (type: string): string => {
+		switch (type) {
+			case 'CURATION':
+				return curationIcon;
+			default:
+				return curationIcon;
+		}
+	};
+
+	const getTypeLabel = (type: string): string => {
+		switch (type) {
+			case 'CURATION':
+				return '큐레이션글';
+			case 'FREE':
+				return '자유글';
+			case 'STORY':
+				return '스토리';
+			default:
+				return type;
+		}
+	};
 
 	return (
-		<div className="relative w-[375px] min-h-screen bg-white flex flex-col">
+		<div className="bg-[#f4f5f7] min-h-screen w-full flex flex-col items-center relative">
+			{/* Status Bar */}
+			<div className="absolute bg-white h-[54px] w-[375px] left-1/2 top-0 -translate-x-1/2" />
 			{/* Header */}
-			<div className="flex flex-col">
-				{/* Status Bar */}
-				<div className="h-[54px] bg-white pt-[21px]" />
-
-				{/* Header Navigation */}
-				<div className="flex h-[54px] items-center px-4 bg-white">
-					<div className="flex gap-[4px] items-center w-full">
-						<div className="relative w-6 h-6 flex items-center justify-center">
-							<img src={backIcon} alt="back" className="w-[20px] h-[20px]" />
-						</div>
-						<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
-							<p>스크랩한 글</p>
-						</div>
+			<div className="absolute bg-white flex flex-col gap-[16px] items-start left-0 pt-0 pb-[12px] px-[20px] top-[calc(50%-352px)] w-[375px]">
+				<div className="flex gap-[4px] items-center w-full">
+					<button
+						onClick={() => router.back()}
+						className="bg-none border-none p-0 cursor-pointer w-6 h-6 flex items-center justify-center"
+						aria-label="뒤로가기"
+					>
+						<img src={backIcon} alt="back" className="w-[20px] h-[20px]" />
+					</button>
+					<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
+						<p>스크랩한 글</p>
 					</div>
 				</div>
 			</div>
-
 			{/* Card List */}
 			<div className="absolute bg-white flex flex-col items-start left-0 top-[calc(50%-306px)] w-[375px]">
+				{isLoading && (
+					<div className="w-full py-8 text-center text-[#a6a6a6]">
+						스크랩한 글을 불러오는 중입니다...
+					</div>
+				)}
+				{error && (
+					<div className="w-full py-8 text-center text-red-500">
+						{error}
+					</div>
+				)}
+				{!isLoading && scraps.length === 0 && !error && (
+					<div className="w-full py-8 text-center text-[#a6a6a6]">
+						스크랩한 글이 없습니다.
+					</div>
+				)}
 				{scraps.map((scrap) => (
 					<div key={scrap.id} className="box-border flex flex-col gap-[10px] items-center overflow-clip px-[12px] py-[18px] w-full border-b border-[#f4f5f7]">
 						<div className="flex items-center justify-center w-[335px]">
 							<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
 								{/* Label */}
 								<div className="flex gap-[3px] items-center">
-									<img src={scrapIcon} alt="스크랩글" className="w-4 h-4" />
-									<span className="text-[#293A92] text-[11px] font-semibold">스크랩글</span>
+									<img src={getTypeIcon(scrap.type)} alt={scrap.type} className="w-4 h-4" />
+									<span className="text-[#293A92] text-[11px] font-semibold">{getTypeLabel(scrap.type)}</span>
 								</div>
 								{/* Title/Content */}
 								<div className="flex flex-col gap-[4px] w-full">
 									<div className="text-[#1a1a1a] text-[14px] font-semibold w-full truncate">{scrap.title}</div>
 									<div className="text-[#a6a6a6] text-[12px] w-full truncate">{scrap.content}</div>
 								</div>
-								{/* Tags */}
-								<div className="flex gap-[2px] w-full">
-									{scrap.tags.map((tag) => (
-										<span key={tag} className="text-[#293A92] text-[11px] font-semibold">
-											{tag}
-										</span>
-									))}
+								{/* Tags/Date */}
+								<div className="flex flex-col gap-[4px] w-full">
+									<div className="flex gap-[4px] text-[#d9d9d9] text-[12px] font-medium">
+										{scrap.hashtags.map((tag: string) => (
+											<span key={tag}>{tag}</span>
+										))}
+									</div>
+									<div className="flex gap-[6px] items-center w-full">
+										<span className="text-[#d9d9d9] text-[12px] font-medium">{formatDate(scrap.createdAt)}</span>
+									</div>
 								</div>
-								{/* Date */}
-								<div className="text-[#a6a6a6] text-[11px]">{scrap.scrapedAt}</div>
 							</div>
+							{/* Thumbnail */}
+							{scrap.thumbnailImageUrl ? (
+								<img src={scrap.thumbnailImageUrl} alt="thumbnail" className="rounded-[8px] w-[96px] h-[96px] ml-4 object-cover" />
+							) : (
+								<div className="bg-[#d9d9d9] rounded-[8px] w-[96px] h-[96px] ml-4" />
+							)}
 						</div>
 					</div>
 				))}
 			</div>
-
-			{/* Home Indicator */}
-			<div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[375px] h-[34px] invisible" />
 		</div>
 	);
 }

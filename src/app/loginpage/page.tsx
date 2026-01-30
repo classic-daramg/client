@@ -17,7 +17,7 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setProfile = useUserProfileStore((state) => state.setProfile);
-  const { setTokens } = useAuthStore();
+  const { setTokens, setUserId } = useAuthStore();
 
   // JWT 토큰 디코딩 및 만료 확인 함수
   const checkTokenExpiration = (token: string): { isExpired: boolean; expiresAt?: Date; payload?: any } => {
@@ -79,19 +79,23 @@ const LoginPage = () => {
       if (response.status === 200 || response.status === 201) {
         // 로그인 성공
         const data = response.data;
-        
+
         // JWT 토큰 추출 및 저장
         const accessToken = data.accessToken || data.token;
         const refreshToken = data.refreshToken;
-        
+        const userId = data.userId;
+
         if (!accessToken) {
           setToast({ show: true, message: '토큰을 받지 못했습니다. 다시 시도해주세요.' });
           setIsLoading(false);
           return;
         }
 
-        // Zustand store에 토큰 저장 (메모리에 보관)
+        // Zustand store에 토큰과 userId 저장 (메모리에 보관)
         setTokens(accessToken, refreshToken || null);
+        if (userId) {
+          setUserId(String(userId));
+        }
 
         // 쿠키에 access token 저장 (백엔드가 cookieAuth로 인증하므로 필수)
         if (typeof document !== 'undefined') {
