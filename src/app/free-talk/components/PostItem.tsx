@@ -32,7 +32,7 @@ export default function PostItem({
 }: PostItemProps) {
   return (
     <div className="self-stretch px-3 py-4 bg-white border-b border-gray-100">
-      <Link href={`/free-talk/${id}`} className="inline-flex justify-center items-center w-full hover:bg-gray-50 transition-colors rounded-lg p-2">
+      <Link href={`/posts/${id}`} className="inline-flex justify-center items-center w-full hover:bg-gray-50 transition-colors rounded-lg p-2">
         <div className="flex-1 flex flex-col justify-start items-start gap-2">
           <div className="inline-flex justify-start items-center gap-[3px]">
             <div className="w-3 h-3 relative">

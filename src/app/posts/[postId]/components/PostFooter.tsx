@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface PostFooterProps {
   likeCount: number;
@@ -32,6 +33,8 @@ export default function PostFooter({
   onToggleScrap,
   postId,
 }: PostFooterProps) {
+  const router = useRouter();
+
   // 공유하기 핸들러
   const handleShare = async () => {
     const url = `${window.location.origin}/posts/${postId}`;
@@ -90,13 +93,23 @@ export default function PostFooter({
           </button>
         </div>
 
-        {/* 공유하기 */}
-        <button
-          onClick={handleShare}
-          className="hover:opacity-70 transition"
-        >
-          <Image src="/icons/upload.svg" alt="공유" width={24} height={24} />
-        </button>
+        {/* 공유하기 & 신고하기 */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleShare}
+            className="hover:opacity-70 transition"
+          >
+            <Image src="/icons/upload.svg" alt="공유" width={24} height={24} />
+          </button>
+
+          {/* 신고 버튼 */}
+          <button
+            onClick={() => router.push('/posts/report')}
+            className="hover:opacity-70 transition"
+          >
+            <Image src="/icons/siren.svg" alt="신고" width={24} height={24} />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -24,71 +24,72 @@ type Filters = {
   continents: string[];
 };
 
-export default function SearchFilterBar() {
+// ============================================================
+// SearchFilterBar Props 타입 정의
+// ============================================================
+interface SearchFilterBarProps {
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  filters: Filters;
+  onEraToggle: (eraId: string) => void;
+  onContinentToggle: (continentId: string) => void;
+  onRemoveFilter: (type: 'era' | 'continent', filterId: string) => void;
+}
+
+export default function SearchFilterBar({
+  searchValue,
+  onSearchChange,
+  filters,
+  onEraToggle,
+  onContinentToggle,
+  onRemoveFilter,
+}: SearchFilterBarProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<Filters>({ eras: [], continents: [] });
-  const [searchValue, setSearchValue] = useState('');
 
-  const handleEraToggle = (eraId: string) => {
-    setFilters(prev => ({
-      ...prev,
-      eras: prev.eras.includes(eraId)
-        ? prev.eras.filter(id => id !== eraId)
-        : [...prev.eras, eraId]
-    }));
-  };
-
-  const handleContinentToggle = (continentId: string) => {
-    setFilters(prev => ({
-      ...prev,
-      continents: prev.continents.includes(continentId)
-        ? prev.continents.filter(id => id !== continentId)
-        : [...prev.continents, continentId]
-    }));
-  };
-
-  const removeFilter = (type: 'era' | 'continent', filterId: string) => {
-    if (type === 'era') {
-      setFilters(prev => ({
-        ...prev,
-        eras: prev.eras.filter(id => id !== filterId)
-      }));
-    } else {
-      setFilters(prev => ({
-        ...prev,
-        continents: prev.continents.filter(id => id !== filterId)
-      }));
-    }
-  };
-
+  // ========== 필터 라벨 조회 함수 ==========
+  // 필터 ID로부터 한글 라벨을 반환
   const getFilterLabel = (type: 'era' | 'continent', filterId: string) => {
     const filterList = type === 'era' ? eraFilters : continentFilters;
-    return filterList.find(f => f.id === filterId)?.label || '';
+    return filterList.find((f) => f.id === filterId)?.label || '';
   };
 
+  // ========== 활성 필터 목록 생성 ==========
+  // 현재 선택된 모든 필터를 통합 배열로 생성
   const activeFilters = [
-    ...filters.eras.map(id => ({ type: 'era' as const, id, label: getFilterLabel('era', id) })),
-    ...filters.continents.map(id => ({ type: 'continent' as const, id, label: getFilterLabel('continent', id) }))
+    ...filters.eras.map((id) => ({
+      type: 'era' as const,
+      id,
+      label: getFilterLabel('era', id),
+    })),
+    ...filters.continents.map((id) => ({
+      type: 'continent' as const,
+      id,
+      label: getFilterLabel('continent', id),
+    })),
   ];
 
   const totalActiveFilters = filters.eras.length + filters.continents.length;
 
   return (
     <>
+      {/* 검색 및 필터 바 */}
       <div className="py-2.5 bg-white flex justify-center">
         <div className="w-80 px-2 py-1 bg-gray-100 rounded-full flex items-center justify-between">
+          {/* 검색 입력 필드 */}
           <input
             type="text"
             placeholder="검색어를 입력하세요"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="flex-1 bg-transparent px-3 text-sm focus:outline-none"
           />
           <div className="flex">
+            {/* 검색 버튼 */}
             <button className="p-1.5">
               <Image src="/icons/search.svg" alt="Search" width={20} height={20} />
             </button>
-            <button 
+            {/* 필터 패널 토글 버튼 */}
+            <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="p-1.5"
             >
@@ -98,58 +99,61 @@ export default function SearchFilterBar() {
         </div>
       </div>
 
+      {/* 필터 패널 (모달) */}
       {isFilterOpen && (
         <>
-          {/* Backdrop */}
-          <div 
+          {/* 배경 오버레이 */}
+          <div
             className="fixed inset-0 bg-black/30 z-40"
             onClick={() => setIsFilterOpen(false)}
           />
 
-          {/* Filter Panel */}
+          {/* 필터 패널 */}
           <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[22px] shadow-[0px_-4px_10px_0px_rgba(0,0,0,0.08)] z-50 max-w-[600px] mx-auto max-h-[80vh] overflow-y-auto">
-            {/* Handle Bar */}
+            {/* 드래그 핸들 바 */}
             <div className="flex justify-center pt-[22px] sticky top-0 bg-white">
               <div className="w-[80px] h-[5px] bg-[#bfbfbf] rounded-full" />
             </div>
 
-            {/* Content */}
+            {/* 필터 패널 컨텐츠 */}
             <div className="px-5 pt-[38px] pb-5 flex flex-col gap-5">
-              {/* Active Filters */}
+              {/* 활성 필터 표시 영역 */}
               {totalActiveFilters > 0 && (
                 <>
                   <div className="flex flex-wrap gap-[5px]">
                     {activeFilters.map((filter) => (
                       <button
                         key={`${filter.type}-${filter.id}`}
-                        onClick={() => removeFilter(filter.type, filter.id)}
+                        onClick={() => onRemoveFilter(filter.type, filter.id)}
                         className="bg-[#4c4c4c] border border-[#4c4c4c] px-3 py-[6px] rounded-full flex items-center gap-0.5"
                       >
                         <span className="text-white text-[13px] font-semibold">
                           {filter.label}
                         </span>
-                        <Image 
-                          src="/icons/close-white.svg" 
-                          alt="제거" 
-                          width={12} 
+                        <Image
+                          src="/icons/close-white.svg"
+                          alt="제거"
+                          width={12}
                           height={12}
                         />
                       </button>
                     ))}
                   </div>
-                  {/* Separator */}
+                  {/* 구분선 */}
                   <div className="h-[1px] bg-[#f4f5f7]" />
                 </>
               )}
 
-              {/* 시대별 필터 */}
+              {/* 시대별 필터 섹션 */}
               <div>
-                <h3 className="text-[#bfbfbf] text-[14px] font-semibold mb-5">시대별</h3>
+                <h3 className="text-[#bfbfbf] text-[14px] font-semibold mb-5">
+                  시대별
+                </h3>
                 <div className="flex flex-wrap gap-[5px]">
-                  {eraFilters.map(filter => (
+                  {eraFilters.map((filter) => (
                     <button
                       key={filter.id}
-                      onClick={() => handleEraToggle(filter.id)}
+                      onClick={() => onEraToggle(filter.id)}
                       className={`px-3 py-[6px] rounded-full border text-[13px] font-semibold ${
                         filters.eras.includes(filter.id)
                           ? 'bg-[#4c4c4c] border-[#4c4c4c] text-white'
@@ -162,17 +166,19 @@ export default function SearchFilterBar() {
                 </div>
               </div>
 
-              {/* Separator */}
+              {/* 구분선 */}
               <div className="h-[1px] bg-[#f4f5f7]" />
 
-              {/* 대륙별 필터 */}
+              {/* 대륙별 필터 섹션 */}
               <div>
-                <h3 className="text-[#bfbfbf] text-[14px] font-semibold mb-5">대륙별</h3>
+                <h3 className="text-[#bfbfbf] text-[14px] font-semibold mb-5">
+                  대륙별
+                </h3>
                 <div className="flex flex-wrap gap-[5px]">
-                  {continentFilters.map(filter => (
+                  {continentFilters.map((filter) => (
                     <button
                       key={filter.id}
-                      onClick={() => handleContinentToggle(filter.id)}
+                      onClick={() => onContinentToggle(filter.id)}
                       className={`px-3 py-[6px] rounded-full border text-[13px] font-semibold ${
                         filters.continents.includes(filter.id)
                           ? 'bg-[#4c4c4c] border-[#4c4c4c] text-white'

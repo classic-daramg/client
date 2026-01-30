@@ -179,14 +179,14 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     try {
       await apiClient.post(`/posts/${postId}/scrap`);
       showToast(prevScrapped ? '스크랩을 취소했습니다.' : '스크랩했습니다.');
-    } catch (err) {
+    } catch (err: any) {
       // Rollback on error
       setPost({
         ...post,
         isScrapped: prevScrapped,
       });
       console.error('Failed to toggle scrap:', err);
-      showToast('스크랩 처리에 실패했습니다.', 'error');
+      showToast(err.response?.data?.message || '스크랩 처리에 실패했습니다.', 'error');
     }
   };
 

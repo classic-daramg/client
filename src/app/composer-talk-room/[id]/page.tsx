@@ -205,7 +205,7 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
             <div className="py-10 text-center text-zinc-400">게시글이 없습니다.</div>
           ) : (
             filteredPosts.map((post) => (
-              <Link key={post.id} href={`/composer-talk-room/${id}/${post.id}`}>
+              <Link key={post.id} href={`/posts/${post.id}`}>
                 <PostItem post={post} />
               </Link>
             ))

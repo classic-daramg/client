@@ -66,7 +66,13 @@ export default function CommentItem({
   // 삭제된 댓글 렌더링
   if (comment.isDeleted) {
     return (
-      <div className={`bg-white py-[18px] ${isNested ? 'pl-[50px] pr-[20px]' : 'px-[20px]'}`}>
+      <div
+        className={`py-[18px] ${
+          isNested
+            ? 'pl-[50px] pr-[20px] bg-[#fafafa] border border-[#eef0f3] border-l-2 border-l-[#e2e8f0] rounded-md'
+            : 'px-[20px] bg-white'
+        }`}
+      >
         <p className="text-sm font-medium text-[#a6a6a6] italic">삭제된 댓글입니다</p>
         
         {comment.childComments && comment.childComments.length > 0 && (
@@ -91,7 +97,13 @@ export default function CommentItem({
   }
 
   return (
-    <div className={`bg-white flex flex-col gap-[10px] py-[18px] ${isNested ? 'pl-[50px] pr-[20px]' : 'px-[20px]'}`}>
+    <div
+      className={`flex flex-col gap-[10px] py-[18px] ${
+        isNested
+          ? 'pl-[50px] pr-[20px] bg-[#fafafa] border border-[#eef0f3] border-l-2 border-l-[#e2e8f0] rounded-md'
+          : 'px-[20px] bg-white'
+      }`}
+    >
       {/* 댓글 헤더 & 본문 */}
       <div className="flex gap-2 items-start w-full">
         {/* 프로필 이미지 - 31px 원형 */}

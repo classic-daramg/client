@@ -38,12 +38,29 @@ const processQueue = (error: any = null, token: string | null = null) => {
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = useAuthStore.getState().accessToken;
+    const url = config.url || '';
 
-    if (token && config.headers) {
+    // 인증 관련 요청에는 Authorization 헤더를 붙이지 않음
+    const isAuthRequest =
+      url.includes('/auth/login') ||
+      url.includes('/auth/signup') ||
+      url.includes('/auth/verify-email') ||
+      url.includes('/auth/email-verifications') ||
+      url.includes('/auth/password-reset') ||
+      url.includes('/auth/refresh') ||
+      url.includes('/auth/logout') ||
+      url.includes('/auth/signout');
+
+    if (!isAuthRequest && token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('✅ Request with token:', config.url);
+      console.log('✅ Request with token:', url);
     } else {
-      console.log('ℹ️ Request without token:', config.url);
+      console.log('ℹ️ Request without token:', url);
+    }
+
+    // 디버깅: 최종 요청 URL 확인
+    if (config.baseURL) {
+      console.log('🔎 Request URL:', `${config.baseURL}${url}`);
     }
 
     return config;
