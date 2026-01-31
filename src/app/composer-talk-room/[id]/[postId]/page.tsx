@@ -240,7 +240,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
         setLoading(false);
       }
     });
-  }, [params]);
+  }, [params, transformComments]);
 
   const handleAddComment = async (content: string, isReply: boolean = false, replyToId?: number) => {
     const currentUserNickname = profile?.nickname || '익명다람쥐';
@@ -325,35 +325,6 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     setComments(prev => prev.map(c =>
       c.id === commentId ? { ...c, isHeartSelected: isLiked, likeCount } : c
     ));
-  };
-
-  const handleCommentDelete = (commentId: number) => {
-    // 댓글 삭제 후 포스트 데이터 새로고침
-    const refreshPost = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/posts/${postId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
-
-        if (res.ok) {
-          const updatedPost = await res.json();
-          setPost(updatedPost);
-
-          if (updatedPost.comments && Array.isArray(updatedPost.comments)) {
-            const apiComments = transformComments(updatedPost.comments);
-            setComments(apiComments);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to refresh after deletion:', error);
-      }
-    };
-
-    refreshPost();
   };
 
   const handleReply = (commentId: number, author: string) => {

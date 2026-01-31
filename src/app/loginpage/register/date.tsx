@@ -68,7 +68,7 @@ const DatePickerWheels: React.FC<DatePickerWheelsProps> = ({
     if (selectedDay > newDaysCount) {
       setSelectedDay(newDaysCount);
     }
-  }, [selectedYear, selectedMonth]);
+  }, [selectedYear, selectedMonth, selectedDay]);
 
   useEffect(() => {
     if (onDateChange) {
@@ -100,7 +100,7 @@ const DatePickerWheels: React.FC<DatePickerWheelsProps> = ({
         dayRef.current.scrollTop = dayIndex * itemHeight;
       }
     }
-  }, [selectedYear, selectedMonth, selectedDay, years, days]);
+  }, [selectedYear, selectedMonth, selectedDay, years, days, months]);
 
   interface WheelColumnProps {
     items: number[];

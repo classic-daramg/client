@@ -29,7 +29,6 @@ export default function CommentItem({ comment, composerId, onReply, onReportOpen
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isHeartSelected, setIsHeartSelected] = useState(comment.isHeartSelected || false);
   const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
   const handleReplyClick = () => onReply?.(comment.id, comment.author);
@@ -77,7 +76,6 @@ export default function CommentItem({ comment, composerId, onReply, onReportOpen
   const handleDeleteClick = async () => {
     if (!confirm('댓글을 삭제하시겠습니까?')) return;
 
-    setIsDeleting(true);
     try {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -103,8 +101,6 @@ export default function CommentItem({ comment, composerId, onReply, onReportOpen
     } catch (error) {
       console.error('Comment delete error:', error);
       alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsDeleting(false);
     }
   };
 
