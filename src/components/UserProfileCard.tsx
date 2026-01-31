@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useUserProfileStore } from '../store/userProfileStore';
 
 const UserProfileCard = () => {
@@ -18,10 +19,12 @@ const UserProfileCard = () => {
     <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md max-w-sm mx-auto">
       {/* 프로필 이미지 */}
       <div className="relative w-20 h-20 mb-4">
-        <img
+        <Image
           src={getProfileImage()}
           alt="프로필"
-          className="w-full h-full rounded-full object-cover border-2 border-gray-200"
+          width={80}
+          height={80}
+          className="rounded-full object-cover border-2 border-gray-200"
         />
       </div>
 
