@@ -81,12 +81,12 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
     } finally {
       setLoading(false);
     }
-  }, [posts.length]);
+  }, []);
 
   // 초기 로드
   useEffect(() => {
     fetchPosts(null);
-  }, []);
+  }, [fetchPosts]);
 
   // 검색어 필터링
   useEffect(() => {

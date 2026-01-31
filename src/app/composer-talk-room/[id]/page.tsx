@@ -6,7 +6,7 @@ import ComposerProfile from './composer-profile';
 import FloatingButtons from './floating-buttons';
 import RoomFilter from './filter';
 import RoomHeader from './header';
-import { useComposerStore, type Composer } from '@/store/composerStore';
+import { useComposerStore } from '@/store/composerStore';
 
 // --- Type Definition for Post Data ---
 type Post = {
@@ -103,7 +103,6 @@ function PostItem({ post }: { post: Post }) {
 
 // --- Main Page Component ---
 export default function ComposerTalkPage({ params }: { params: Promise<{ id: string }> }) {
-  const [id, setId] = useState<string>('');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -113,7 +112,6 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
   // params 처리 및 작곡가 데이터 + 포스트 가져오기
   useEffect(() => {
     params.then(async ({ id: composerId }) => {
-      setId(composerId);
       setLoading(true);
 
       // API에서 작곡가 정보 + 포스트 목록 함께 가져오기
@@ -138,7 +136,7 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
 
           // 포스트 목록 저장
           if (data.posts && data.posts.content) {
-            const formattedPosts: Post[] = data.posts.content.map((post: any) => ({
+            const formattedPosts: Post[] = data.posts.content.map((post: Post) => ({
               id: post.id,
               title: post.title,
               content: post.content,

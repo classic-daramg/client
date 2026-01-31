@@ -110,9 +110,11 @@ export default function PostItem({ post, isFirst = false }: PostItemProps) {
       {/* 썸네일 이미지 */}
       {post.imageUrl && (
         <div className="relative w-[100px] h-[100px] bg-[#d9d9d9] rounded-[8px] ml-4 flex items-center justify-center overflow-hidden">
-          <img
+          <Image
             src={post.imageUrl}
             alt={post.title}
+            width={100}
+            height={100}
             className="w-full h-full object-cover"
           />
         </div>

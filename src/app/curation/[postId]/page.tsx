@@ -35,6 +35,15 @@ interface Comment {
   isReply: boolean;
 }
 
+interface ApiComment {
+  id: number;
+  writerNickname: string;
+  createdAt: string;
+  content: string;
+  isLiked: boolean;
+  parentCommentId: number | null;
+}
+
 type PostDetailPageProps = {
   params: Promise<{
     postId: string;
@@ -92,7 +101,7 @@ export default function CurationPostDetail({ params }: PostDetailPageProps) {
         setIsScrapped(formattedData.isScrapped || false);
         
         // 댓글 데이터는 포스트 응답에 포함되어 있음
-        const formattedComments = data.comments?.map((comment: any) => ({
+        const formattedComments = data.comments?.map((comment: ApiComment) => ({
           id: comment.id,
           author: comment.writerNickname || 'Unknown',
           timestamp: formatDateTime(comment.createdAt),

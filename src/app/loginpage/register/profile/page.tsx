@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState, useRef } from 'react';
 import { useRegistrationStore } from '../../../../store/registrationStore';
@@ -116,7 +117,7 @@ const ProfileSetupPage = () => {
             'image/jpeg',
             0.7
           );
-        } catch (err) {
+        } catch {
           setUploadError('이미지 처리 중 오류가 발생했습니다.');
           setUploadLoading(false);
         }
@@ -372,9 +373,11 @@ const ProfileSetupPage = () => {
                 className="block w-full h-full rounded-full overflow-hidden cursor-pointer bg-gray-100"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <img
+                <Image
                   src={profileImage || defaultProfileImage}
                   alt="프로필"
+                  width={163}
+                  height={163}
                   className="w-full h-full object-cover"
                 />
                 {uploadLoading && (
@@ -386,9 +389,11 @@ const ProfileSetupPage = () => {
             </div>
 
             <div className="flex items-center gap-1 text-[#A6A6A6]">
-              <img
+              <Image
                 src="/icons/write.svg"
                 alt="카메라 아이콘"
+                width={20}
+                height={20}
                 className="w-5 h-5"
               />
 

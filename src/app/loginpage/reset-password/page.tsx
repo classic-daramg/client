@@ -14,8 +14,6 @@ const ResetPasswordPage = () => {
     confirmPassword: ''
   });
   const [step, setStep] = useState<'email' | 'verify' | 'reset'>('email');
-  const [isCodeSent, setIsCodeSent] = useState(false);
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);

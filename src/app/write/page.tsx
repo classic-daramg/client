@@ -26,7 +26,6 @@ export default function WritePage() {
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
     
@@ -48,9 +47,8 @@ export default function WritePage() {
         return '자유 글'; // 기본값
     };
 
-    const [selectedType, setSelectedType] = useState<string>(getSelectedType());
-    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
-    
+    const [selectedType] = useState<string>(getSelectedType());
+
     // 큐레이션 옵션 모드 ('{composer} 이야기'일 때만 사용)
     const [curationMode, setCurationMode] = useState<'none' | 'curation' | null>(null);
 

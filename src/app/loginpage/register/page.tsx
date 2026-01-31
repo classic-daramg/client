@@ -179,7 +179,7 @@ const SignupPage = () => {
     } else {
       setAgeError('');
     }
-  }, []);
+  }, [handleInputChange]);
 
   const handleDateConfirm = () => {
     const formattedDate = `${tempSelectedDate.getFullYear()}년 ${tempSelectedDate.getMonth() + 1}월 ${tempSelectedDate.getDate()}일`;

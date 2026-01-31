@@ -20,6 +20,23 @@ interface Post {
   imageUrl?: string;
 }
 
+interface ApiPost {
+  id: number;
+  title: string;
+  content: string;
+  hashtags?: string[];
+  tags?: string[];
+  keywords?: string[];
+  likeCount?: number;
+  commentCount?: number;
+  writerNickname?: string;
+  createdAt: string;
+  thumbnailImageUrl?: string;
+  imageUrl?: string;
+  imageUrls?: string[];
+  images?: Array<{ url?: string } | string>;
+}
+
 interface Filters {
   eras: string[];
   continents: string[];
@@ -50,7 +67,7 @@ export default function PostList({ searchValue, filters }: PostListProps) {
         const data = response.data;
 
         // ========== API 응답을 Post 형식으로 변환 ==========
-        const formattedPosts = data.content?.map((post: any) => {
+        const formattedPosts = data.content?.map((post: ApiPost) => {
           // 디버깅: API 응답 구조 확인
           console.log('API Post Data:', post);
           

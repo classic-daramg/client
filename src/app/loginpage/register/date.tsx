@@ -20,10 +20,10 @@ const DatePickerWheels: React.FC<DatePickerWheelsProps> = ({
   const dayRef = useRef<HTMLDivElement>(null);
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const years = React.useMemo(() => Array.from({ length: 100 }, (_, i) => currentYear - i), [currentYear]);
+  const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const getDaysInMonth = (year: number, month: number): number => new Date(year, month, 0).getDate();
-  const days = Array.from({ length: getDaysInMonth(selectedYear, selectedMonth) }, (_, i) => i + 1);
+  const days = React.useMemo(() => Array.from({ length: getDaysInMonth(selectedYear, selectedMonth) }, (_, i) => i + 1), [selectedYear, selectedMonth]);
 
   const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
 
@@ -74,7 +74,7 @@ const DatePickerWheels: React.FC<DatePickerWheelsProps> = ({
     if (onDateChange) {
       onDateChange(new Date(selectedYear, selectedMonth - 1, selectedDay));
     }
-  }, [selectedYear, selectedMonth, selectedDay]);
+  }, [selectedYear, selectedMonth, selectedDay, onDateChange]);
 
   // 초기 스크롤 위치 설정
   useEffect(() => {
@@ -100,7 +100,7 @@ const DatePickerWheels: React.FC<DatePickerWheelsProps> = ({
         dayRef.current.scrollTop = dayIndex * itemHeight;
       }
     }
-  }, [selectedYear, selectedMonth, selectedDay, years, months, days]);
+  }, [selectedYear, selectedMonth, selectedDay, years, days]);
 
   interface WheelColumnProps {
     items: number[];
