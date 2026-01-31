@@ -110,7 +110,7 @@ apiClient.interceptors.response.use(
             }
             resolve(apiClient(originalRequest));
           },
-          reject: (err: any) => {
+          reject: (err: AxiosError) => {
             reject(err);
           },
         });

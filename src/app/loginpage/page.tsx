@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { AxiosError } from 'axios';
 import ToastNotification from '../../components/ToastNotification';
 import { useUserProfileStore } from '../../store/userProfileStore';
 import { useAuthStore } from '../../store/authStore';
@@ -20,7 +21,7 @@ const LoginPage = () => {
   const { setTokens, setUserId } = useAuthStore();
 
   // JWT 토큰 디코딩 및 만료 확인 함수
-  const checkTokenExpiration = (token: string): { isExpired: boolean; expiresAt?: Date; payload?: any } => {
+  const checkTokenExpiration = (token: string): { isExpired: boolean; expiresAt?: Date; payload?: Record<string, unknown> } => {
     try {
       // JWT는 header.payload.signature 형식
       const parts = token.split('.');
@@ -160,13 +161,14 @@ const LoginPage = () => {
           router.push('/my-page');
         }, 500);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('로그인 오류:', error);
-      
+
+      const axiosError = error as AxiosError<{ message: string }>;
       // Axios 에러 처리
-      if (error.response) {
-        const status = error.response.status;
-        const errorData = error.response.data;
+      if (axiosError.response) {
+        const status = axiosError.response.status;
+        const errorData = axiosError.response.data;
 
         switch (status) {
           case 401:

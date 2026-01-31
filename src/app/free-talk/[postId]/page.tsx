@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -169,8 +169,8 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
   };
 
   // API 댓글을 CommentData로 변환 (childComments 포함)
-  const transformComments = (apiCommentList: any[]): CommentData[] => {
-    return apiCommentList.map((comment: any) => ({
+  const transformComments = useCallback((apiCommentList: ApiComment[]): CommentData[] => {
+    return apiCommentList.map((comment: ApiComment) => ({
       id: comment.id,
       author: comment.writerNickname,
       timestamp: getRelativeTime(comment.createdAt),
@@ -184,7 +184,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
         ? transformComments(comment.childComments)
         : undefined
     }));
-  };
+  }, []);
 
   // 포스트에서 댓글 데이터 가져오기
   useEffect(() => {
@@ -201,7 +201,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
         setComments([]);
       }
     }
-  }, [post]);
+  }, [post, transformComments]);
 
   const handleToggleLike = async () => {
     // Save previous state for rollback
@@ -286,7 +286,7 @@ export default function FreeTalkPostDetail({ params }: PageProps) {
     ));
   };
 
-  const handleCommentDelete = (commentId: number) => {
+  const handleCommentDelete = () => {
     // 댓글 삭제 후 포스트 데이터 새로고침
     const refreshPost = async () => {
       try {
