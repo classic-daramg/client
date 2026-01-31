@@ -1,9 +1,7 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { useAuthStore } from '@/store/authStore';
-
-const API_BASE = 'https://classic-daramg.duckdns.org';
+import { apiClient } from '@/lib/apiClient';
 
 function Popup({ message, onClose }: { message: string; onClose: () => void }) {
 	return (
@@ -17,11 +15,9 @@ function Popup({ message, onClose }: { message: string; onClose: () => void }) {
 }
 
 export default function ChangePassword() {
-	const { accessToken } = useAuthStore();
 
 	// 상태 관리
 	const [step, setStep] = useState<'current'|'new'|'confirm'|'done'>('current');
-	const [userEmail, setUserEmail] = useState('');
 	const [currentPw, setCurrentPw] = useState('');
 	const [newPw, setNewPw] = useState('');
 	const [confirmPw, setConfirmPw] = useState('');
@@ -29,70 +25,21 @@ export default function ChangePassword() {
 	const [popup, setPopup] = useState<string|null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
-	// 초기 로드: 사용자 이메일 불러오기
-	useEffect(() => {
-		const loadUserEmail = async () => {
-			try {
-				const headers: Record<string, string> = {
-					'Content-Type': 'application/json',
-				};
-
-				if (accessToken) {
-					headers['Authorization'] = `Bearer ${accessToken}`;
-				}
-
-				const res = await fetch(`${API_BASE}/users`, {
-					method: 'GET',
-					headers,
-					credentials: 'include',
-				});
-
-				if (res.ok) {
-					const data = await res.json();
-					if (data.email) {
-						setUserEmail(data.email);
-					}
-				} else {
-					console.error('Failed to load user email:', res.status);
-				}
-			} catch (error) {
-				console.error('Failed to load user email:', error);
-			}
-		};
-
-		loadUserEmail();
-	}, [accessToken]);
-
 	// 비밀번호 유효성 검증
 	const validatePassword = (pw: string): boolean => {
-		// 비밀번호 규칙: 8자 이상, 영문+숫자
-		return /^.*(?=.{8,})(?=.*\d)(?=.*[a-zA-Z]).*$/.test(pw);
+		// 비밀번호 규칙: 10자 이상, 영문 대문자+소문자+숫자+특수문자 모두 포함
+		return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{10,}$/.test(pw);
 	};
 
 	// 이벤트 핸들러
 	const handleCheckCurrentPw = async () => {
-		if (!userEmail) {
-			setMessage('사용자 정보를 로드할 수 없습니다');
-			return;
-		}
-
 		setIsLoading(true);
 		try {
-			const headers: Record<string, string> = {
-				'Content-Type': 'application/json',
-			};
-
-			const res = await fetch(`${API_BASE}/auth/login`, {
-				method: 'POST',
-				headers,
-				credentials: 'include',
-				body: JSON.stringify({
-					email: userEmail,
-					password: currentPw,
-				}),
+			const response = await apiClient.post('/users/verify-user-password', {
+				password: currentPw,
 			});
 
-			if (res.ok) {
+			if (response.data.isPasswordMatch) {
 				setMessage('기존 비밀번호와 일치합니다');
 				setStep('new');
 			} else {
@@ -123,37 +70,17 @@ export default function ChangePassword() {
 
 		setIsLoading(true);
 		try {
-			const headers: Record<string, string> = {
-				'Content-Type': 'application/json',
-			};
-
-			if (accessToken) {
-				headers['Authorization'] = `Bearer ${accessToken}`;
-			}
-
-			const res = await fetch(`${API_BASE}/auth/password-reset`, {
-				method: 'PUT',
-				headers,
-				credentials: 'include',
-				body: JSON.stringify({
-					email: userEmail,
-					password: newPw,
-				}),
+			const response = await apiClient.post('/users/change-password', {
+				password: newPw,
 			});
 
-			if (res.ok) {
-				setMessage('입력한 비밀번호가 일치합니다');
-				setStep('done');
-				setPopup('비밀번호가 성공적으로 변경되었습니다.');
-				// 상태 초기화
-				setCurrentPw('');
-				setNewPw('');
-				setConfirmPw('');
-			} else {
-				const errorData = await res.text();
-				console.error('Password change error:', errorData);
-				setMessage('비밀번호 변경에 실패했습니다');
-			}
+			setMessage('입력한 비밀번호가 일치합니다');
+			setStep('done');
+			setPopup('비밀번호가 성공적으로 변경되었습니다.');
+			// 상태 초기화
+			setCurrentPw('');
+			setNewPw('');
+			setConfirmPw('');
 		} catch (error) {
 			console.error('Password change error:', error);
 			setMessage('비밀번호 변경 중 오류가 발생했습니다');

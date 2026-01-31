@@ -1,9 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useAuthStore } from '@/store/authStore';
-
-const API_BASE = 'https://classic-daramg.duckdns.org';
+import { apiClient } from '@/lib/apiClient';
 
 function Popup({ message, onClose }: { message: string; onClose: () => void }) {
   return (
@@ -17,8 +15,6 @@ function Popup({ message, onClose }: { message: string; onClose: () => void }) {
 }
 
 export default function ChangeEmail() {
-  const { accessToken } = useAuthStore();
-
   // 상태 관리
   const [currentEmail, setCurrentEmail] = useState('');
   const [inputCurrentEmail, setInputCurrentEmail] = useState('');
@@ -39,29 +35,11 @@ export default function ChangeEmail() {
     const loadCurrentEmail = async () => {
       setEmailLoading(true);
       try {
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-        };
-
-        if (accessToken) {
-          headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-
-        const res = await fetch(`${API_BASE}/users`, {
-          method: 'GET',
-          headers,
-          credentials: 'include',
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.email) {
-            // 이메일 마스킹: ad***@g****.com 형식
-            const masked = data.email.replace(/(.{2}).*(@.*)/, '$1***$2');
-            setCurrentEmail(masked);
-          }
-        } else {
-          console.error('Failed to load email:', res.status);
+        const response = await apiClient.get('/users');
+        if (response.data.email) {
+          // 이메일 마스킹: ad***@g****.com 형식
+          const masked = response.data.email.replace(/(.{2}).*(@.*)/, '$1***$2');
+          setCurrentEmail(masked);
         }
       } catch (error) {
         console.error('Failed to load email:', error);
@@ -71,7 +49,7 @@ export default function ChangeEmail() {
     };
 
     loadCurrentEmail();
-  }, [accessToken]);
+  }, []);
 
   // Step 1: 기존 이메일 확인
   const handleCheckCurrentEmail = async () => {
@@ -82,30 +60,9 @@ export default function ChangeEmail() {
 
     setIsLoading(true);
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
+      const response = await apiClient.get(`/users/verify-user-email?email=${encodeURIComponent(inputCurrentEmail)}`);
 
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-
-      const res = await fetch(`${API_BASE}/users/verify-user-email?email=${encodeURIComponent(inputCurrentEmail)}`, {
-        method: 'GET',
-        headers,
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error('Email verify error:', errorData);
-        setPopup({ message: '기존 이메일이 일치하지 않습니다.' });
-        return;
-      }
-
-      const data = await res.json();
-      // API returns: {"유저 이메일 일치 여부 ": true}
-      if (data['유저 이메일 일치 여부 '] || data['유저 이메일 일치 여부']) {
+      if (response.data.isEmailMatch) {
         setStep('current-checked');
         setPopup({ message: '기존 이메일이 확인되었습니다.' });
       } else {
@@ -128,30 +85,10 @@ export default function ChangeEmail() {
 
     setIsLoading(true);
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-
-      const res = await fetch(`${API_BASE}/auth/email-verifications`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({
-          email: inputNewEmail,
-          emailPurpose: 'SIGNUP',
-        }),
+      await apiClient.post('/auth/email-verifications', {
+        email: inputNewEmail,
+        emailPurpose: 'EMAIL_CHANGE',
       });
-
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error('Send code error:', errorData);
-        setPopup({ message: '인증코드 전송에 실패했습니다.' });
-        return;
-      }
 
       setStep('code-sent');
       setPopup({ message: '인증코드가 이메일로 전송되었습니다.' });
@@ -167,48 +104,16 @@ export default function ChangeEmail() {
   const handleVerifyCode = async () => {
     setIsLoading(true);
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-
       // Step 3: 인증코드 확인
-      const verifyRes = await fetch(`${API_BASE}/auth/verify-email`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({
-          email: inputNewEmail,
-          verificationCode: inputCode,
-        }),
+      await apiClient.post('/auth/verify-email', {
+        email: inputNewEmail,
+        verificationCode: inputCode,
       });
-
-      if (!verifyRes.ok) {
-        const errorData = await verifyRes.text();
-        console.error('Verify code error:', errorData);
-        setPopup({ message: '인증번호가 일치하지 않습니다.' });
-        return;
-      }
 
       // Step 4: 이메일 변경
-      const changeRes = await fetch(`${API_BASE}/users/change-email`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({
-          email: inputNewEmail,
-        }),
+      await apiClient.post('/users/change-email', {
+        email: inputNewEmail,
       });
-
-      if (!changeRes.ok) {
-        const errorData = await changeRes.text();
-        console.error('Change email error:', errorData);
-        setPopup({ message: '이메일 변경에 실패했습니다.' });
-        return;
-      }
 
       // 성공: UI 업데이트
       const masked = inputNewEmail.replace(/(.{2}).*(@.*)/, '$1***$2');
