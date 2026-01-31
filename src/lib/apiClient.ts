@@ -18,11 +18,11 @@ let isRefreshing = false;
 // 토큰 갱신 대기 중인 요청 큐
 let failedQueue: Array<{
   resolve: (token: string) => void;
-  reject: (error: any) => void;
+  reject: (error: AxiosError) => void;
 }> = [];
 
 // 큐에 있는 요청들 처리
-const processQueue = (error: any = null, token: string | null = null) => {
+const processQueue = (error: AxiosError | null = null, token: string | null = null) => {
   failedQueue.forEach((promise) => {
     if (error) {
       promise.reject(error);

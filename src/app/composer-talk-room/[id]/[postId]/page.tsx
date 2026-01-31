@@ -184,8 +184,8 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   };
 
   // API 댓글을 CommentData로 변환
-  const transformComments = (apiCommentList: any[]): CommentData[] => {
-    return apiCommentList.map((comment: any) => ({
+  const transformComments = (apiCommentList: ApiComment[]): CommentData[] => {
+    return apiCommentList.map((comment: ApiComment) => ({
       id: comment.id,
       author: comment.writerNickname,
       timestamp: getRelativeTime(comment.createdAt),

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { AxiosError } from 'axios';
 import ComposerSearch from './composer-search';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
@@ -17,7 +18,7 @@ const SectionHeader = ({ title }: { title: string }) => (
 export default function WritePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { accessToken, isAuthenticated } = useAuthStore();
+    const { isAuthenticated } = useAuthStore();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [hashtags, setHashtags] = useState('');
@@ -249,20 +250,21 @@ export default function WritePage() {
                 alert('등록되었습니다.');
                 router.push(isCuration ? '/curation' : '/free-talk');
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('An error occurred while creating the post:', error);
-            
+
+            const axiosError = error as AxiosError<{ message: string }>;
             // Axios 에러 처리
-            if (error.response) {
+            if (axiosError.response) {
                 let errorMessage = '게시글 등록에 실패했습니다.';
-                
-                const errorData = error.response.data;
+
+                const errorData = axiosError.response.data;
                 if (errorData?.message) {
                     errorMessage = errorData.message;
                 }
 
                 // 상태 코드별 에러 메시지
-                switch (error.response.status) {
+                switch (axiosError.response.status) {
                     case 400:
                         errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
                         break;
@@ -399,12 +401,13 @@ export default function WritePage() {
 
                 alert('임시저장 되었습니다.');
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('Draft save error:', error);
 
-            if (error.response?.status === 400) {
+            const axiosError = error as AxiosError;
+            if (axiosError.response?.status === 400) {
                 alert('잘못된 요청입니다. 입력 내용을 확인해주세요.');
-            } else if (error.response?.status === 401) {
+            } else if (axiosError.response?.status === 401) {
                 alert('로그인이 필요합니다.');
             } else {
                 alert('임시저장에 실패했습니다.');

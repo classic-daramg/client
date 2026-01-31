@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { AxiosError } from 'axios';
 import { apiClient } from '@/lib/apiClient';
 import { usePostAuth } from '@/hooks/usePostAuth';
 import PostHeader from './components/PostHeader';
@@ -102,9 +103,10 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
       const response = await apiClient.get(`/posts/${pId}`);
       setPost(response.data);
       setError(null);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch post:', err);
-      setError(err.response?.data?.message || '포스트를 불러올 수 없습니다.');
+      const axiosError = err as AxiosError<{ message: string }>;
+      setError(axiosError.response?.data?.message || '포스트를 불러올 수 없습니다.');
     } finally {
       setLoading(false);
     }
@@ -179,14 +181,15 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     try {
       await apiClient.post(`/posts/${postId}/scrap`);
       showToast(prevScrapped ? '스크랩을 취소했습니다.' : '스크랩했습니다.');
-    } catch (err: any) {
+    } catch (err) {
       // Rollback on error
       setPost({
         ...post,
         isScrapped: prevScrapped,
       });
       console.error('Failed to toggle scrap:', err);
-      showToast(err.response?.data?.message || '스크랩 처리에 실패했습니다.', 'error');
+      const axiosError = err as AxiosError<{ message: string }>;
+      showToast(axiosError.response?.data?.message || '스크랩 처리에 실패했습니다.', 'error');
     }
   };
 
@@ -258,9 +261,10 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           router.push('/');
         }
       }, 1000);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to delete post:', err);
-      const errorMsg = err.response?.data?.message || '포스트 삭제에 실패했습니다.';
+      const axiosError = err as AxiosError<{ message: string }>;
+      const errorMsg = axiosError.response?.data?.message || '포스트 삭제에 실패했습니다.';
       showToast(errorMsg, 'error');
     }
   };
