@@ -88,8 +88,7 @@ export default function PostList({ searchValue, filters }: PostListProps) {
               post.thumbnailImageUrl ||
               post.imageUrl ||
               post.imageUrls?.[0] ||
-              post.images?.[0]?.url ||
-              post.images?.[0],
+              (typeof post.images?.[0] === 'string' ? post.images[0] : post.images?.[0]?.url),
           };
         }) || [];
 

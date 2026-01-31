@@ -49,7 +49,7 @@ const ProfileSetupPage = () => {
     const reader = new FileReader();
     
     reader.onload = (e) => {
-      const img = new Image();
+      const img = new window.Image();
       
       img.onload = () => {
         try {

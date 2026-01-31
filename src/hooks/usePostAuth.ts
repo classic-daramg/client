@@ -47,7 +47,7 @@ export function usePostAuth(
       isAuthor: isPostAuthor,
       currentUserNickname: currentNickname,
     };
-  }, [checkAuth, profile?.nickname, writerNickname, isLiked, isScrapped]);
+  }, [checkAuth, profile?.nickname, writerNickname]);
 
   return authStatus;
 }

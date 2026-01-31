@@ -64,7 +64,6 @@ const ResetPasswordPage = () => {
       */
 
       // 테스트용
-      setIsCodeSent(true);
       setStep('verify');
     } catch (error) {
       alert('네트워크 오류가 발생했습니다.');
@@ -98,7 +97,6 @@ const ResetPasswordPage = () => {
       */
 
       // 테스트용
-      setIsEmailVerified(true);
       setStep('reset');
     } catch (error) {
       alert('네트워크 오류가 발생했습니다.');

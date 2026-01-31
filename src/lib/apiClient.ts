@@ -155,7 +155,7 @@ apiClient.interceptors.response.use(
       return apiClient(originalRequest);
     } catch (refreshError) {
       console.error('❌ Token refresh failed:', refreshError);
-      processQueue(refreshError, null);
+      processQueue(refreshError as AxiosError, null);
       useAuthStore.getState().clearTokens();
 
       // 로그인 페이지로 리다이렉트
