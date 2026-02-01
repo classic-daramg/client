@@ -8,12 +8,6 @@ interface Composer {
     name: string;
 }
 
-interface ComposerApiResponse {
-    composerId: number;
-    koreanName: string;
-    englishName: string;
-}
-
 interface ComposerSearchProps {
     onSelectComposer: (composers: Array<{ id: number; name: string }>) => void;
     onClose: () => void;
@@ -39,7 +33,7 @@ export default function ComposerSearch({
                 const { data } = await apiClient.get('/composers');
 
                 // API 응답을 Composer 형식으로 변환
-                const formattedComposers = data.map((composer: ComposerApiResponse) => ({
+                const formattedComposers = data.map((composer: any) => ({
                     id: composer.composerId,
                     name: composer.koreanName || composer.englishName || '알 수 없음',
                 }));
