@@ -30,7 +30,7 @@ const LikeIcon = () => (
   <Image src="/icons/heart.svg" alt="좋아요" width={15} height={15} />
 );
 const CommentIcon = () => (
-  <Image src="/icons/message.svg" alt="댓글" width={12} height={12} />
+  <Image src="/icons/icons_comment.svg" alt="댓글" width={12} height={12} />
 );
 
 // --- Helpers ---

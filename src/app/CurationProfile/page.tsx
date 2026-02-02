@@ -243,7 +243,7 @@ const CurationProfile: React.FC<CurationProfileProps> = ({
                     <div className="flex items-center gap-3 text-xs">
                       <div className="flex items-center gap-1">
                         <Image 
-                          src="/icons/message.svg" 
+                          src="/icons/icons_comment.svg" 
                           alt="댓글" 
                           width={12} 
                           height={12} 
