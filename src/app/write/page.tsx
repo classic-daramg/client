@@ -254,7 +254,7 @@ export default function WritePage() {
             console.error('An error occurred while creating the post:', error);
 
             // Axios 에러 처리
-            const axiosError = error as AxiosError;
+            const axiosError = error as AxiosError<{ message?: string }>;
             if (axiosError?.response) {
                 let errorMessage = '게시글 등록에 실패했습니다.';
 
