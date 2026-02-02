@@ -8,22 +8,10 @@ import ComposerSearch from './composer-search';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
 
-function WriteSkeleton() {
-  return (
-    <div className="relative bg-[#f4f5f7] min-h-screen">
-      <div className="h-16 bg-gray-200 animate-pulse" />
-      <div className="flex-1 space-y-4 p-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function WritePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [isClient, setIsClient] = useState(false);
     const { isAuthenticated } = useAuthStore();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -36,8 +24,16 @@ export default function WritePage() {
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
     
+    // 클라이언트 사이드 마운트 확인
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     // URL query parameter에서 postType 결정
     const composerName = searchParams.get('composer');
+    const composerId = searchParams.get('composerId')
+        ? parseInt(searchParams.get('composerId')!)
+        : null;
     const postTypeParam = searchParams.get('type'); // 'curation', 'free'
     
     // PostType 자동 설정
@@ -56,12 +52,16 @@ export default function WritePage() {
 
     const [selectedType, setSelectedType] = useState<string>(getSelectedType());
     const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+    const [primaryComposerId, setPrimaryComposerId] = useState<number | null>(composerId);
     
     // 큐레이션 옵션 모드 ('{composer} 이야기'일 때만 사용)
     const [curationMode, setCurationMode] = useState<'none' | 'curation' | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // draft-edit 데이터가 있으면 제목/내용에 자동 입력
     useEffect(() => {
+        if (!isClient) return;
+        
         if (typeof window !== 'undefined') {
             const draftStr = localStorage.getItem('draft-edit');
             if (draftStr) {
@@ -72,7 +72,7 @@ export default function WritePage() {
                 } catch {}
             }
         }
-    }, []);
+    }, [isClient]);
 
     // postType 변경 시 curationMode 초기화 로직
     useEffect(() => {
@@ -134,18 +134,18 @@ export default function WritePage() {
     // PostType 판단
     const isComposerTalkRoom = selectedType.includes('이야기');
     const isCurationPost = selectedType === '큐레이션 글';
-    
-    // 큐레이션 모드가 'curation'일 때만 큐레이션 포스트로 간주
+    const isStoryPost = isComposerTalkRoom && curationMode === 'none';
     const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
     
-    // 작곡가 선택 필수 여부 (큐레이션 글 또는 {composer}이야기 + 큐레이션 모드)
-    const composerSelectionRequired = isCurationPost || isCurationWithComposer;
+    // 작곡가 선택 필수 여부 (큐레이션 글만 필수, {composer} 이야기의 큐레이션은 선택사항)
+    const composerSelectionRequired = isCurationPost;
     
     const isButtonEnabled = title.trim() !== '' && content.trim() !== '' && 
         (composerSelectionRequired ? selectedComposers.length > 0 : true);
 
     const handleRegister = async () => {
         if (!isButtonEnabled) return;
+        if (isSubmitting) return; // 이중 제출 방지
 
         // 로그인 확인
         if (!isAuthenticated()) {
@@ -154,7 +154,15 @@ export default function WritePage() {
             return;
         }
 
+        setIsSubmitting(true);
+
         try {
+            // 포스트 타입 판단
+            const isComposerTalkRoom = selectedType.includes('이야기');
+            const isCurationPost = selectedType === '큐레이션 글';
+            const isStoryPost = isComposerTalkRoom && curationMode === 'none';
+            const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
+
             // 해시태그를 배열로 변환 (쉼표 또는 공백으로 구분)
             const hashtagArray = hashtags
                 .trim()
@@ -162,113 +170,190 @@ export default function WritePage() {
                 .filter((tag: string) => tag.length > 0)
                 .map((tag: string) => tag.startsWith('#') ? tag.slice(1) : tag);
 
-            // 포스트 타입에 따라 데이터 구성
-            interface CurationPostData {
-                title: string;
-                content: string;
-                postStatus: string;
-                primaryComposerId: number;
-                additionalComposerIds?: number[];
-                images?: string[];
-                hashtags?: string[];
-                videoUrl?: string;
-            }
-            
-            interface FreePostData {
-                title: string;
-                content: string;
-                postStatus: string;
-                images?: string[];
-                hashtags?: string[];
-                videoUrl?: string;
-            }
-
-            const isCuration = isCurationPost || isCurationWithComposer;
-            const postData: CurationPostData | FreePostData = {
-                title: title,
-                content: content,
-                postStatus: 'PUBLISHED',
-            };
-
-            // 큐레이션 글 또는 {composer} 이야기이면서 curationMode가 'curation'일 때만 작곡가 ID 추가
-            if (isCuration && selectedComposers.length > 0) {
-                (postData as CurationPostData).primaryComposerId = selectedComposers[0].id;
-                // 추가 작곡가가 있으면 추가
-                if (selectedComposers.length > 1) {
-                    (postData as CurationPostData).additionalComposerIds = selectedComposers.slice(1).map((c: { id: number; name: string }) => c.id);
-                }
-            }
-
-            // 이미지가 있으면 먼저 S3에 업로드
+            // 공통 이미지 업로드
+            let uploadedImages: string[] | undefined;
             if (imageFiles.length > 0) {
                 try {
-                    // FormData 생성
                     const formData = new FormData();
                     imageFiles.forEach((file: File) => {
                         formData.append('images', file);
                     });
 
-                    // Axios로 이미지 업로드 (자동으로 토큰 포함됨)
                     const uploadRes = await apiClient.post('/images/upload', formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
                     });
 
-                    // S3 URL 배열을 postData에 추가
-                    postData.images = uploadRes.data.imageUrls;
-
-                    console.log('Uploaded image URLs:', uploadRes.data.imageUrls);
+                    uploadedImages = uploadRes.data.imageUrls;
+                    console.log('✅ Images uploaded:', uploadedImages);
                 } catch (error) {
-                    console.error('Image upload error:', error);
+                    console.error('❌ Image upload error:', error);
                     alert('이미지 업로드에 실패했습니다.');
-                    return; // 이미지 업로드 실패 시 게시글 생성 중단
+                    setIsSubmitting(false);
+                    return;
                 }
             }
 
-            // 해시태그가 있으면 추가
-            if (hashtagArray.length > 0) {
-                postData.hashtags = hashtagArray;
+            // 기본 포스트 데이터
+            interface PostData {
+                title: string;
+                content: string;
+                postStatus: string;
+                primaryComposerId?: number;
+                additionalComposerIds?: number[];
+                images?: string[];
+                hashtags?: string[];
+                videoUrl?: string;
             }
 
-            // 비디오/링크가 있으면 추가
-            if (link && link.trim()) {
-                postData.videoUrl = link;
+            // Case 1: Story Post (작곡가 이야기 - 큐레이션 없음)
+            if (isStoryPost) {
+                if (!primaryComposerId) {
+                    alert('작곡가 ID를 찾을 수 없습니다.');
+                    setIsSubmitting(false);
+                    return;
+                }
+
+                const storyData: PostData = {
+                    title,
+                    content,
+                    postStatus: 'PUBLISHED',
+                    primaryComposerId,
+                };
+
+                if (uploadedImages) storyData.images = uploadedImages;
+                if (hashtagArray.length > 0) storyData.hashtags = hashtagArray;
+                if (link && link.trim()) storyData.videoUrl = link;
+
+                console.log('📝 [STORY] Posting to /posts/story:', storyData);
+
+                const response = await apiClient.post('/posts/story', storyData);
+                console.log('✅ [STORY] Post created:', response.data);
+
+                alert('작곡가 이야기가 등록되었습니다.');
+                router.push(`/composer-talk-room/${primaryComposerId}`);
+                return;
             }
 
-            // API 엔드포인트 결정
-            const apiEndpoint = isCuration 
-                ? '/posts/curation'
-                : '/posts/free';
+            // Case 2: Story + Curation (작곡가 이야기의 큐레이션)
+            if (isCurationWithComposer) {
+                if (!primaryComposerId) {
+                    alert('작곡가 ID를 찾을 수 없습니다.');
+                    setIsSubmitting(false);
+                    return;
+                }
 
-            console.log('--- JSON Data to be Sent ---');
-            console.log(JSON.stringify(postData, null, 2));
-            console.log('--------------------------');
+                try {
+                    // 1단계: Story 포스트 생성
+                    const storyData: PostData = {
+                        title,
+                        content,
+                        postStatus: 'PUBLISHED',
+                        primaryComposerId,
+                    };
 
-            // Axios를 사용하여 POST 요청 (자동으로 토큰 포함 및 401 에러 처리)
-            const response = await apiClient.post(apiEndpoint, postData);
+                    if (uploadedImages) storyData.images = uploadedImages;
+                    if (hashtagArray.length > 0) storyData.hashtags = hashtagArray;
+                    if (link && link.trim()) storyData.videoUrl = link;
 
-            console.log('Response status:', response.status);
-            console.log('Response data:', response.data);
+                    console.log('📝 [STORY] Posting to /posts/story:', storyData);
+                    const storyRes = await apiClient.post('/posts/story', storyData);
+                    console.log('✅ [STORY] Post created:', storyRes.data);
 
-            if (response.status === 200 || response.status === 201) {
-                console.log('Post created successfully:', response.data);
-                alert('등록되었습니다.');
-                router.push(isCuration ? '/curation' : '/free-talk');
+                    // 2단계: Curation 포스트 생성
+                    const curationData: PostData = {
+                        title,
+                        content,
+                        postStatus: 'PUBLISHED',
+                        primaryComposerId,
+                    };
+
+                    if (selectedComposers.length > 0) {
+                        if (selectedComposers.length > 1) {
+                            curationData.additionalComposerIds = selectedComposers.slice(1).map(c => c.id);
+                        }
+                    }
+
+                    if (uploadedImages) curationData.images = uploadedImages;
+                    if (hashtagArray.length > 0) curationData.hashtags = hashtagArray;
+                    if (link && link.trim()) curationData.videoUrl = link;
+
+                    console.log('📝 [CURATION] Posting to /posts/curation:', curationData);
+                    const curationRes = await apiClient.post('/posts/curation', curationData);
+                    console.log('✅ [CURATION] Post created:', curationRes.data);
+
+                    alert('작곡가 이야기와 큐레이션이 등록되었습니다.');
+                    router.push('/curation');
+                    return;
+                } catch (error: any) {
+                    console.error('❌ API Error:', error.response?.data);
+                    alert('포스트 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                    setIsSubmitting(false);
+                    return;
+                }
             }
+
+            // Case 3: Curation Post (큐레이션 글 - 단독)
+            if (isCurationPost) {
+                if (selectedComposers.length === 0) {
+                    alert('작곡가를 최소 1명 선택해주세요.');
+                    setIsSubmitting(false);
+                    return;
+                }
+
+                const curationData: PostData = {
+                    title,
+                    content,
+                    postStatus: 'PUBLISHED',
+                    primaryComposerId: selectedComposers[0].id,
+                };
+
+                if (selectedComposers.length > 1) {
+                    curationData.additionalComposerIds = selectedComposers.slice(1).map(c => c.id);
+                }
+
+                if (uploadedImages) curationData.images = uploadedImages;
+                if (hashtagArray.length > 0) curationData.hashtags = hashtagArray;
+                if (link && link.trim()) curationData.videoUrl = link;
+
+                console.log('📝 [CURATION] Posting to /posts/curation:', curationData);
+                const response = await apiClient.post('/posts/curation', curationData);
+                console.log('✅ [CURATION] Post created:', response.data);
+
+                alert('큐레이션이 등록되었습니다.');
+                router.push('/curation');
+                return;
+            }
+
+            // Case 4: Free Post (자유 글)
+            const freeData: PostData = {
+                title,
+                content,
+                postStatus: 'PUBLISHED',
+            };
+
+            if (uploadedImages) freeData.images = uploadedImages;
+            if (hashtagArray.length > 0) freeData.hashtags = hashtagArray;
+            if (link && link.trim()) freeData.videoUrl = link;
+
+            console.log('📝 [FREE] Posting to /posts/free:', freeData);
+            const response = await apiClient.post('/posts/free', freeData);
+            console.log('✅ [FREE] Post created:', response.data);
+
+            alert('자유글이 등록되었습니다.');
+            router.push('/free-talk');
         } catch (error: any) {
-            console.error('An error occurred while creating the post:', error);
-            
-            // Axios 에러 처리
+            console.error('❌ An error occurred while creating the post:', error);
+
             if (error.response) {
                 let errorMessage = '게시글 등록에 실패했습니다.';
-                
+
                 const errorData = error.response.data;
                 if (errorData?.message) {
                     errorMessage = errorData.message;
                 }
 
-                // 상태 코드별 에러 메시지
                 switch (error.response.status) {
                     case 400:
                         errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
@@ -286,11 +371,13 @@ export default function WritePage() {
                         errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
                         break;
                 }
-                
+
                 alert(errorMessage);
             } else {
                 alert('오류가 발생했습니다.');
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -306,6 +393,11 @@ export default function WritePage() {
         localStorage.setItem('draft-edit', JSON.stringify(draft));
         alert('임시저장 되었습니다.');
     };
+
+    // 클라이언트 사이드에서만 렌더링
+    if (!isClient) {
+        return null;
+    }
 
     return (
         <div className="relative bg-[#f4f5f7] min-h-screen">
@@ -325,9 +417,9 @@ export default function WritePage() {
                         </button>
                         <button 
                             onClick={handleRegister} 
-                            disabled={!isButtonEnabled} 
+                            disabled={!isButtonEnabled || isSubmitting} 
                             className={`px-3 py-1.5 rounded-full flex items-center gap-0.5 ${
-                                isButtonEnabled ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
+                                isButtonEnabled && !isSubmitting ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
                             }`}
                         >
                             <span className="text-white text-[13px] font-semibold font-['Pretendard']">등록</span>

@@ -49,35 +49,6 @@ const getRelativeTime = (isoString: string): string => {
   return date.toLocaleDateString('ko-KR');
 };
 
-function RoomSkeleton() {
-  return (
-    <div className="min-h-screen bg-[#f4f5f7]">
-      <div className="h-14 bg-white shadow-sm" />
-      <div className="px-5 py-4 space-y-4">
-        <div className="h-24 bg-white rounded-lg shadow-sm p-4">
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 w-1/3 bg-zinc-200 rounded" />
-            <div className="h-3 w-1/2 bg-zinc-200 rounded" />
-            <div className="h-3 w-1/4 bg-zinc-200 rounded" />
-          </div>
-        </div>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="animate-pulse space-y-3">
-                <div className="h-4 w-3/4 bg-zinc-200 rounded" />
-                <div className="h-3 w-full bg-zinc-200 rounded" />
-                <div className="h-3 w-5/6 bg-zinc-200 rounded" />
-                <div className="h-3 w-1/3 bg-zinc-200 rounded" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function PostsSkeleton() {
   return (
     <div className="space-y-4 py-4">
@@ -264,7 +235,7 @@ export default function ComposerTalkPage() {
     : posts;
 
   if (!isClient || !hasHydrated) {
-    return <RoomSkeleton />;
+    return null;
   }
 
   return (
@@ -276,10 +247,12 @@ export default function ComposerTalkPage() {
       {selectedComposer && <ComposerProfile data={selectedComposer} />}
       <div className="px-5">
         <section>
-          {loading ? (
-            <PostsSkeleton />
-          ) : filteredPosts.length === 0 ? (
-            <div className="py-10 text-center text-zinc-400">게시글이 없습니다.</div>
+          {filteredPosts.length === 0 ? (
+            loading ? (
+              <PostsSkeleton />
+            ) : (
+              <div className="py-10 text-center text-zinc-400">게시글이 없습니다.</div>
+            )
           ) : (
             filteredPosts.map((post) => (
               <Link key={post.id} href={`/posts/${post.id}`}>
