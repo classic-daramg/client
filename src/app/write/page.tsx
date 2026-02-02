@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { AxiosError } from 'axios';
 import ComposerSearch from './composer-search';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
