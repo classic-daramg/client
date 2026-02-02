@@ -70,7 +70,7 @@ export default function PostItem({
                 <span className="text-blue-900">{likes}</span>
               </div>
               <div className="flex items-center gap-0.5">
-                <Image src="/icons/icons_comment.svg" alt="댓글" width={12} height={12} />
+                <Image src="/icons/message.svg" alt="댓글" width={12} height={12} />
                 <span className="text-blue-900">{comments}</span>
               </div>
               <span>{timeAgo}</span>

@@ -1,30 +1,24 @@
-'use client'
+'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { SectionHeader } from './components/SectionHeader';
+import { AxiosError } from 'axios';
 import ComposerSearch from './composer-search';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
 
-function WriteSkeleton() {
-  return (
-    <div className="relative bg-[#f4f5f7] min-h-screen">
-      <div className="h-16 bg-gray-200 animate-pulse" />
-      <div className="flex-1 space-y-4 p-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
-        ))}
-      </div>
+// Section Header Component
+const SectionHeader = ({ title }: { title: string }) => (
+    <div className="w-full px-5 py-3.5 bg-[#f4f5f7]">
+        <p className="text-[#4c4c4c] text-xs font-medium font-['Pretendard']">{title}</p>
     </div>
-  );
-}
+);
 
-export default function WritePage() {
+export default function WriteContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { isAuthenticated } = useAuthStore();
+    const { accessToken, isAuthenticated } = useAuthStore();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [hashtags, setHashtags] = useState('');
@@ -35,11 +29,11 @@ export default function WritePage() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
-    
+
     // URL query parameter에서 postType 결정
     const composerName = searchParams.get('composer');
     const postTypeParam = searchParams.get('type'); // 'curation', 'free'
-    
+
     // PostType 자동 설정
     const getSelectedType = (): string => {
         if (composerName) {
@@ -56,7 +50,7 @@ export default function WritePage() {
 
     const [selectedType, setSelectedType] = useState<string>(getSelectedType());
     const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
-    
+
     // 큐레이션 옵션 모드 ('{composer} 이야기'일 때만 사용)
     const [curationMode, setCurationMode] = useState<'none' | 'curation' | null>(null);
 
@@ -77,7 +71,7 @@ export default function WritePage() {
     // postType 변경 시 curationMode 초기화 로직
     useEffect(() => {
         const isComposerTalkPostType = selectedType.includes('이야기');
-        
+
         if (isComposerTalkPostType) {
             // {composer} 이야기로 변경되면 기본값 'none'으로 설정
             setCurationMode('none');
@@ -104,7 +98,7 @@ export default function WritePage() {
         if (event.target.files) {
             const newFiles = Array.from(event.target.files);
             const newUrls = newFiles.map(file => URL.createObjectURL(file));
-            
+
             setImageFiles([...imageFiles, ...newFiles]);
             setImagePreviewUrls([...imagePreviewUrls, ...newUrls]);
         }
@@ -119,29 +113,29 @@ export default function WritePage() {
         if (imagePreviewUrls[index]) {
             URL.revokeObjectURL(imagePreviewUrls[index]);
         }
-        
-        setImageFiles(imageFiles.filter((_: File, i: number) => i !== index));
-        setImagePreviewUrls(imagePreviewUrls.filter((_: string, i: number) => i !== index));
+
+        setImageFiles(imageFiles.filter((_, i) => i !== index));
+        setImagePreviewUrls(imagePreviewUrls.filter((_, i) => i !== index));
     };
 
     // 컴포넌트 언마운트 시 모든 Blob URL 정리
     useEffect(() => {
         return () => {
-            imagePreviewUrls.forEach((url: string) => URL.revokeObjectURL(url));
+            imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
         };
     }, [imagePreviewUrls]);
 
     // PostType 판단
     const isComposerTalkRoom = selectedType.includes('이야기');
     const isCurationPost = selectedType === '큐레이션 글';
-    
+
     // 큐레이션 모드가 'curation'일 때만 큐레이션 포스트로 간주
     const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
-    
+
     // 작곡가 선택 필수 여부 (큐레이션 글 또는 {composer}이야기 + 큐레이션 모드)
     const composerSelectionRequired = isCurationPost || isCurationWithComposer;
-    
-    const isButtonEnabled = title.trim() !== '' && content.trim() !== '' && 
+
+    const isButtonEnabled = title.trim() !== '' && content.trim() !== '' &&
         (composerSelectionRequired ? selectedComposers.length > 0 : true);
 
     const handleRegister = async () => {
@@ -159,8 +153,8 @@ export default function WritePage() {
             const hashtagArray = hashtags
                 .trim()
                 .split(/[,\s]+/)
-                .filter((tag: string) => tag.length > 0)
-                .map((tag: string) => tag.startsWith('#') ? tag.slice(1) : tag);
+                .filter(tag => tag.length > 0)
+                .map(tag => tag.startsWith('#') ? tag.slice(1) : tag);
 
             // 포스트 타입에 따라 데이터 구성
             interface CurationPostData {
@@ -173,7 +167,7 @@ export default function WritePage() {
                 hashtags?: string[];
                 videoUrl?: string;
             }
-            
+
             interface FreePostData {
                 title: string;
                 content: string;
@@ -195,7 +189,7 @@ export default function WritePage() {
                 (postData as CurationPostData).primaryComposerId = selectedComposers[0].id;
                 // 추가 작곡가가 있으면 추가
                 if (selectedComposers.length > 1) {
-                    (postData as CurationPostData).additionalComposerIds = selectedComposers.slice(1).map((c: { id: number; name: string }) => c.id);
+                    (postData as CurationPostData).additionalComposerIds = selectedComposers.slice(1).map(c => c.id);
                 }
             }
 
@@ -204,7 +198,7 @@ export default function WritePage() {
                 try {
                     // FormData 생성
                     const formData = new FormData();
-                    imageFiles.forEach((file: File) => {
+                    imageFiles.forEach(file => {
                         formData.append('images', file);
                     });
 
@@ -237,7 +231,7 @@ export default function WritePage() {
             }
 
             // API 엔드포인트 결정
-            const apiEndpoint = isCuration 
+            const apiEndpoint = isCuration
                 ? '/posts/curation'
                 : '/posts/free';
 
@@ -256,20 +250,21 @@ export default function WritePage() {
                 alert('등록되었습니다.');
                 router.push(isCuration ? '/curation' : '/free-talk');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('An error occurred while creating the post:', error);
-            
+
             // Axios 에러 처리
-            if (error.response) {
+            const axiosError = error as AxiosError<{ message?: string }>;
+            if (axiosError?.response) {
                 let errorMessage = '게시글 등록에 실패했습니다.';
-                
-                const errorData = error.response.data;
+
+                const errorData = axiosError.response.data;
                 if (errorData?.message) {
                     errorMessage = errorData.message;
                 }
 
                 // 상태 코드별 에러 메시지
-                switch (error.response.status) {
+                switch (axiosError.response.status) {
                     case 400:
                         errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
                         break;
@@ -286,7 +281,7 @@ export default function WritePage() {
                         errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
                         break;
                 }
-                
+
                 alert(errorMessage);
             } else {
                 alert('오류가 발생했습니다.');
@@ -317,15 +312,15 @@ export default function WritePage() {
                     </button>
                     <h1 className="flex-1 text-[#1a1a1a] text-base font-semibold font-['Pretendard'] ml-1">글쓰기</h1>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <button 
-                            onClick={handleSaveDraft} 
+                        <button
+                            onClick={handleSaveDraft}
                             className="px-3 py-1.5 bg-white rounded-full border border-[#d9d9d9] flex items-center gap-0.5"
                         >
                             <span className="text-[#a6a6a6] text-[13px] font-semibold font-['Pretendard']">임시저장</span>
                         </button>
-                        <button 
-                            onClick={handleRegister} 
-                            disabled={!isButtonEnabled} 
+                        <button
+                            onClick={handleRegister}
+                            disabled={!isButtonEnabled}
                             className={`px-3 py-1.5 rounded-full flex items-center gap-0.5 ${
                                 isButtonEnabled ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
                             }`}
@@ -342,11 +337,11 @@ export default function WritePage() {
                 <SectionHeader title="게시글 유형" />
                 <div className="bg-white px-6 py-[18px] flex items-center gap-2">
                     <div className="w-3 h-3 flex-shrink-0">
-                        <Image 
-                            src="/icons/write-blue.svg" 
-                            alt="post type" 
-                            width={12} 
-                            height={12} 
+                        <Image
+                            src="/icons/write-blue.svg"
+                            alt="post type"
+                            width={12}
+                            height={12}
                         />
                     </div>
                     <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">{selectedType}</p>
@@ -382,7 +377,7 @@ export default function WritePage() {
                                     <span className={`text-sm font-medium font-['Pretendard'] ${
                                         selectedComposers.length > 0 ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'
                                     }`}>
-                                        {selectedComposers.length > 0 
+                                        {selectedComposers.length > 0
                                             ? selectedComposers.length === 1
                                                 ? selectedComposers[0].name
                                                 : `${selectedComposers[0].name} 외 ${selectedComposers.length - 1}명`
@@ -410,8 +405,8 @@ export default function WritePage() {
                 <SectionHeader title="게시글 내용" />
                 <div className="w-full px-5 py-[18px] bg-white">
                     <textarea
-                        placeholder={selectedType === '큐레이션 글' 
-                            ? "나만의 이야기를 담아 클래식 음악을 추천해주세요!" 
+                        placeholder={selectedType === '큐레이션 글'
+                            ? "나만의 이야기를 담아 클래식 음악을 추천해주세요!"
                             : "작곡가에 대해 같은 음악 취향을 가진 사람들과 나누고픈 이야기를 자유롭게 적어보세요!"}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
@@ -452,8 +447,8 @@ export default function WritePage() {
                             accept="image/*"
                             multiple
                         />
-                        <button 
-                            onClick={handleImageUploadClick} 
+                        <button
+                            onClick={handleImageUploadClick}
                             className="w-full px-3.5 py-2.5 bg-[#f4f5f7] rounded-[10px] text-sm font-medium font-['Pretendard'] text-[#a6a6a6] text-left"
                         >
                             이미지 업로드
@@ -461,13 +456,13 @@ export default function WritePage() {
                     </div>
                     {imageFiles.length > 0 && (
                         <div className="w-full grid grid-cols-2 gap-2.5">
-                            {imageFiles.map((file: File, index: number) => (
-                                <div 
-                                    key={index} 
+                            {imageFiles.map((file, index) => (
+                                <div
+                                    key={index}
                                     className="relative aspect-square bg-[#f4f5f7] rounded-[10px] overflow-hidden"
                                 >
-                                    <Image 
-                                        src={imagePreviewUrls[index]} 
+                                    <Image
+                                        src={imagePreviewUrls[index]}
                                         alt={`업로드된 이미지 ${index + 1}`}
                                         fill
                                         unoptimized
@@ -488,10 +483,10 @@ export default function WritePage() {
 
             {/* 작곡가 검색 모달 */}
             {showComposerSearch && (
-                <ComposerSearch 
+                <ComposerSearch
                     onSelectComposer={handleSelectComposer}
                     onClose={handleCloseComposerSearch}
-                    initialSelected={selectedComposers.map((c: { id: number; name: string }) => c.name)}
+                    initialSelected={selectedComposers.map(c => c.name)}
                 />
             )}
         </div>

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import ComposerProfile from './composer-profile';
 import FloatingButtons from './floating-buttons';
 import RoomFilter from './filter';
@@ -47,6 +48,52 @@ const getRelativeTime = (isoString: string): string => {
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}일 전`;
   return date.toLocaleDateString('ko-KR');
 };
+
+function RoomSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#f4f5f7]">
+      <div className="h-14 bg-white shadow-sm" />
+      <div className="px-5 py-4 space-y-4">
+        <div className="h-24 bg-white rounded-lg shadow-sm p-4">
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 w-1/3 bg-zinc-200 rounded" />
+            <div className="h-3 w-1/2 bg-zinc-200 rounded" />
+            <div className="h-3 w-1/4 bg-zinc-200 rounded" />
+          </div>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="animate-pulse space-y-3">
+                <div className="h-4 w-3/4 bg-zinc-200 rounded" />
+                <div className="h-3 w-full bg-zinc-200 rounded" />
+                <div className="h-3 w-5/6 bg-zinc-200 rounded" />
+                <div className="h-3 w-1/3 bg-zinc-200 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PostsSkeleton() {
+  return (
+    <div className="space-y-4 py-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 w-3/4 bg-zinc-200 rounded" />
+            <div className="h-3 w-full bg-zinc-200 rounded" />
+            <div className="h-3 w-5/6 bg-zinc-200 rounded" />
+            <div className="h-3 w-1/3 bg-zinc-200 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // --- Single Post Item Component ---
 function PostItem({ post }: { post: Post }) {
@@ -102,19 +149,30 @@ function PostItem({ post }: { post: Post }) {
 }
 
 // --- Main Page Component ---
-export default function ComposerTalkPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ComposerTalkPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { selectedComposer, selectComposer } = useComposerStore();
+  const [isClient, setIsClient] = useState(false);
+  const { selectedComposer, selectComposer, hasHydrated } = useComposerStore();
+  const params = useParams<{ id: string | string[] }>();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // params 처리 및 작곡가 데이터 + 포스트 가져오기
   useEffect(() => {
-    params.then(async ({ id: composerId }) => {
+    if (!isClient || !hasHydrated) return;
+
+    const fetchData = async () => {
+      const rawId = params?.id;
+      const composerId = Array.isArray(rawId) ? rawId[0] : rawId;
+      if (!composerId) return;
+
       setLoading(true);
 
-      // API에서 작곡가 정보 + 포스트 목록 함께 가져오기
       try {
         const response = await fetch(
           `https://classic-daramg.duckdns.org/composers/${composerId}/posts`,
@@ -129,12 +187,27 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
         if (response.ok) {
           const data = await response.json();
 
-          // 작곡가 정보 저장
           if (data.composer) {
             selectComposer(data.composer);
+          } else if (!selectedComposer) {
+            const composerRes = await fetch(
+              `https://classic-daramg.duckdns.org/composers/${composerId}`,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+              }
+            );
+
+            if (composerRes.ok) {
+              const composerData = await composerRes.json();
+              if (composerData) {
+                selectComposer(composerData);
+              }
+            }
           }
 
-          // 포스트 목록 저장
           if (data.posts && data.posts.content) {
             const formattedPosts: Post[] = data.posts.content.map((post: Post) => ({
               id: post.id,
@@ -161,8 +234,10 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
       } finally {
         setLoading(false);
       }
-    });
-  }, [params, selectComposer]);
+    };
+
+    fetchData();
+  }, [hasHydrated, isClient, params, selectComposer, selectedComposer]);
 
   // 필터 제거 핸들러
   const handleRemoveFilter = (filterId: string) => {
@@ -188,17 +263,21 @@ export default function ComposerTalkPage({ params }: { params: Promise<{ id: str
       })
     : posts;
 
+  if (!isClient || !hasHydrated) {
+    return <RoomSkeleton />;
+  }
+
   return (
     <>
-      <RoomHeader 
-        onFilterClick={() => setIsFilterOpen(true)} 
+      <RoomHeader
+        onFilterClick={() => setIsFilterOpen(true)}
         composerName={selectedComposer?.koreanName}
       />
       {selectedComposer && <ComposerProfile data={selectedComposer} />}
       <div className="px-5">
         <section>
           {loading ? (
-            <div className="py-10 text-center text-zinc-400">불러오는 중...</div>
+            <PostsSkeleton />
           ) : filteredPosts.length === 0 ? (
             <div className="py-10 text-center text-zinc-400">게시글이 없습니다.</div>
           ) : (
