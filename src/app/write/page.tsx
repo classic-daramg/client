@@ -249,20 +249,21 @@ export default function WritePage() {
                 alert('등록되었습니다.');
                 router.push(isCuration ? '/curation' : '/free-talk');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('An error occurred while creating the post:', error);
-            
+
             // Axios 에러 처리
-            if (error.response) {
+            const axiosError = error as AxiosError;
+            if (axiosError?.response) {
                 let errorMessage = '게시글 등록에 실패했습니다.';
-                
-                const errorData = error.response.data;
+
+                const errorData = axiosError.response.data;
                 if (errorData?.message) {
                     errorMessage = errorData.message;
                 }
 
                 // 상태 코드별 에러 메시지
-                switch (error.response.status) {
+                switch (axiosError.response.status) {
                     case 400:
                         errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
                         break;

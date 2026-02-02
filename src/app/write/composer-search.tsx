@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
 
+interface ComposerApiResponse {
+    composerId: number;
+    koreanName?: string;
+    englishName?: string;
+}
+
 interface Composer {
     id: number;
     name: string;
@@ -33,7 +39,7 @@ export default function ComposerSearch({
                 const { data } = await apiClient.get('/composers');
 
                 // API 응답을 Composer 형식으로 변환
-                const formattedComposers = data.map((composer: any) => ({
+                const formattedComposers = data.map((composer: ComposerApiResponse) => ({
                     id: composer.composerId,
                     name: composer.koreanName || composer.englishName || '알 수 없음',
                 }));
