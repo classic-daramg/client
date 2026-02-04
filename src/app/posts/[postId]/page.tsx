@@ -11,7 +11,6 @@ import PostHeader from './components/PostHeader';
 import PostContent from './components/PostContent';
 import PostFooter from './components/PostFooter';
 import CommentSection from './components/CommentSection';
-import ComposerInfo from './components/ComposerInfo';
 import PostSkeleton from './components/PostSkeleton';
 import EditDeleteButtons from './components/EditDeleteButtons';
 import ToastNotification from '@/components/ToastNotification';
@@ -343,15 +342,6 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           postType={post.type}
         />
 
-        {/* ========== Composer Info (STORY & CURATION only) ========== */}
-        {(post.type === 'STORY' || post.type === 'CURATION') && post.primaryComposer && (
-          <ComposerInfo
-            primaryComposer={post.primaryComposer}
-            additionalComposers={post.additionalComposers}
-            showAdditional={post.type === 'CURATION'}
-          />
-        )}
-
         {/* ========== Post Content ========== */}
         <PostContent
           title={post.title}
@@ -359,6 +349,15 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           images={post.images}
           videoUrl={post.videoUrl}
           hashtags={post.hashtags}
+          primaryComposerName={post.primaryComposer?.koreanName}
+          additionalComposerNames={
+            post.type === 'CURATION'
+              ? (post.additionalComposers || [])
+                  .map((composer) => composer.koreanName || composer.englishName)
+                  .filter((name): name is string => !!name)
+              : []
+          }
+          showComposerChip={post.type === 'CURATION' && !!post.primaryComposer}
         />
 
         {/* ========== Post Footer ========== */}

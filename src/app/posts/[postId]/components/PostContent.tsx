@@ -9,6 +9,9 @@ interface PostContentProps {
   images: string[];
   videoUrl: string | null;
   hashtags: string[];
+  primaryComposerName?: string;
+  additionalComposerNames?: string[];
+  showComposerChip?: boolean;
 }
 
 /**
@@ -29,6 +32,9 @@ export default function PostContent({
   images,
   videoUrl,
   hashtags,
+  primaryComposerName,
+  additionalComposerNames = [],
+  showComposerChip = false,
 }: PostContentProps) {
   // URL 검증 함수
   const isValidUrl = (url: string): boolean => {
@@ -78,14 +84,35 @@ export default function PostContent({
         {content}
       </div>
 
-      {/* 해시태그 */}
-      {hashtags.length > 0 && (
-        <div className="flex flex-wrap gap-1 font-medium text-xs text-[#d9d9d9]">
-          {hashtags.map((tag, index) => (
-            <span key={index}>#{tag}</span>
-          ))}
+      {/* 작곡가 칩 + 해시태그 */}
+      {(showComposerChip && (primaryComposerName || additionalComposerNames.length > 0)) || hashtags.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          {showComposerChip && (primaryComposerName || additionalComposerNames.length > 0) && (
+            <div className="flex flex-wrap gap-1">
+              {primaryComposerName && (
+                <span className="inline-flex items-center justify-center rounded-full bg-[#293a92] px-[10px] py-[3px] text-[12px] font-semibold text-white">
+                  {primaryComposerName}
+                </span>
+              )}
+              {additionalComposerNames.map((name, index) => (
+                <span
+                  key={`${name}-${index}`}
+                  className="inline-flex items-center justify-center rounded-full bg-[#293a92] px-[10px] py-[3px] text-[12px] font-semibold text-white"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          )}
+          {hashtags.length > 0 && (
+            <div className="flex flex-wrap gap-1 font-medium text-xs text-[#d9d9d9]">
+              {hashtags.map((tag, index) => (
+                <span key={index}>#{tag}</span>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* 이미지 슬라이더 */}
       {validImages.length > 0 && (
