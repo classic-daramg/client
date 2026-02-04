@@ -126,6 +126,7 @@ export default function ComposerTalkPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [hasLoadedComposer, setHasLoadedComposer] = useState(false);
   const { selectedComposer, selectComposer, hasHydrated } = useComposerStore();
   const params = useParams<{ id: string | string[] }>();
 
@@ -204,11 +205,15 @@ export default function ComposerTalkPage() {
         console.error('Failed to fetch composer data:', error);
       } finally {
         setLoading(false);
+        setHasLoadedComposer(true);
       }
     };
 
-    fetchData();
-  }, [hasHydrated, isClient, params, selectComposer, selectedComposer]);
+    // 이미 로드했으면 다시 로드하지 않음
+    if (!hasLoadedComposer) {
+      fetchData();
+    }
+  }, [hasHydrated, isClient, params, hasLoadedComposer]);
 
   // 필터 제거 핸들러
   const handleRemoveFilter = (filterId: string) => {

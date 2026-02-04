@@ -5,8 +5,37 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SectionHeader } from './components/SectionHeader';
 import ComposerSearch from './composer-search';
+import HashtagInput from './components/HashtagInput';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
+
+// 한국 시간(KST, UTC+9) ISO 문자열 생성 함수
+const getKSTISOString = (): string => {
+    const now = new Date();
+    
+    // 방법 1: 로컬 시간을 한국 시간대로 포맷한 후 ISO 문자열로 변환
+    const formatter = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        fractionalSecondDigits: 3,
+    });
+    
+    const parts = formatter.formatToParts(now);
+    const partsObj = parts.reduce((acc: any, part: any) => {
+        acc[part.type] = part.value;
+        return acc;
+    }, {});
+    
+    // ISO 포맷으로 변환: YYYY-MM-DDTHH:mm:ss.sssZ
+    const isoString = `${partsObj.year}-${partsObj.month}-${partsObj.day}T${partsObj.hour}:${partsObj.minute}:${partsObj.second}.${partsObj.fractionalSecond}Z`;
+    
+    return isoString;
+};
 
 export default function WritePage() {
     const router = useRouter();
@@ -15,7 +44,7 @@ export default function WritePage() {
     const { isAuthenticated } = useAuthStore();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [hashtags, setHashtags] = useState('');
+    const [hashtags, setHashtags] = useState<string[]>([]);
     const [link, setLink] = useState('');
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
@@ -69,6 +98,18 @@ export default function WritePage() {
                     const draft = JSON.parse(draftStr);
                     if (draft.title) setTitle(draft.title);
                     if (draft.content) setContent(draft.content);
+                    if (draft.hashtags) {
+                        if (Array.isArray(draft.hashtags)) {
+                            setHashtags(draft.hashtags.filter((tag: unknown) => typeof tag === 'string'));
+                        } else if (typeof draft.hashtags === 'string') {
+                            const nextTags = draft.hashtags
+                                .trim()
+                                .split(/[,\s]+/)
+                                .filter((tag: string) => tag.length > 0)
+                                .map((tag: string) => tag.startsWith('#') ? tag.slice(1) : tag);
+                            setHashtags(nextTags);
+                        }
+                    }
                 } catch {}
             }
         }
@@ -163,13 +204,6 @@ export default function WritePage() {
             const isStoryPost = isComposerTalkRoom && curationMode === 'none';
             const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
 
-            // 해시태그를 배열로 변환 (쉼표 또는 공백으로 구분)
-            const hashtagArray = hashtags
-                .trim()
-                .split(/[,\s]+/)
-                .filter((tag: string) => tag.length > 0)
-                .map((tag: string) => tag.startsWith('#') ? tag.slice(1) : tag);
-
             // 공통 이미지 업로드
             let uploadedImages: string[] | undefined;
             if (imageFiles.length > 0) {
@@ -196,10 +230,11 @@ export default function WritePage() {
             }
 
             // 기본 포스트 데이터
-            interface PostData {
+                interface PostData {
                 title: string;
                 content: string;
                 postStatus: string;
+                createdAt?: string;
                 primaryComposerId?: number;
                 additionalComposerIds?: number[];
                 images?: string[];
@@ -215,18 +250,18 @@ export default function WritePage() {
                     return;
                 }
 
+                const currentTime = getKSTISOString();
                 const storyData: PostData = {
                     title,
                     content,
                     postStatus: 'PUBLISHED',
+                    createdAt: currentTime,
                     primaryComposerId,
                 };
 
                 if (uploadedImages) storyData.images = uploadedImages;
-                if (hashtagArray.length > 0) storyData.hashtags = hashtagArray;
+                if (hashtags.length > 0) storyData.hashtags = hashtags;
                 if (link && link.trim()) storyData.videoUrl = link;
-
-                console.log('📝 [STORY] Posting to /posts/story:', storyData);
 
                 const response = await apiClient.post('/posts/story', storyData);
                 console.log('✅ [STORY] Post created:', response.data);
@@ -245,19 +280,21 @@ export default function WritePage() {
                 }
 
                 try {
+                    const currentTime = getKSTISOString();
+                    
                     // 1단계: Story 포스트 생성
                     const storyData: PostData = {
                         title,
                         content,
                         postStatus: 'PUBLISHED',
+                        createdAt: currentTime,
                         primaryComposerId,
                     };
 
                     if (uploadedImages) storyData.images = uploadedImages;
-                    if (hashtagArray.length > 0) storyData.hashtags = hashtagArray;
+                    if (hashtags.length > 0) storyData.hashtags = hashtags;
                     if (link && link.trim()) storyData.videoUrl = link;
 
-                    console.log('📝 [STORY] Posting to /posts/story:', storyData);
                     const storyRes = await apiClient.post('/posts/story', storyData);
                     console.log('✅ [STORY] Post created:', storyRes.data);
 
@@ -276,10 +313,9 @@ export default function WritePage() {
                     }
 
                     if (uploadedImages) curationData.images = uploadedImages;
-                    if (hashtagArray.length > 0) curationData.hashtags = hashtagArray;
+                    if (hashtags.length > 0) curationData.hashtags = hashtags;
                     if (link && link.trim()) curationData.videoUrl = link;
 
-                    console.log('📝 [CURATION] Posting to /posts/curation:', curationData);
                     const curationRes = await apiClient.post('/posts/curation', curationData);
                     console.log('✅ [CURATION] Post created:', curationRes.data);
 
@@ -314,10 +350,9 @@ export default function WritePage() {
                 }
 
                 if (uploadedImages) curationData.images = uploadedImages;
-                if (hashtagArray.length > 0) curationData.hashtags = hashtagArray;
+                if (hashtags.length > 0) curationData.hashtags = hashtags;
                 if (link && link.trim()) curationData.videoUrl = link;
 
-                console.log('📝 [CURATION] Posting to /posts/curation:', curationData);
                 const response = await apiClient.post('/posts/curation', curationData);
                 console.log('✅ [CURATION] Post created:', response.data);
 
@@ -327,17 +362,18 @@ export default function WritePage() {
             }
 
             // Case 4: Free Post (자유 글)
+            const currentTime = getKSTISOString();
             const freeData: PostData = {
                 title,
                 content,
                 postStatus: 'PUBLISHED',
+                createdAt: currentTime,
             };
 
             if (uploadedImages) freeData.images = uploadedImages;
-            if (hashtagArray.length > 0) freeData.hashtags = hashtagArray;
+            if (hashtags.length > 0) freeData.hashtags = hashtags;
             if (link && link.trim()) freeData.videoUrl = link;
 
-            console.log('📝 [FREE] Posting to /posts/free:', freeData);
             const response = await apiClient.post('/posts/free', freeData);
             console.log('✅ [FREE] Post created:', response.data);
 
@@ -513,15 +549,11 @@ export default function WritePage() {
 
                 {/* 해시태그 등록 */}
                 <SectionHeader title="해시태그 등록" />
-                <div className="w-full px-5 py-[18px] bg-white">
-                    <input
-                        type="text"
-                        placeholder="해시태그 작성 최대 N개"
-                        value={hashtags}
-                        onChange={(e) => setHashtags(e.target.value)}
-                        className="w-full text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#4c4c4c]"
-                    />
-                </div>
+                <HashtagInput
+                    value={hashtags}
+                    onChange={setHashtags}
+                    placeholder="해시태그 작성 최대 N개"
+                />
 
                 {/* 콘텐츠 첨부 */}
                 <SectionHeader title="콘텐츠 첨부" />
