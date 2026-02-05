@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { SectionHeader } from './components/SectionHeader';
 import ComposerSearch from './composer-search';
 import HashtagInput from './components/HashtagInput';
@@ -69,6 +70,19 @@ export default function WritePage() {
         ? parseInt(searchParams.get('composerId')!)
         : null;
     const postTypeParam = searchParams.get('type'); // 'curation', 'free'
+    const editIdParam = searchParams.get('edit');
+
+    const getFallbackHref = () => {
+        if (editIdParam) {
+            return `/posts/${editIdParam}`;
+        }
+        if (postTypeParam === 'curation') return '/curation';
+        if (postTypeParam === 'free') return '/free-talk';
+        if (composerId) return `/composer-talk-room/${composerId}`;
+        return '/';
+    };
+
+    const handleSafeBack = useSafeBack(getFallbackHref());
     
     // PostType 자동 설정
     const getSelectedType = (): string => {
@@ -153,7 +167,7 @@ export default function WritePage() {
         } catch (error) {
             console.error('Failed to fetch post:', error);
             alert('포스트를 불러올 수 없습니다.');
-            router.back();
+            handleSafeBack();
         }
     };
 
@@ -587,7 +601,7 @@ export default function WritePage() {
             {/* Header */}
             <header className="bg-white px-5 py-3 flex items-center sticky top-0 z-10 w-full">
                 <div className="flex items-center gap-1 w-full">
-                    <button onClick={() => router.back()} className="flex-shrink-0">
+                    <button onClick={handleSafeBack} className="flex-shrink-0">
                         <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
                     </button>
                     <h1 className="flex-1 text-[#1a1a1a] text-base font-semibold font-['Pretendard'] ml-1">글쓰기</h1>

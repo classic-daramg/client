@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { AxiosError } from 'axios';
 import ComposerSearch from './composer-search';
 import { useAuthStore } from '@/store/authStore';
@@ -17,6 +18,7 @@ const SectionHeader = ({ title }: { title: string }) => (
 
 export default function WriteContent() {
     const router = useRouter();
+    const handleSafeBack = useSafeBack('/');
     const searchParams = useSearchParams();
     const { accessToken, isAuthenticated } = useAuthStore();
     const [title, setTitle] = useState('');
@@ -307,7 +309,7 @@ export default function WriteContent() {
             {/* Header */}
             <header className="bg-white px-5 py-3 flex items-center sticky top-0 z-10 w-full">
                 <div className="flex items-center gap-1 w-full">
-                    <button onClick={() => router.back()} className="flex-shrink-0">
+                    <button onClick={handleSafeBack} className="flex-shrink-0">
                         <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
                     </button>
                     <h1 className="flex-1 text-[#1a1a1a] text-base font-semibold font-['Pretendard'] ml-1">글쓰기</h1>

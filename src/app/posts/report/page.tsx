@@ -1,10 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useSafeBack } from '@/hooks/useSafeBack';
 
 export default function ReportPage() {
-  const router = useRouter();
+  const handleSafeBack = useSafeBack('/');
 
   return (
     <div className="bg-[#f4f5f7] relative w-full max-w-md mx-auto min-h-screen flex flex-col">
@@ -14,7 +14,7 @@ export default function ReportPage() {
       {/* Header */}
       <div className="bg-white px-5 py-3 flex items-center gap-1 border-b border-[#f4f5f7]">
         <button
-          onClick={() => router.back()}
+          onClick={handleSafeBack}
           className="flex-shrink-0 hover:opacity-70 transition"
         >
           <svg width="7" height="15" viewBox="0 0 7 15" fill="none" className="rotate-180">

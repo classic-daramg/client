@@ -1,11 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import React from 'react';
 
 export default function FAQ() {
-	const router = useRouter();
+	const handleSafeBack = useSafeBack('/my-page');
 
 	return (
 		<div className="min-h-screen bg-[#f4f5f7] flex flex-col">
@@ -13,7 +13,7 @@ export default function FAQ() {
 			<header className="flex h-[54px] items-center px-4 bg-white border-b border-[#f4f5f7]">
 				<button
 					type="button"
-					onClick={() => router.back()}
+					onClick={handleSafeBack}
 					aria-label="뒤로 가기"
 					className="flex items-center justify-center size-6"
 				>

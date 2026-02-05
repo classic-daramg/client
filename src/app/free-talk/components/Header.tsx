@@ -35,12 +35,7 @@ export default function Header({
 
   const handleBack = useCallback(() => {
     if (onBack) return onBack();
-    // history stack이 없을 수도 있으니 fallback 홈
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push('/free-talk');
-    }
+    router.push('/');
   }, [onBack, router]);
 
   const handleReport = useCallback(() => {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AxiosError } from 'axios';
@@ -62,6 +63,7 @@ export default function EditPage({ params }: EditPageProps) {
   // URL 파라미터
   const postId = searchParams.get('edit');
   const postType = (searchParams.get('type')?.toUpperCase() as 'FREE' | 'CURATION' | 'STORY') || 'FREE';
+  const handleSafeBack = useSafeBack(postId ? `/posts/${postId}` : '/');
 
   // 상태 관리
   const [post, setPost] = useState<PostDetail | null>(null);
@@ -279,7 +281,7 @@ export default function EditPage({ params }: EditPageProps) {
         <div className="text-center">
           <p className="text-red-500 mb-4">{error || '포스트를 불러올 수 없습니다.'}</p>
           <button
-            onClick={() => router.back()}
+            onClick={handleSafeBack}
             className="px-4 py-2 bg-[#293a92] text-white rounded-lg"
           >
             돌아가기

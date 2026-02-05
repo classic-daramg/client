@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useSafeBack } from '@/hooks/useSafeBack';
 
 interface WriteHeaderProps {
     onSaveDraft: () => void;
@@ -11,11 +11,11 @@ interface WriteHeaderProps {
 }
 
 export default function WriteHeader({ onSaveDraft, onRegister, isRegisterEnabled }: WriteHeaderProps) {
-    const router = useRouter();
+    const handleSafeBack = useSafeBack('/');
 
     return (
         <header className="bg-white py-2 px-4 flex justify-between items-center border-b sticky top-0 z-10 h-14">
-            <button onClick={() => router.back()}>
+            <button onClick={handleSafeBack}>
                 <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
             </button>
             <h1 className="text-zinc-900 text-base font-semibold absolute left-1/2 -translate-x-1/2">글쓰기</h1>

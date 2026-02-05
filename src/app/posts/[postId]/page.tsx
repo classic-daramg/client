@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AxiosError } from 'axios';
@@ -74,6 +75,7 @@ interface PostDetailPageProps {
 
 export default function PostDetailPage({ params }: PostDetailPageProps) {
   const router = useRouter();
+  const handleSafeBack = useSafeBack('/');
   const [postId, setPostId] = useState<string>('');
   const [post, setPost] = useState<PostDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -281,7 +283,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
         <div className="text-center">
           <p className="text-red-500 mb-4">{error || '포스트를 불러올 수 없습니다.'}</p>
           <button
-            onClick={() => router.back()}
+            onClick={handleSafeBack}
             className="px-4 py-2 bg-[#293a92] text-white rounded-lg"
           >
             돌아가기

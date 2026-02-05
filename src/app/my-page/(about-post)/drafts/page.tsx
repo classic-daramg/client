@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useAuthStore } from "@/store/authStore";
 import apiClient from "@/lib/apiClient";
 
@@ -30,7 +30,7 @@ interface DraftsResponse {
 }
 
 export default function Drafts() {
-	const router = useRouter();
+	const handleSafeBack = useSafeBack("/my-page");
 	const { accessToken, userId: storedUserId, getUserIdFromToken } = useAuthStore();
 	const [drafts, setDrafts] = useState<Draft[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -121,7 +121,7 @@ export default function Drafts() {
 			<div className="absolute bg-white flex flex-col gap-[16px] items-start left-0 pt-0 pb-[12px] px-[20px] top-[calc(50%-352px)] w-[375px]">
 				<div className="flex gap-[4px] items-center w-full">
 					<button
-						onClick={() => router.back()}
+						onClick={handleSafeBack}
 						className="bg-none border-none p-0 cursor-pointer w-6 h-6 flex items-center justify-center"
 						aria-label="뒤로가기"
 					>
