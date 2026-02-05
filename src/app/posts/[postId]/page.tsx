@@ -265,6 +265,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
       const axiosError = err as AxiosError<{ message: string }>;
       const errorMsg = axiosError.response?.data?.message || '포스트 삭제에 실패했습니다.';
       showToast(errorMsg, 'error');
+      throw err; // 모달을 닫기 위해 에러 던지기
     }
   };
 
@@ -329,6 +330,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
             <EditDeleteButtons
               postId={postId}
               postType={post.type}
+              postTitle={post.title}
               onDelete={handleDeletePost}
             />
           )}

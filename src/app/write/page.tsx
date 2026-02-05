@@ -53,6 +53,11 @@ export default function WritePage() {
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
     
+        // ========== Edit Mode States ==========
+        const [isEditMode, setIsEditMode] = useState(false);
+        const [editPostId, setEditPostId] = useState<string | null>(null);
+        const [editPostData, setEditPostData] = useState<any>(null);
+    
     // 클라이언트 사이드 마운트 확인
     useEffect(() => {
         setIsClient(true);
@@ -87,9 +92,86 @@ export default function WritePage() {
     const [curationMode, setCurationMode] = useState<'none' | 'curation' | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // ========== Edit Mode Initialization ==========
+    const fetchPostDataForEdit = async (postId: string) => {
+        try {
+            const response = await apiClient.get(`/posts/${postId}`);
+            const post = response.data;
+            setEditPostData(post);
+
+            // 폼 데이터 채우기
+            setTitle(post.title);
+            setContent(post.content);
+            setHashtags(post.hashtags || []);
+            setLink(post.videoUrl || '');
+            setImageFiles([]);
+
+            // 포스트 타입에 따라 처리
+            if (post.type === 'CURATION') {
+                setSelectedType('큐레이션 글');
+                const composerList = [] as Array<{ id: number; name: string }>;
+                if (post.primaryComposer) {
+                    const primaryId = post.primaryComposer.id ?? post.primaryComposer.composerId;
+                    composerList.push({
+                        id: primaryId,
+                        name: post.primaryComposer.koreanName || post.primaryComposer.englishName,
+                    });
+                    if (primaryId) {
+                        setPrimaryComposerId(primaryId);
+                    }
+                }
+                if (post.additionalComposers && post.additionalComposers.length > 0) {
+                    composerList.push(
+                        ...post.additionalComposers.map((c: any) => ({
+                            id: c.id ?? c.composerId,
+                            name: c.koreanName || c.englishName,
+                        }))
+                    );
+                }
+                setSelectedComposers(composerList);
+                setCurationMode(null);
+            } else if (post.type === 'FREE') {
+                setSelectedType('자유 글');
+                setSelectedComposers([]);
+                setCurationMode(null);
+            } else if (post.type === 'STORY' && post.primaryComposer) {
+                setSelectedType(`${post.primaryComposer.koreanName} 이야기`);
+                const primaryId = post.primaryComposer.id ?? post.primaryComposer.composerId;
+                if (primaryId) {
+                    setPrimaryComposerId(primaryId);
+                }
+                setSelectedComposers([]);
+                setCurationMode('none');
+            }
+
+            // 기존 이미지 미리보기
+            if (post.images && post.images.length > 0) {
+                setImagePreviewUrls(post.images);
+            } else {
+                setImagePreviewUrls([]);
+            }
+        } catch (error) {
+            console.error('Failed to fetch post:', error);
+            alert('포스트를 불러올 수 없습니다.');
+            router.back();
+        }
+    };
+
+    useEffect(() => {
+        if (!isClient) return;
+
+        const editId = searchParams.get('edit');
+        if (editId) {
+            setEditPostId(editId);
+            setIsEditMode(true);
+            fetchPostDataForEdit(editId);
+        }
+    }, [isClient, searchParams]);
+
     // draft-edit 데이터가 있으면 제목/내용에 자동 입력
     useEffect(() => {
         if (!isClient) return;
+        if (isEditMode) return;
         
         if (typeof window !== 'undefined') {
             const draftStr = localStorage.getItem('draft-edit');
@@ -113,7 +195,7 @@ export default function WritePage() {
                 } catch {}
             }
         }
-    }, [isClient]);
+    }, [isClient, isEditMode]);
 
     // postType 변경 시 curationMode 초기화 로직
     useEffect(() => {
@@ -196,8 +278,73 @@ export default function WritePage() {
         }
 
         setIsSubmitting(true);
-
         try {
+            // ========== EDIT MODE ==========
+            if (isEditMode && editPostId && editPostData) {
+                // 새로운 이미지만 업로드
+                let newUploadedImages: string[] = [];
+                if (imageFiles.length > 0) {
+                    const formData = new FormData();
+                    imageFiles.forEach((file: File) => {
+                        formData.append('images', file);
+                    });
+
+                    const uploadRes = await apiClient.post('/images/upload', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+
+                    newUploadedImages = uploadRes.data.imageUrls;
+                }
+
+                // 기존 이미지 (URL 기반) + 새 이미지 합치기
+                const existingImages = imagePreviewUrls.filter(
+                    (url) => typeof url === 'string' && url.startsWith('http')
+                );
+                const finalImages = [...existingImages, ...newUploadedImages];
+
+                const updateData = {
+                    title,
+                    content,
+                    hashtags: hashtags.length > 0 ? hashtags : [],
+                    images: finalImages.length > 0 ? finalImages : [],
+                    videoUrl: link?.trim() ? link.trim() : '',
+                    postStatus: editPostData.postStatus || 'PUBLISHED',
+                };
+
+                // 포스트 타입별 엔드포인트
+                let endpoint = '';
+                let requestData: any = { ...updateData };
+
+                if (editPostData.type === 'FREE') {
+                    endpoint = `/posts/free/${editPostId}`;
+                } else if (editPostData.type === 'STORY') {
+                    endpoint = `/posts/story/${editPostId}`;
+                    requestData.primaryComposerId = primaryComposerId;
+                } else if (editPostData.type === 'CURATION') {
+                    endpoint = `/posts/curation/${editPostId}`;
+                    const primaryId =
+                        selectedComposers[0]?.id ??
+                        primaryComposerId ??
+                        editPostData.primaryComposer?.id ??
+                        editPostData.primaryComposer?.composerId;
+                    if (primaryId) {
+                        requestData.primaryComposerId = primaryId;
+                    }
+                    const additionalIds = selectedComposers
+                        .slice(1)
+                        .map((c) => c.id)
+                        .filter((id) => typeof id === 'number');
+                    requestData.additionalComposersId = additionalIds;
+                }
+
+                await apiClient.patch(endpoint, requestData);
+                alert('포스트가 수정되었습니다.');
+                router.push(`/posts/${editPostId}`);
+                return;
+            }
+
             // 포스트 타입 판단
             const isComposerTalkRoom = selectedType.includes('이야기');
             const isCurationPost = selectedType === '큐레이션 글';
@@ -458,7 +605,9 @@ export default function WritePage() {
                                 isButtonEnabled && !isSubmitting ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
                             }`}
                         >
-                            <span className="text-white text-[13px] font-semibold font-['Pretendard']">등록</span>
+                            <span className="text-white text-[13px] font-semibold font-['Pretendard']">
+                                {isEditMode ? '수정' : '등록'}
+                            </span>
                         </button>
                     </div>
                 </div>
