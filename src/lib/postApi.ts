@@ -18,9 +18,7 @@ export interface PostUpdateCommonFields {
 /**
  * FREE 타입 포스트 수정 요청
  */
-export interface FreePostUpdateRequest extends PostUpdateCommonFields {
-  // 추가 필드 없음
-}
+export type FreePostUpdateRequest = PostUpdateCommonFields;
 
 /**
  * STORY 타입 포스트 수정 요청

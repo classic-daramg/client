@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSafeBack } from '@/hooks/useSafeBack';
@@ -9,6 +9,7 @@ import ComposerSearch from './composer-search';
 import HashtagInput from './components/HashtagInput';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
+import { AxiosError } from 'axios';
 
 // 한국 시간(KST, UTC+9) ISO 문자열 생성 함수
 const getKSTISOString = (): string => {
@@ -27,7 +28,7 @@ const getKSTISOString = (): string => {
     });
     
     const parts = formatter.formatToParts(now);
-    const partsObj = parts.reduce((acc: any, part: any) => {
+    const partsObj = parts.reduce<Record<string, string>>((acc, part) => {
         acc[part.type] = part.value;
         return acc;
     }, {});
@@ -38,7 +39,39 @@ const getKSTISOString = (): string => {
     return isoString;
 };
 
-export default function WritePage() {
+type PostType = 'FREE' | 'CURATION' | 'STORY';
+
+interface Composer {
+    id?: number;
+    composerId?: number;
+    koreanName?: string;
+    englishName?: string;
+}
+
+interface EditPostData {
+    type: PostType;
+    title: string;
+    content: string;
+    hashtags?: string[];
+    videoUrl?: string;
+    images?: string[];
+    postStatus?: 'PUBLISHED' | 'DRAFT';
+    primaryComposer?: Composer;
+    additionalComposers?: Composer[];
+}
+
+type UpdatePayload = {
+    title: string;
+    content: string;
+    hashtags: string[];
+    images: string[];
+    videoUrl: string;
+    postStatus: 'PUBLISHED' | 'DRAFT';
+    primaryComposerId?: number;
+    additionalComposersId?: number[];
+};
+
+function WritePageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isClient, setIsClient] = useState(false);
@@ -50,14 +83,13 @@ export default function WritePage() {
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
     
         // ========== Edit Mode States ==========
         const [isEditMode, setIsEditMode] = useState(false);
         const [editPostId, setEditPostId] = useState<string | null>(null);
-        const [editPostData, setEditPostData] = useState<any>(null);
+        const [editPostData, setEditPostData] = useState<EditPostData | null>(null);
     
     // 클라이언트 사이드 마운트 확인
     useEffect(() => {
@@ -99,7 +131,6 @@ export default function WritePage() {
     };
 
     const [selectedType, setSelectedType] = useState<string>(getSelectedType());
-    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
     const [primaryComposerId, setPrimaryComposerId] = useState<number | null>(composerId);
     
     // 큐레이션 옵션 모드 ('{composer} 이야기'일 때만 사용)
@@ -107,10 +138,10 @@ export default function WritePage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // ========== Edit Mode Initialization ==========
-    const fetchPostDataForEdit = async (postId: string) => {
+    const fetchPostDataForEdit = useCallback(async (postId: string) => {
         try {
             const response = await apiClient.get(`/posts/${postId}`);
-            const post = response.data;
+            const post = response.data as EditPostData;
             setEditPostData(post);
 
             // 폼 데이터 채우기
@@ -126,20 +157,25 @@ export default function WritePage() {
                 const composerList = [] as Array<{ id: number; name: string }>;
                 if (post.primaryComposer) {
                     const primaryId = post.primaryComposer.id ?? post.primaryComposer.composerId;
-                    composerList.push({
-                        id: primaryId,
-                        name: post.primaryComposer.koreanName || post.primaryComposer.englishName,
-                    });
-                    if (primaryId) {
+                    if (primaryId !== null && primaryId !== undefined) {
+                        composerList.push({
+                            id: primaryId,
+                            name: post.primaryComposer.koreanName || post.primaryComposer.englishName || '',
+                        });
                         setPrimaryComposerId(primaryId);
                     }
                 }
                 if (post.additionalComposers && post.additionalComposers.length > 0) {
                     composerList.push(
-                        ...post.additionalComposers.map((c: any) => ({
-                            id: c.id ?? c.composerId,
-                            name: c.koreanName || c.englishName,
-                        }))
+                        ...post.additionalComposers
+                            .map((c: Composer) => ({
+                                id: c.id ?? c.composerId,
+                                name: c.koreanName || c.englishName || '',
+                            }))
+                            .filter(
+                                (c): c is { id: number; name: string } =>
+                                    typeof c.id === 'number' && c.name !== ''
+                            )
                     );
                 }
                 setSelectedComposers(composerList);
@@ -169,7 +205,7 @@ export default function WritePage() {
             alert('포스트를 불러올 수 없습니다.');
             handleSafeBack();
         }
-    };
+    }, [handleSafeBack]);
 
     useEffect(() => {
         if (!isClient) return;
@@ -180,7 +216,7 @@ export default function WritePage() {
             setIsEditMode(true);
             fetchPostDataForEdit(editId);
         }
-    }, [isClient, searchParams]);
+    }, [isClient, searchParams, fetchPostDataForEdit]);
 
     // draft-edit 데이터가 있으면 제목/내용에 자동 입력
     useEffect(() => {
@@ -271,7 +307,6 @@ export default function WritePage() {
     // PostType 판단
     const isComposerTalkRoom = selectedType.includes('이야기');
     const isCurationPost = selectedType === '큐레이션 글';
-    const isStoryPost = isComposerTalkRoom && curationMode === 'none';
     const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
     
     // 작곡가 선택 필수 여부 (큐레이션 글만 필수, {composer} 이야기의 큐레이션은 선택사항)
@@ -318,7 +353,7 @@ export default function WritePage() {
                 );
                 const finalImages = [...existingImages, ...newUploadedImages];
 
-                const updateData = {
+                const updateData: UpdatePayload = {
                     title,
                     content,
                     hashtags: hashtags.length > 0 ? hashtags : [],
@@ -329,13 +364,15 @@ export default function WritePage() {
 
                 // 포스트 타입별 엔드포인트
                 let endpoint = '';
-                let requestData: any = { ...updateData };
+                const requestData: UpdatePayload = { ...updateData };
 
                 if (editPostData.type === 'FREE') {
                     endpoint = `/posts/free/${editPostId}`;
                 } else if (editPostData.type === 'STORY') {
                     endpoint = `/posts/story/${editPostId}`;
-                    requestData.primaryComposerId = primaryComposerId;
+                    if (primaryComposerId !== null) {
+                        requestData.primaryComposerId = primaryComposerId;
+                    }
                 } else if (editPostData.type === 'CURATION') {
                     endpoint = `/posts/curation/${editPostId}`;
                     const primaryId =
@@ -483,8 +520,9 @@ export default function WritePage() {
                     alert('작곡가 이야기와 큐레이션이 등록되었습니다.');
                     router.push('/curation');
                     return;
-                } catch (error: any) {
-                    console.error('❌ API Error:', error.response?.data);
+                } catch (error: unknown) {
+                    const axiosError = error as AxiosError<{ message?: string }>;
+                    console.error('❌ API Error:', axiosError.response?.data);
                     alert('포스트 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
                     setIsSubmitting(false);
                     return;
@@ -540,18 +578,19 @@ export default function WritePage() {
 
             alert('자유글이 등록되었습니다.');
             router.push('/free-talk');
-        } catch (error: any) {
-            console.error('❌ An error occurred while creating the post:', error);
+        } catch (error: unknown) {
+            const axiosError = error as AxiosError<{ message?: string }>;
+            console.error('❌ An error occurred while creating the post:', axiosError);
 
-            if (error.response) {
+            if (axiosError.response) {
                 let errorMessage = '게시글 등록에 실패했습니다.';
 
-                const errorData = error.response.data;
+                const errorData = axiosError.response.data;
                 if (errorData?.message) {
                     errorMessage = errorData.message;
                 }
 
-                switch (error.response.status) {
+                switch (axiosError.response.status) {
                     case 400:
                         errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
                         break;
@@ -782,5 +821,13 @@ export default function WritePage() {
                 />
             )}
         </div>
+    );
+}
+
+export default function WritePage() {
+    return (
+        <Suspense fallback={<div className="bg-[#f4f5f7] min-h-screen" />}>
+            <WritePageInner />
+        </Suspense>
     );
 }

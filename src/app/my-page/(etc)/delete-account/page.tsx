@@ -49,6 +49,7 @@ export default function DeleteAccountPage() {
                 }, 1000);
             } else {
                 const errorText = await response.text();
+                console.error('Delete account failed:', errorText);
                 setToast({ show: true, message: '비밀번호가 일치하지 않거나 탈퇴 처리에 실패했습니다.' });
             }
         } catch (error) {

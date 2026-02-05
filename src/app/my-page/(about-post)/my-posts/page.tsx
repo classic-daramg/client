@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Image from 'next/image';
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useAuthStore } from "@/store/authStore";
 import apiClient from "@/lib/apiClient";
@@ -35,8 +36,6 @@ export default function MyPosts() {
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [cursor, setCursor] = useState<string | null>(null);
-	const [hasNext, setHasNext] = useState(false);
 
 	// 초기 로드: 작성한 글 불러오기
 	useEffect(() => {
@@ -53,19 +52,12 @@ export default function MyPosts() {
 			try {
 				setIsLoading(true);
 
-				const params: Record<string, string | number> = { size: 10 };
-				if (cursor) {
-					params.cursor = cursor;
-				}
-
 				const response = await apiClient.get<PostsResponse>(`/posts/${userId}/published`, {
-					params,
+					params: { size: 10 },
 				});
 
 				const data = response.data;
-				setPosts(cursor ? [...posts, ...data.content] : data.content);
-				setCursor(data.nextCursor);
-				setHasNext(data.hasNext);
+				setPosts(data.content);
 			} catch (error) {
 				console.error('Failed to load posts:', error);
 				setError('작성한 글을 불러오는 중 오류가 발생했습니다');
@@ -125,7 +117,7 @@ export default function MyPosts() {
 						className="bg-none border-none p-0 cursor-pointer w-6 h-6 flex items-center justify-center"
 						aria-label="뒤로가기"
 					>
-						<img src={backIcon} alt="back" className="w-[20px] h-[20px]" />
+						<Image src={backIcon} alt="back" width={20} height={20} />
 					</button>
 					<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
 						<p>내가 작성한 글</p>
@@ -155,7 +147,7 @@ export default function MyPosts() {
 							<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
 								{/* Label */}
 								<div className="flex gap-[3px] items-center">
-									<img src={getTypeIcon(post.type)} alt={post.type} className="w-4 h-4" />
+											<Image src={getTypeIcon(post.type)} alt={post.type} width={16} height={16} />
 									<span className="text-[#293A92] text-[11px] font-semibold">{getTypeLabel(post.type)}</span>
 								</div>
 								{/* Title/Content */}
@@ -176,9 +168,16 @@ export default function MyPosts() {
 								</div>
 							</div>
 							{/* Thumbnail */}
-							{post.thumbnailImageUrl ? (
-								<img src={post.thumbnailImageUrl} alt="thumbnail" className="rounded-[8px] w-[96px] h-[96px] ml-4 object-cover" />
-							) : (
+								{post.thumbnailImageUrl ? (
+									<Image
+										src={post.thumbnailImageUrl}
+										alt="thumbnail"
+										width={96}
+										height={96}
+										className="rounded-[8px] w-[96px] h-[96px] ml-4 object-cover"
+										unoptimized
+									/>
+								) : (
 								<div className="bg-[#d9d9d9] rounded-[8px] w-[96px] h-[96px] ml-4" />
 							)}
 						</div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSafeBack } from '@/hooks/useSafeBack';
 import Image from 'next/image';
@@ -45,24 +45,28 @@ interface PostDetail {
   videoUrl: string | null;
   primaryComposer?: Composer;
   additionalComposers?: Composer[];
-  comments: any[];
+  comments: unknown[];
 }
 
-interface EditPageProps {
-  params: Promise<{
-    postId: string;
-  }>;
-}
+type FormDataState = {
+  title: string;
+  content: string;
+  hashtags: string[];
+  images: string[];
+  videoUrl: string;
+  postStatus: 'PUBLISHED' | 'DRAFT';
+  primaryComposerId: number;
+  additionalComposersId: number[];
+};
 
 // ================== Main Component ==================
 
-export default function EditPage({ params }: EditPageProps) {
+function EditPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
   // URL 파라미터
   const postId = searchParams.get('edit');
-  const postType = (searchParams.get('type')?.toUpperCase() as 'FREE' | 'CURATION' | 'STORY') || 'FREE';
   const handleSafeBack = useSafeBack(postId ? `/posts/${postId}` : '/');
 
   // 상태 관리
@@ -74,7 +78,7 @@ export default function EditPage({ params }: EditPageProps) {
   const [hasChanges, setHasChanges] = useState(false);
 
   // 폼 상태
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>({
     title: '',
     content: '',
     hashtags: [] as string[],
@@ -143,9 +147,9 @@ export default function EditPage({ params }: EditPageProps) {
   };
 
   // 폼 필드 변경 감지
-  const handleFieldChange = (
-    field: keyof typeof formData,
-    value: any
+  const handleFieldChange = <K extends keyof FormDataState>(
+    field: K,
+    value: FormDataState[K]
   ) => {
     const oldValue = formData[field];
     const newValue = value;
@@ -206,7 +210,10 @@ export default function EditPage({ params }: EditPageProps) {
     setSubmitting(true);
     try {
       // 요청 데이터 구성
-      let requestData: PostUpdateRequest = {
+      const requestData: PostUpdateRequest & {
+        primaryComposerId?: number;
+        additionalComposersId?: number[];
+      } = {
         title: formData.title,
         content: formData.content,
         hashtags: formData.hashtags,
@@ -222,11 +229,11 @@ export default function EditPage({ params }: EditPageProps) {
           setSubmitting(false);
           return;
         }
-        (requestData as any).primaryComposerId = formData.primaryComposerId;
+        requestData.primaryComposerId = formData.primaryComposerId;
       }
 
       if (post.type === 'CURATION') {
-        (requestData as any).additionalComposersId =
+        requestData.additionalComposersId =
           (formData.additionalComposersId || []).filter((id) => typeof id === 'number');
       }
 
@@ -448,5 +455,13 @@ export default function EditPage({ params }: EditPageProps) {
         />
       )}
     </div>
+  );
+}
+
+export default function EditPage() {
+  return (
+    <Suspense fallback={<div className="bg-[#f4f5f7] min-h-screen" />}>
+      <EditPageInner />
+    </Suspense>
   );
 }

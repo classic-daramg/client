@@ -123,7 +123,7 @@ const LogoutPopup = ({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
 export default function MyPage() {
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const router = useRouter();
-  const { profile, setProfile, clearProfile } = useUserProfileStore();
+  const { clearProfile } = useUserProfileStore();
 
   useEffect(() => {
     const fetchUserProfile = async () => {

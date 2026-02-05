@@ -31,7 +31,10 @@ export function usePostAuth(
     // 1. 로그인 여부 확인 (3가지 방법)
     // - authStore의 isAuthenticated() 체크
     // - isLiked/isScrapped가 null이 아닌지 확인 (서버가 로그인 유저에게만 boolean 반환)
-    const isLoggedIn = checkAuth() || (isLiked !== null && isLiked !== undefined);
+    const isLoggedIn =
+      checkAuth() ||
+      (isLiked !== null && isLiked !== undefined) ||
+      (isScrapped !== null && isScrapped !== undefined);
     
     // 2. 현재 로그인한 유저의 닉네임
     const currentNickname = profile?.nickname || null;
@@ -47,7 +50,7 @@ export function usePostAuth(
       isAuthor: isPostAuthor,
       currentUserNickname: currentNickname,
     };
-  }, [checkAuth, profile?.nickname, writerNickname]);
+  }, [checkAuth, isLiked, isScrapped, profile?.nickname, writerNickname]);
 
   return authStatus;
 }

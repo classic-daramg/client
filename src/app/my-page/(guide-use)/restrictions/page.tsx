@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 const backIcon = '/icons/back.svg';
 
@@ -36,7 +37,7 @@ export default function Restrictions() {
 			<div className="flex h-[54px] items-center px-4 bg-white border-b border-[#f4f5f7]">
 				<div className="flex gap-[4px] items-center w-full">
 					<div className="relative w-6 h-6 flex items-center justify-center">
-						<img src={backIcon} alt="back" className="w-[20px] h-[20px]" />
+						<Image src={backIcon} alt="back" width={20} height={20} />
 					</div>
 					<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
 						<p>서비스 이용제한</p>

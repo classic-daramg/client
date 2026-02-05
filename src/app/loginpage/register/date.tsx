@@ -21,7 +21,7 @@ const DatePickerWheels: React.FC<DatePickerWheelsProps> = ({
 
   const currentYear = new Date().getFullYear();
   const years = React.useMemo(() => Array.from({ length: 100 }, (_, i) => currentYear - i), [currentYear]);
-  const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const months = React.useMemo(() => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], []);
   const getDaysInMonth = (year: number, month: number): number => new Date(year, month, 0).getDate();
   const days = React.useMemo(() => Array.from({ length: getDaysInMonth(selectedYear, selectedMonth) }, (_, i) => i + 1), [selectedYear, selectedMonth]);
 

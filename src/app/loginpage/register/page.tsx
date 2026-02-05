@@ -45,7 +45,7 @@ const SignupPage = () => {
     );
   };
 
-  const handleInputChange = (field:string, value:string) => {
+  const handleInputChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -70,7 +70,7 @@ const SignupPage = () => {
       setPasswordCheckResult(''); // 비밀번호 입력 시 결과 초기화
       setConfirmPasswordChecked(''); // 입력 시 결과 초기화
     }
-  };
+  }, [formData.confirmPassword, formData.password]);
   // 비밀번호 규약 체크 함수 (10자 이상, 대문자/소문자/숫자/특수문자 포함)
   function validatePasswordRule(password: string): boolean {
     const lengthValid = password.length >= 10;

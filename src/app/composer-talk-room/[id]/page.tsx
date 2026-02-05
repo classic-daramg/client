@@ -214,7 +214,7 @@ export default function ComposerTalkPage() {
     if (!hasLoadedComposer) {
       fetchData();
     }
-  }, [hasHydrated, isClient, params, hasLoadedComposer]);
+  }, [hasHydrated, isClient, params, hasLoadedComposer, selectComposer, selectedComposer]);
 
   // 필터 제거 핸들러
   const handleRemoveFilter = (filterId: string) => {

@@ -76,7 +76,7 @@ export default function ConfirmDeleteModal({
             <p className="text-sm text-[#666666] leading-relaxed">{message}</p>
             {itemName && (
               <p className="text-sm font-medium text-[#1a1a1a] break-all bg-[#f4f5f7] rounded-lg px-3 py-2">
-                '{itemName}'
+                &quot;{itemName}&quot;
               </p>
             )}
             <p className="text-xs text-[#999999] pt-2 leading-relaxed">

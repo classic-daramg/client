@@ -66,6 +66,7 @@ const ResetPasswordPage = () => {
       // 테스트용
       setStep('verify');
     } catch (error) {
+      console.error('Reset password email error:', error);
       alert('네트워크 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
@@ -99,6 +100,7 @@ const ResetPasswordPage = () => {
       // 테스트용
       setStep('reset');
     } catch (error) {
+      console.error('Reset password verify error:', error);
       alert('네트워크 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
