@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import Image from 'next/image';
 import HeartButton from './heart-button';
+import { getApiUrl } from '@/lib/api';
 import Link from 'next/link';
 import { useComposerTalk } from './context';
 import { useComposerStore } from '@/store/composerStore';
@@ -24,7 +25,7 @@ export default function ComposerTalkPage() {
                     params.append('continents', filters.continent.join(','));
                 }
                 
-                const url = `https://classic-daramg.duckdns.org/composers${params.toString() ? '?' + params.toString() : ''}`;
+                const url = getApiUrl(`/composers${params.toString() ? '?' + params.toString() : ''}`);
                 const response = await fetch(url);
                 const data = await response.json();
                 setComposers(data);

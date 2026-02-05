@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { fetchApi } from '@/lib/api';
 import ComposerProfile from './composer-profile';
 import FloatingButtons from './floating-buttons';
 import RoomFilter from './filter';
@@ -147,14 +148,8 @@ export default function ComposerTalkPage() {
       setLoading(true);
 
       try {
-        const response = await fetch(
-          `https://classic-daramg.duckdns.org/composers/${composerId}/posts`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          }
+        const response = await fetchApi(
+          `/composers/${composerId}/posts`
         );
 
         if (response.ok) {
@@ -163,14 +158,8 @@ export default function ComposerTalkPage() {
           if (data.composer) {
             selectComposer(data.composer);
           } else if (!selectedComposer) {
-            const composerRes = await fetch(
-              `https://classic-daramg.duckdns.org/composers/${composerId}`,
-              {
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-              }
+            const composerRes = await fetchApi(
+              `/composers/${composerId}`
             );
 
             if (composerRes.ok) {

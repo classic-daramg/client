@@ -1,7 +1,8 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/authStore';
+import { API_BASE_URL } from './api';
 
-const BASE_URL = 'https://classic-daramg.duckdns.org';
+const BASE_URL = API_BASE_URL;
 
 // Axios 인스턴스 생성
 export const apiClient = axios.create({

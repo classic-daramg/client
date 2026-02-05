@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { getApiUrl } from '@/lib/api';
 import { useUserProfileStore } from '@/store/userProfileStore';
 import ToastNotification from '@/components/ToastNotification';
 
@@ -30,7 +31,7 @@ export default function DeleteAccountPage() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('https://classic-daramg.duckdns.org/auth/signout', {
+            const response = await fetch(getApiUrl('/auth/signout'), {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

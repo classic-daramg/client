@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getApiUrl } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useUserProfileStore } from '@/store/userProfileStore';
 
@@ -128,7 +129,7 @@ export default function MyPage() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch('https://classic-daramg.duckdns.org/users', {
+        const response = await fetch(getApiUrl('/users'), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -168,7 +169,7 @@ export default function MyPage() {
   const handleLogout = async () => {
     try {
       // 서버에 로그아웃 요청 (인증 쿠키 삭제)
-      const response = await fetch('https://classic-daramg.duckdns.org/auth/logout', {
+      const response = await fetch(getApiUrl('/auth/logout'), {
         method: 'DELETE',
         credentials: 'include', // 쿠키를 함께 전송
       });

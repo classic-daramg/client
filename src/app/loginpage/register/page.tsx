@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState, useCallback } from 'react';
+import { getApiUrl } from '@/lib/api';
 import DatePickerWheels from './date';
 import { useRegistrationStore } from '../../../store/registrationStore';
 import RegistrationDebug from '../../../components/RegistrationDebug';
@@ -107,7 +108,7 @@ const SignupPage = () => {
     if (formData.email.trim() === '') return;
 
     try {
-      const response = await fetch('https://classic-daramg.duckdns.org/auth/email-verifications', {
+      const response = await fetch(getApiUrl('/auth/email-verifications'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +136,7 @@ const SignupPage = () => {
     if (formData.verificationCode.trim() === '') return;
 
     try {
-      const response = await fetch('https://classic-daramg.duckdns.org/auth/verify-email', {
+      const response = await fetch(getApiUrl('/auth/verify-email'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -217,7 +217,7 @@ const ProfileSetupPage = () => {
 
       // 백엔드 API로 회원가입 요청 (multipart/form-data)
       // Content-Type 헤더를 명시하지 않음 (브라우저가 자동으로 boundary 설정)
-      const response = await fetch('https://classic-daramg.duckdns.org/auth/signup', {
+      const response = await fetch(getApiUrl('/auth/signup'), {
         method: 'POST',
         body: formData,
       });
@@ -284,7 +284,7 @@ const ProfileSetupPage = () => {
     setNicknameCheckError('');
     setIsNicknameChecked(false);
     try {
-      const response = await fetch(`https://classic-daramg.duckdns.org/users/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+      const response = await fetch(getApiUrl(`/users/check-nickname?nickname=${encodeURIComponent(nickname)}`));
       
       if (response.ok) {
         // 응답 본문이 JSON인지 확인

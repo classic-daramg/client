@@ -4,8 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useUserProfileStore } from "@/store/userProfileStore";
 import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
-
-const API_BASE = 'https://classic-daramg.duckdns.org';
+import { getApiUrl } from '@/lib/api';
 
 export default function EditProfilePage() {
 	const { profile, updateProfile, setProfileImage, resetToDefaultImage, getProfileImage } = useUserProfileStore();
@@ -30,7 +29,7 @@ export default function EditProfilePage() {
 					headers['Authorization'] = `Bearer ${accessToken}`;
 				}
 
-				const res = await fetch(`${API_BASE}/users`, {
+				const res = await fetch(getApiUrl('/users'), {
 					method: 'GET',
 					headers,
 					credentials: 'include',
@@ -120,7 +119,7 @@ export default function EditProfilePage() {
 				headers['Authorization'] = `Bearer ${accessToken}`;
 			}
 
-			const res = await fetch(`${API_BASE}/users/profile`, {
+			const res = await fetch(getApiUrl('/users/profile'), {
 				method: 'PUT',
 				headers,
 				credentials: 'include',

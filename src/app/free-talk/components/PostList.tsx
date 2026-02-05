@@ -55,7 +55,7 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
       params.append('size', '10');
 
       const response = await fetch(
-        `https://classic-daramg.duckdns.org/posts/free?${params.toString()}`,
+        getApiUrl(`/posts/free?${params.toString()}`),
         {
           method: 'GET',
           credentials: 'include',
