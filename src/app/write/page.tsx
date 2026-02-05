@@ -617,17 +617,60 @@ function WritePageInner() {
         }
     };
 
-    const handleSaveDraft = () => {
-        const draft = {
-            postType: selectedType,
-            composers: selectedComposers,
-            title,
-            content,
-            hashtags,
-            link,
-        };
-        localStorage.setItem('draft-edit', JSON.stringify(draft));
-        alert('임시저장 되었습니다.');
+    const handleSaveDraft = async () => {
+        const { userId } = useAuthStore.getState();
+        
+        if (!userId) {
+            alert('사용자 정보를 확인할 수 없습니다.');
+            return;
+        }
+
+        if (!title.trim()) {
+            alert('제목을 입력해주세요.');
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+
+            // 게시글 타입 결정
+            let postType: 'FREE' | 'CURATION' | 'STORY' = 'FREE';
+            if (selectedType === '큐레이션 글') {
+                postType = 'CURATION';
+            } else if (selectedType.includes('이야기')) {
+                postType = 'STORY';
+            }
+
+            const payload = {
+                title,
+                content,
+                hashtags: hashtags.filter(tag => tag.trim()),
+                images: imagePreviewUrls,
+                videoUrl: link,
+                postStatus: 'DRAFT',
+                primaryComposerId: primaryComposerId || undefined,
+                additionalComposersId: selectedComposers
+                    .filter(c => c.id !== primaryComposerId)
+                    .map(c => c.id),
+                type: postType,
+            };
+
+            if (isEditMode && editPostId) {
+                // 기존 게시글 수정
+                await apiClient.put(`/posts/${editPostId}`, payload);
+            } else {
+                // 새 게시글 draft로 저장
+                await apiClient.post(`/posts`, payload);
+            }
+
+            alert('임시저장 되었습니다.');
+            router.push('/my-page/(about-post)/drafts');
+        } catch (error) {
+            console.error('Failed to save draft:', error);
+            alert('임시저장 중 오류가 발생했습니다.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // 클라이언트 사이드에서만 렌더링

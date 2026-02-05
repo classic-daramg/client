@@ -1,13 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Image from 'next/image';
+import Image from "next/image";
+import Link from "next/link";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useAuthStore } from "@/store/authStore";
 import apiClient from "@/lib/apiClient";
 
 // Local SVG assets
 const backIcon = "/icons/back.svg";
-const curationIcon = "/icons/write-blue.svg";
+const curationIcon = "/icons/white_check.svg";
+const freeIcon = "/icons/white_pen.svg";
+const likeIcon = "/icons/heart.svg";
+const commentIcon = "/icons/icons_comment.svg";
 
 interface Scrap {
 	id: number;
@@ -51,11 +55,14 @@ export default function Scraps() {
 
 			try {
 				setIsLoading(true);
+				setError(null);
 
+				console.log('Loading scraps for userId:', userId);
 				const response = await apiClient.get<ScrapsResponse>(`/posts/${userId}/scraps`, {
 					params: { size: 10 },
 				});
 
+				console.log('Scraps response:', response.data);
 				const data = response.data;
 				setScraps(data.content);
 			} catch (error) {
@@ -67,7 +74,7 @@ export default function Scraps() {
 		};
 
 		loadScraps();
-	}, [accessToken, storedUserId, getUserIdFromToken]);
+	}, [accessToken, storedUserId]);
 
 	const formatDate = (dateString: string): string => {
 		try {
@@ -85,8 +92,10 @@ export default function Scraps() {
 
 	const getTypeIcon = (type: string): string => {
 		switch (type) {
-			case 'CURATION':
+			case "CURATION":
 				return curationIcon;
+			case "FREE":
+				return freeIcon;
 			default:
 				return curationIcon;
 		}
@@ -106,68 +115,85 @@ export default function Scraps() {
 	};
 
 	return (
-		<div className="bg-[#f4f5f7] min-h-screen w-full flex flex-col items-center relative">
-			{/* Status Bar */}
-			<div className="absolute bg-white h-[54px] w-[375px] left-1/2 top-0 -translate-x-1/2" />
-			{/* Header */}
-			<div className="absolute bg-white flex flex-col gap-[16px] items-start left-0 pt-0 pb-[12px] px-[20px] top-[calc(50%-352px)] w-[375px]">
-				<div className="flex gap-[4px] items-center w-full">
-					<button
-						onClick={handleSafeBack}
-						className="bg-none border-none p-0 cursor-pointer w-6 h-6 flex items-center justify-center"
-						aria-label="뒤로가기"
-					>
-						<Image src={backIcon} alt="back" width={20} height={20} />
-					</button>
-					<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
-						<p>스크랩한 글</p>
+		<div className="bg-[#f4f5f7] min-h-screen w-full">
+			<div className="mx-auto w-full max-w-[375px]">
+				<div className="bg-white h-[54px]" />
+				<div className="bg-white px-[20px] pb-[12px]">
+					<div className="flex items-center gap-[4px]">
+						<button
+							onClick={handleSafeBack}
+							className="bg-none border-none p-0 cursor-pointer w-6 h-6 flex items-center justify-center"
+							aria-label="뒤로가기"
+						>
+							<Image src={backIcon} alt="back" width={20} height={20} />
+						</button>
+						<div className="text-[#1a1a1a] text-[16px] font-semibold">스크랩한 글</div>
 					</div>
 				</div>
-			</div>
-			{/* Card List */}
-			<div className="absolute bg-white flex flex-col items-start left-0 top-[calc(50%-306px)] w-[375px]">
-				{isLoading && (
-					<div className="w-full py-8 text-center text-[#a6a6a6]">
-						스크랩한 글을 불러오는 중입니다...
-					</div>
-				)}
-				{error && (
-					<div className="w-full py-8 text-center text-red-500">
-						{error}
-					</div>
-				)}
-				{!isLoading && scraps.length === 0 && !error && (
-					<div className="w-full py-8 text-center text-[#a6a6a6]">
-						스크랩한 글이 없습니다.
-					</div>
-				)}
-				{scraps.map((scrap) => (
-					<div key={scrap.id} className="box-border flex flex-col gap-[10px] items-center overflow-clip px-[12px] py-[18px] w-full border-b border-[#f4f5f7]">
-						<div className="flex items-center justify-center w-[335px]">
-							<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
-								{/* Label */}
-								<div className="flex gap-[3px] items-center">
-											<Image src={getTypeIcon(scrap.type)} alt={scrap.type} width={16} height={16} />
-									<span className="text-[#293A92] text-[11px] font-semibold">{getTypeLabel(scrap.type)}</span>
-								</div>
-								{/* Title/Content */}
-								<div className="flex flex-col gap-[4px] w-full">
-									<div className="text-[#1a1a1a] text-[14px] font-semibold w-full truncate">{scrap.title}</div>
-									<div className="text-[#a6a6a6] text-[12px] w-full truncate">{scrap.content}</div>
-								</div>
-								{/* Tags/Date */}
-								<div className="flex flex-col gap-[4px] w-full">
-									<div className="flex gap-[4px] text-[#d9d9d9] text-[12px] font-medium">
-										{scrap.hashtags.map((tag: string) => (
-											<span key={tag}>{tag}</span>
-										))}
+				<div className="h-[5px] bg-[#f4f5f7]" />
+				<div className="bg-white">
+					{isLoading && (
+						<div className="w-full py-8 text-center text-[#a6a6a6]">
+							스크랩한 글을 불러오는 중입니다...
+						</div>
+					)}
+					{error && (
+						<div className="w-full py-8 text-center text-red-500">{error}</div>
+					)}
+					{!isLoading && scraps.length === 0 && !error && (
+						<div className="w-full py-8 text-center text-[#a6a6a6]">
+							스크랩한 글이 없습니다.
+						</div>
+					)}
+					{scraps.map((scrap, index) => (
+						<Link
+							key={scrap.id}
+							href={`/posts/${scrap.id}`}
+							className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${
+								index > 0 ? "border-t border-[#f4f5f7]" : ""
+							}`}
+						>
+							<div className="flex items-center justify-center w-[335px]">
+								<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
+									<div className="flex gap-[3px] items-center">
+										<Image src={getTypeIcon(scrap.type)} alt={scrap.type} width={12} height={12} />
+										<span className="text-[#d9d9d9] text-[11px] font-semibold">
+											{getTypeLabel(scrap.type)}
+										</span>
 									</div>
-									<div className="flex gap-[6px] items-center w-full">
-										<span className="text-[#d9d9d9] text-[12px] font-medium">{formatDate(scrap.createdAt)}</span>
+									<div className="flex flex-col gap-[4px] w-full">
+										<div className="text-[#1a1a1a] text-[14px] font-semibold w-full truncate">
+											{scrap.title}
+										</div>
+										<div className="text-[#a6a6a6] text-[12px] w-full line-clamp-2">
+											{scrap.content}
+										</div>
+									</div>
+									<div className="flex flex-col gap-[4px] w-full">
+										<div className="flex gap-[4px] text-[#d9d9d9] text-[12px] font-medium whitespace-nowrap overflow-hidden">
+											{scrap.hashtags.slice(0, 3).map((tag: string) => (
+												<span key={tag}>{tag.startsWith("#") ? tag : `#${tag}`}</span>
+											))}
+										</div>
+										<div className="flex gap-[6px] items-center w-full">
+											<div className="flex gap-[2px] items-center">
+												<Image src={likeIcon} alt="좋아요" width={12} height={12} />
+												<span className="text-[#293a92] text-[12px] font-medium">
+													{scrap.likeCount}
+												</span>
+											</div>
+											<div className="flex gap-[2px] items-center">
+												<Image src={commentIcon} alt="댓글" width={12} height={12} />
+												<span className="text-[#293a92] text-[12px] font-medium">
+													{scrap.commentCount}
+												</span>
+											</div>
+											<span className="text-[#d9d9d9] text-[12px] font-medium">
+												{formatDate(scrap.createdAt)}
+											</span>
+										</div>
 									</div>
 								</div>
-							</div>
-							{/* Thumbnail */}
 								{scrap.thumbnailImageUrl ? (
 									<Image
 										src={scrap.thumbnailImageUrl}
@@ -177,12 +203,11 @@ export default function Scraps() {
 										className="rounded-[8px] w-[96px] h-[96px] ml-4 object-cover"
 										unoptimized
 									/>
-								) : (
-								<div className="bg-[#d9d9d9] rounded-[8px] w-[96px] h-[96px] ml-4" />
-							)}
-						</div>
-					</div>
-				))}
+								) : null}
+							</div>
+						</Link>
+					))}
+				</div>
 			</div>
 		</div>
 	);

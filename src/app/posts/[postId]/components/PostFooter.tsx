@@ -84,7 +84,7 @@ export default function PostFooter({
             className="flex items-center gap-1.5 font-medium text-xs text-[#a6a6a6] hover:text-[#293a92] transition"
           >
             <Image
-              src={isScrapped ? '/icons/bookmark_selected.svg' : '/icons/bookmark_gray.svg'}
+              src={isScrapped ? '/icons/bookmark-on.svg' : '/icons/bookmark_gray.svg'}
               alt="스크랩"
               width={24}
               height={24}

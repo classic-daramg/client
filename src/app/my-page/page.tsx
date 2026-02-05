@@ -34,7 +34,7 @@ const UserProfileSection = () => {
   const profileImage = profile?.profileImage || '/icons/DefaultImage.svg';
 
   return (
-    <div className="bg-white flex flex-col items-start pb-[34px] pt-[20px] px-[10px] shadow-[0px_0px_7px_-3px_rgba(0,0,0,0.15)]">
+    <div className="bg-white flex flex-col items-start pb-[34px] pt-[20px] px-[20px] shadow-[0px_0px_7px_-3px_rgba(0,0,0,0.15)]">
       <div className="flex gap-[14px] items-start w-full">
         {/* Profile Image */}
         <div className="flex flex-col items-center shrink-0 size-[86px]">
@@ -53,7 +53,7 @@ const UserProfileSection = () => {
         {/* Profile Info and Edit Button */}
         <div className="flex flex-1 flex-col gap-[18px] items-start leading-none">
           {/* Nickname and Bio */}
-          <div className="flex flex-col gap-[5px] items-start w-full">
+          <div className="flex flex-col gap-[9px] items-start w-full">
             <h2 className="text-zinc-900 text-[20px] font-semibold">{nickname}</h2>
             <p className="text-neutral-400 text-[12px] font-medium">{bio}</p>
           </div>
@@ -210,7 +210,7 @@ export default function MyPage() {
         <SectionHeader title="게시글 관련" />
         <ListItem title="작성한 글" href="/my-page/my-posts" />
         <ListItem title="임시저장한 글" href="/my-page/drafts" />
-        <ListItem title="스크랩한 글-" href="/my-page/scraps" />
+        <ListItem title="스크랩한 글" href="/my-page/scraps" />
 
         <SectionHeader title="이용안내" />
         <ListItem title="이용 제한 내역" href="/my-page/restrictions" />
