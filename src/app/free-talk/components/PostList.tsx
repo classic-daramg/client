@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import PostItem from './PostItem';
+import { getApiUrl } from '@/lib/api';
 
 interface ApiPost {
   id: number;

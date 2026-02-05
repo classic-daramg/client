@@ -7,6 +7,7 @@ import React, { useState, useRef } from 'react';
 import { useRegistrationStore } from '../../../../store/registrationStore';
 import { useUserProfileStore } from '../../../../store/userProfileStore';
 import SignupSuccessPopup from '../../../../components/SignupSuccessPopup';
+import { getApiUrl } from '@/lib/api';
 
 const ProfileSetupPage = () => {
   const router = useRouter();
