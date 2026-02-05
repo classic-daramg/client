@@ -58,7 +58,22 @@ export default function PostList({ searchValue, filters }: PostListProps) {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const response = await apiClient.get('/posts/curation');
+        
+        // ========== 쿼리 파라미터 구성 ==========
+        const queryParams = new URLSearchParams();
+        
+        // eras 필터 추가
+        if (filters.eras.length > 0) {
+          queryParams.append('eras', filters.eras.join(','));
+        }
+        
+        // continents 필터 추가
+        if (filters.continents.length > 0) {
+          queryParams.append('continents', filters.continents.join(','));
+        }
+        
+        const url = `/posts/curation${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+        const response = await apiClient.get(url);
 
         if (response.status !== 200) {
           throw new Error('포스트 목록을 불러올 수 없습니다.');
@@ -106,7 +121,7 @@ export default function PostList({ searchValue, filters }: PostListProps) {
     };
 
     fetchPosts();
-  }, []);
+  }, [filters]);
 
   // ========== 검색 및 필터 적용 로직 ==========
   // searchValue 또는 filters가 변경될 때마다 실행
@@ -116,63 +131,55 @@ export default function PostList({ searchValue, filters }: PostListProps) {
       return;
     }
 
-    // 정렬된 포스트 배열 생성
-    const sortedPosts = [...allPosts].sort((a, b) => {
+    // ========== 1단계: 검색어 필터링 (클라이언트 사이드) ==========
+    const searchFiltered = allPosts.filter((post) => {
+      // 검색어가 없으면 모두 포함
+      if (!searchValue.trim()) {
+        return true;
+      }
+
+      const searchLower = searchValue.toLowerCase();
+      const titleMatch = post.title.toLowerCase().includes(searchLower);
+      const contentMatch = post.content.toLowerCase().includes(searchLower);
+      const tagsMatch = post.tags.some((tag) => tag.toLowerCase().includes(searchLower));
+      
+      // 제목, 내용, 태그 중 하나라도 일치해야 함
+      return titleMatch || contentMatch || tagsMatch;
+    });
+
+    // ========== 2단계: 정렬 (검색 일치도, 최신순) ==========
+    const sortedPosts = [...searchFiltered].sort((a, b) => {
       let scoreA = 0;
       let scoreB = 0;
 
-      // ========== 검색 우선순위 (최상위) ==========
-      // 검색어가 존재하고 content에 포함되면 최상위 우선순위 부여
+      // 검색어가 있으면 일치도로 정렬
       if (searchValue.trim()) {
         const searchLower = searchValue.toLowerCase();
-        if (a.content.toLowerCase().includes(searchLower)) scoreA += 1000;
-        if (b.content.toLowerCase().includes(searchLower)) scoreB += 1000;
-        // 제목도 검색 (content보다 낮은 우선순위)
-        if (a.title.toLowerCase().includes(searchLower)) scoreA += 500;
-        if (b.title.toLowerCase().includes(searchLower)) scoreB += 500;
+        
+        // 제목에 일치하면 최우선
+        if (a.title.toLowerCase().includes(searchLower)) scoreA += 1000;
+        if (b.title.toLowerCase().includes(searchLower)) scoreB += 1000;
+        
+        // 내용에 일치하면 그 다음
+        if (a.content.toLowerCase().includes(searchLower)) scoreA += 500;
+        if (b.content.toLowerCase().includes(searchLower)) scoreB += 500;
+        
+        // 태그에 일치하면 마지막
+        if (a.tags.some((tag) => tag.toLowerCase().includes(searchLower))) scoreA += 100;
+        if (b.tags.some((tag) => tag.toLowerCase().includes(searchLower))) scoreB += 100;
       }
 
-      // ========== 필터링 우선순위 (그 다음) ==========
-      // 시대 필터가 선택된 경우, 해당 시대에 맞는 작곡가 게시물에 우선순위 부여
-      // (백엔드에서 composer.era 정보를 tags에 포함한다고 가정)
-      if (filters.eras.length > 0) {
-        const hasMatchingEra = filters.eras.some((era) =>
-          a.tags.some((tag) => tag.includes(era))
-        );
-        if (hasMatchingEra) scoreA += 100;
-
-        const hasMatchingEraB = filters.eras.some((era) =>
-          b.tags.some((tag) => tag.includes(era))
-        );
-        if (hasMatchingEraB) scoreB += 100;
-      }
-
-      // ========== 대륙 필터 우선순위 ==========
-      // 대륙 필터가 선택된 경우, 해당 대륙에 맞는 작곡가 게시물에 우선순위 부여
-      if (filters.continents.length > 0) {
-        const hasMatchingContinent = filters.continents.some((continent) =>
-          a.tags.some((tag) => tag.includes(continent))
-        );
-        if (hasMatchingContinent) scoreA += 50;
-
-        const hasMatchingContinentB = filters.continents.some((continent) =>
-          b.tags.some((tag) => tag.includes(continent))
-        );
-        if (hasMatchingContinentB) scoreB += 50;
-      }
-
-      // ========== 동점일 경우 최신순 정렬 ==========
-      // 점수가 같으면 생성 시간 역순 (최신 먼저)
+      // 점수가 다르면 점수순
       if (scoreA !== scoreB) {
-        return scoreB - scoreA; // 점수가 높을수록 앞으로
+        return scoreB - scoreA;
       }
 
-      // 모든 조건이 같으면 id로 역순 정렬 (최신 먼저)
+      // 점수가 같으면 최신순 (id 역순)
       return b.id - a.id;
     });
 
     setPosts(sortedPosts);
-  }, [searchValue, filters, allPosts]);
+  }, [searchValue, allPosts]);
 
   // ========== 시간 포맷팅 함수 ==========
   // 생성 시간을 상대적 시간으로 표시 (예: "2시간전")

@@ -28,10 +28,10 @@ type Post = {
 
 // --- Reusable Icon Components ---
 const LikeIcon = () => (
-  <Image src="/icons/heart.svg" alt="좋아요" width={15} height={15} />
+  <Image src="/icons/heart.svg" alt="좋아요" width={17} height={17} />
 );
 const CommentIcon = () => (
-  <Image src="/icons/message.svg" alt="댓글" width={12} height={12} />
+  <Image src="/icons/icons_comment.svg" alt="댓글" width={15} height={15} />
 );
 
 // --- Helpers ---
@@ -125,6 +125,7 @@ export default function ComposerTalkPage() {
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isClient, setIsClient] = useState(false);
   const [hasLoadedComposer, setHasLoadedComposer] = useState(false);
   const { selectedComposer, selectComposer, hasHydrated } = useComposerStore();
@@ -230,14 +231,25 @@ export default function ComposerTalkPage() {
   // 활성 필터 목록
   const activeFilters = selectedCategory ? [selectedCategory] : [];
 
-  // 필터링된 게시글
-  const filteredPosts = selectedCategory
-    ? posts.filter(post => {
-        if (selectedCategory === 'rachmaninoff') return post.type === 'STORY';
-        if (selectedCategory === 'curation') return post.type === 'CURATION';
-        return true;
-      })
-    : posts;
+  // 필터링된 게시글 (카테고리 + 검색)
+  const filteredPosts = posts.filter(post => {
+    // 카테고리 필터
+    if (selectedCategory) {
+      if (selectedCategory === 'rachmaninoff' && post.type !== 'STORY') return false;
+      if (selectedCategory === 'curation' && post.type !== 'CURATION') return false;
+    }
+
+    // 검색어 필터
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const titleMatch = post.title.toLowerCase().includes(query);
+      const contentMatch = post.content.toLowerCase().includes(query);
+      const hashtagMatch = post.hashtags.some(tag => tag.toLowerCase().includes(query));
+      if (!titleMatch && !contentMatch && !hashtagMatch) return false;
+    }
+
+    return true;
+  });
 
   if (!isClient || !hasHydrated) {
     return null;
@@ -248,6 +260,7 @@ export default function ComposerTalkPage() {
       <RoomHeader
         onFilterClick={() => setIsFilterOpen(true)}
         composerName={selectedComposer?.koreanName}
+        onSearchChange={setSearchQuery}
       />
       {selectedComposer && <ComposerProfile data={selectedComposer} />}
       <div className="px-5">

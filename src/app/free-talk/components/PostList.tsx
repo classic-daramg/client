@@ -88,13 +88,23 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
     fetchPosts(null);
   }, [fetchPosts]);
 
-  // 검색어 필터링
+  // 검색어 필터링 (제목, 내용, 해시태그)
   useEffect(() => {
-    const filtered = posts.filter(post =>
-      post.title.toLowerCase().includes(searchTerm?.toLowerCase() || '') ||
-      post.content.toLowerCase().includes(searchTerm?.toLowerCase() || '')
-    );
-    setFilteredPosts(filtered);
+    if (!searchTerm?.trim()) {
+      // 검색어가 없으면 모든 포스트 표시
+      setFilteredPosts(posts);
+    } else {
+      const query = searchTerm.toLowerCase();
+      const filtered = posts.filter(post => {
+        const titleMatch = post.title.toLowerCase().includes(query);
+        const contentMatch = post.content.toLowerCase().includes(query);
+        const hashtagMatch = post.hashtags.some(tag => tag.toLowerCase().includes(query));
+        
+        // 제목, 내용, 해시태그 중 하나라도 일치하면 포함
+        return titleMatch || contentMatch || hashtagMatch;
+      });
+      setFilteredPosts(filtered);
+    }
   }, [posts, searchTerm]);
 
   // 무한 스크롤

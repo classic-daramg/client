@@ -82,17 +82,17 @@ export default function PostItem({ post, isFirst = false }: PostItemProps) {
           <div className="self-stretch flex items-center gap-3 text-[12px] font-medium text-[#d9d9d9]">
             {/* 좋아요 */}
             <div className="flex items-center gap-0.5 text-[#293a92]">
-              <Image src="/icons/heart.svg" alt="좋아요" width={14} height={14} />
+              <Image src="/icons/heart.svg" alt="좋아요" width={17} height={17} />
               <span>{post.likes}</span>
             </div>
 
             {/* 댓글 */}
             <div className="flex items-center gap-0.5 text-[#293a92]">
               <Image
-                src="/icons/message.svg"
+                src="/icons/icons_comment.svg"
                 alt="댓글"
-                width={12}
-                height={12}
+                width={15}
+                height={15}
               />
               <span>{post.comments}</span>
             </div>

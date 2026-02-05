@@ -15,7 +15,18 @@ export default function SearchFilterBar() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/free-talk?search=${searchTerm}`);
+    
+    // 검색어가 비어있으면 쿼리 제거
+    if (!searchTerm.trim()) {
+      router.push('/free-talk');
+    } else {
+      router.push(`/free-talk?search=${encodeURIComponent(searchTerm)}`);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    router.push('/free-talk');
   };
 
   const handleRulesClick = () => {
@@ -30,12 +41,26 @@ export default function SearchFilterBar() {
           <div className="px-2.5 py-[5px] bg-gray-100 rounded-[100px] flex justify-start items-center gap-2 overflow-hidden hover:bg-gray-200 transition-colors">
             <input
               type="text"
-              placeholder="자유 토크 검색..."
+              placeholder="제목, 내용, 해시태그 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-sm font-medium font-['Pretendard'] text-gray-700 placeholder-gray-400 focus:outline-none"
             />
-            <button type="submit" className="w-7 h-7 relative flex items-center justify-center hover:opacity-70 transition-opacity">
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="w-5 h-5 relative flex items-center justify-center hover:opacity-70 transition-opacity text-gray-400"
+                aria-label="검색어 삭제"
+              >
+                <Image src="/icons/close-white.svg" alt="삭제" width={20} height={20} />
+              </button>
+            )}
+            <button 
+              type="submit" 
+              className="w-7 h-7 relative flex items-center justify-center hover:opacity-70 transition-opacity"
+              aria-label="검색"
+            >
               <Image src="/icons/search.svg" alt="검색" width={24} height={24} priority />
             </button>
           </div>

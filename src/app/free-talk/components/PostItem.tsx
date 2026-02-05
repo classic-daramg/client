@@ -66,11 +66,11 @@ export default function PostItem({
 
             <div className="self-stretch inline-flex justify-start items-center gap-2 text-xs text-zinc-400 font-medium">
               <div className="flex items-center gap-0.5">
-                <Image src="/icons/heart.svg" alt="좋아요" width={16} height={16} />
+                <Image src="/icons/heart.svg" alt="좋아요" width={17} height={17} />
                 <span className="text-blue-900">{likes}</span>
               </div>
               <div className="flex items-center gap-0.5">
-                <Image src="/icons/message.svg" alt="댓글" width={12} height={12} />
+                <Image src="/icons/icons_comment.svg" alt="댓글" width={15} height={15} />
                 <span className="text-blue-900">{comments}</span>
               </div>
               <span>{timeAgo}</span>

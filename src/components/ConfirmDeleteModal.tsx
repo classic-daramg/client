@@ -55,47 +55,48 @@ export default function ConfirmDeleteModal({
 
   return (
     <>
-      {/* 배경 오버레이 */}
+      {/* 배경 오버레이 - 투명도 조정 */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+        className="fixed inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-sm"
         onClick={onCancel}
         aria-hidden="true"
       />
 
-      {/* 모달 */}
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-        <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-center">
+      {/* 모달 컨테이너 - 화면 중앙에 반응형 배치 */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        {/* 모달 본체 */}
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl animate-in fade-in zoom-in-95">
           {/* 헤더 */}
-          <div className="px-6 py-4 border-b border-[#e5e7eb]">
+          <div className="px-5 py-4 border-b border-[#e5e7eb]">
             <h2 className="text-lg font-semibold text-[#1a1a1a]">{title}</h2>
           </div>
 
           {/* 본문 */}
-          <div className="px-6 py-4 space-y-2">
-            <p className="text-sm text-[#666666]">{message}</p>
+          <div className="px-5 py-5 space-y-2.5">
+            <p className="text-sm text-[#666666] leading-relaxed">{message}</p>
             {itemName && (
-              <p className="text-sm font-medium text-[#1a1a1a] break-all">
+              <p className="text-sm font-medium text-[#1a1a1a] break-all bg-[#f4f5f7] rounded-lg px-3 py-2">
                 '{itemName}'
               </p>
             )}
-            <p className="text-xs text-[#999999] pt-2">
+            <p className="text-xs text-[#999999] pt-2 leading-relaxed">
               삭제된 포스트는 복구할 수 없습니다.
             </p>
           </div>
 
           {/* 버튼 영역 */}
-          <div className="flex gap-3 px-6 py-4 border-t border-[#e5e7eb]">
+          <div className="flex gap-3 px-5 py-4 border-t border-[#e5e7eb] bg-[#fafafa]">
             <button
               onClick={onCancel}
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 rounded-lg font-medium text-[#666666] bg-[#f4f5f7] hover:bg-[#efefef] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-[#666666] bg-white border border-[#d9d9d9] hover:bg-[#f9f9f9] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               취소
             </button>
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 rounded-lg font-medium text-white bg-red-500 hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-white bg-red-500 hover:bg-red-600 active:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>

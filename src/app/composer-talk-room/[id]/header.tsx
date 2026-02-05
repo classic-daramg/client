@@ -7,9 +7,10 @@ import Link from 'next/link';
 type HeaderProps = {
   onFilterClick: () => void;
   composerName?: string;
+  onSearchChange: (value: string) => void;
 };
 
-export default function RoomHeader({ onFilterClick, composerName }: HeaderProps) {
+export default function RoomHeader({ onFilterClick, composerName, onSearchChange }: HeaderProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [searchValue, setSearchValue] = useState('');
 
@@ -17,10 +18,17 @@ export default function RoomHeader({ onFilterClick, composerName }: HeaderProps)
     setIsSearching(true);
   };
 
+  const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    onSearchChange(value);
+  };
+
   const handleBackClick = () => {
     if (isSearching) {
       setIsSearching(false);
       setSearchValue('');
+      onSearchChange('');
     }
   };
 
@@ -33,9 +41,9 @@ export default function RoomHeader({ onFilterClick, composerName }: HeaderProps)
       {isSearching ? (
         <input
           type="text"
-          placeholder="검색"
+          placeholder="제목, 내용 검색"
           value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
+          onChange={handleSearchInput}
           autoFocus
           className="flex-grow ml-3 px-4 py-2 bg-[#f4f5f7] rounded-full text-zinc-900 text-base font-semibold outline-none placeholder-zinc-400"
         />
