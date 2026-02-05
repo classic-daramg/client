@@ -34,35 +34,38 @@ const UserProfileSection = () => {
   const profileImage = profile?.profileImage || '/icons/DefaultImage.svg';
 
   return (
-    <div className="px-5 pt-5 pb-8 bg-white shadow-[0px_0px_7px_-3px_rgba(0,0,0,0.15)] flex items-center gap-3.5">
-      <div className="flex flex-col items-center gap-2">
-        <Image
-          className="w-24 h-24 rounded-full object-cover"
-          src={profileImage}
-          alt="프로필 이미지"
-          width={96}
-          height={96}
-          priority
-        />
-        <Link href="/my-page/edit-profile" className="text-neutral-400 text-xs font-semibold flex items-center gap-1">
-          프로필 편집
-          <Image src="/icons/write.svg" alt="편집" width={12} height={12} />
-        </Link>
-      </div>
-      <div className="flex-1 flex flex-col gap-4">
-        <div>
-          <h2 className="text-zinc-900 text-xl font-semibold">{nickname}</h2>
-          <p className="text-neutral-400 text-xs font-medium">{bio}</p>
+    <div className="bg-white flex flex-col items-start pb-[34px] pt-[20px] px-[10px] shadow-[0px_0px_7px_-3px_rgba(0,0,0,0.15)]">
+      <div className="flex gap-[14px] items-start w-full">
+        {/* Profile Image */}
+        <div className="flex flex-col items-center shrink-0 size-[86px]">
+          <div className="relative rounded-[100px] shrink-0 w-full h-full">
+            <Image
+              className="rounded-full object-cover w-full h-full"
+              src={profileImage}
+              alt="프로필 이미지"
+              width={96}
+              height={96}
+              priority
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-0.5">
-          <button className="w-full h-7 px-3 py-1.5 bg-blue-900 rounded-[50px] inline-flex justify-center items-center gap-1 text-gray-100 text-xs font-semibold">
-            도토리 친구 목록
-            <Image src="/icons/back.svg" alt="" width={8} height={8} className="transform rotate-180 filter-white" />
-          </button>
-          <button className="w-full h-7 px-3 py-1.5 bg-white rounded-[50px] border border-zinc-300 inline-flex justify-center items-center gap-1 text-neutral-600 text-xs font-semibold">
-            칭호 목록
-            <Image src="/icons/back.svg" alt="" width={8} height={8} className="transform rotate-180" />
-          </button>
+
+        {/* Profile Info and Edit Button */}
+        <div className="flex flex-1 flex-col gap-[18px] items-start leading-none">
+          {/* Nickname and Bio */}
+          <div className="flex flex-col gap-[5px] items-start w-full">
+            <h2 className="text-zinc-900 text-[20px] font-semibold">{nickname}</h2>
+            <p className="text-neutral-400 text-[12px] font-medium">{bio}</p>
+          </div>
+
+          {/* Edit Profile Button */}
+          <Link 
+            href="/my-page/edit-profile" 
+            className="text-neutral-400 text-[12px] font-semibold flex items-center gap-2"
+          >
+            <Image src="/icons/write.svg" alt="편집" width={10} height={10} />
+            프로필 편집
+          </Link>
         </div>
       </div>
     </div>
