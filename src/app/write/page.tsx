@@ -619,7 +619,7 @@ function WritePageInner() {
 
     const handleSaveDraft = async () => {
         const { userId } = useAuthStore.getState();
-        
+
         if (!userId) {
             alert('사용자 정보를 확인할 수 없습니다.');
             return;
@@ -641,30 +641,67 @@ function WritePageInner() {
                 postType = 'STORY';
             }
 
-            const payload = {
+            // 유효한 이미지 URL만 필터링 (blob URL 제외, http(s) URL만 포함)
+            const validImages = imagePreviewUrls.filter(url =>
+                typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))
+            );
+
+            // ========== 기본 payload ==========
+            const basePayload = {
                 title,
                 content,
                 hashtags: hashtags.filter(tag => tag.trim()),
-                images: imagePreviewUrls,
+                images: validImages,
                 videoUrl: link,
                 postStatus: 'DRAFT',
-                primaryComposerId: primaryComposerId || undefined,
-                additionalComposersId: selectedComposers
-                    .filter(c => c.id !== primaryComposerId)
-                    .map(c => c.id),
-                type: postType,
             };
 
+            // ========== 엔드포인트 및 payload 구성 ==========
+            let endpoint = '';
+            let payload: any = { ...basePayload };
+
             if (isEditMode && editPostId) {
-                // 기존 게시글 수정
-                await apiClient.put(`/posts/${editPostId}`, payload);
+                // ===== EDIT MODE =====
+                if (postType === 'FREE') {
+                    endpoint = `/posts/free/${editPostId}`;
+                } else if (postType === 'STORY') {
+                    endpoint = `/posts/story/${editPostId}`;
+                    if (primaryComposerId) {
+                        payload.primaryComposerId = primaryComposerId;
+                    }
+                } else if (postType === 'CURATION') {
+                    endpoint = `/posts/curation/${editPostId}`;
+                    if (selectedComposers.length > 0) {
+                        payload.primaryComposerId = selectedComposers[0].id;
+                        if (selectedComposers.length > 1) {
+                            payload.additionalComposersId = selectedComposers.slice(1).map(c => c.id);
+                        }
+                    }
+                }
+                await apiClient.patch(endpoint, payload);
             } else {
-                // 새 게시글 draft로 저장
-                await apiClient.post(`/posts`, payload);
+                // ===== CREATE MODE =====
+                if (postType === 'FREE') {
+                    endpoint = '/posts/free';
+                } else if (postType === 'STORY') {
+                    endpoint = '/posts/story';
+                    if (primaryComposerId) {
+                        payload.primaryComposerId = primaryComposerId;
+                    }
+                } else if (postType === 'CURATION') {
+                    endpoint = '/posts/curation';
+                    if (selectedComposers.length > 0) {
+                        payload.primaryComposerId = selectedComposers[0].id;
+                        if (selectedComposers.length > 1) {
+                            payload.additionalComposersId = selectedComposers.slice(1).map(c => c.id);
+                        }
+                    }
+                }
+                await apiClient.post(endpoint, payload);
             }
 
             alert('임시저장 되었습니다.');
-            router.push('/my-page/(about-post)/drafts');
+            router.push('/my-page/drafts');
         } catch (error) {
             console.error('Failed to save draft:', error);
             alert('임시저장 중 오류가 발생했습니다.');
