@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import ImageModal from '@/components/ImageModal';
 
 interface PostContentProps {
   title: string;
@@ -49,6 +50,7 @@ export default function PostContent({
   // 유효한 이미지만 필터링
   const validImages = images.filter(isValidUrl);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   // 이미지 슬라이더 핸들러
   const handleNextImage = () => {
@@ -57,6 +59,11 @@ export default function PostContent({
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+  };
+
+  // 이미지 클릭 핸들러
+  const handleImageClick = () => {
+    setIsImageModalOpen(true);
   };
 
   // YouTube URL을 embed URL로 변환
@@ -117,7 +124,10 @@ export default function PostContent({
       {/* 이미지 슬라이더 */}
       {validImages.length > 0 && (
         <div className="relative">
-          <div className="relative w-full h-[300px] bg-[#d9d9d9] rounded-lg overflow-hidden">
+          <div
+            className="relative w-full h-[300px] bg-[#d9d9d9] rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={handleImageClick}
+          >
             <Image
               src={validImages[currentImageIndex]}
               alt={`Post image ${currentImageIndex + 1}`}
@@ -172,6 +182,13 @@ export default function PostContent({
           />
         </div>
       )}
+
+      {/* 이미지 확대 모달 */}
+      <ImageModal
+        isOpen={isImageModalOpen}
+        imageUrl={validImages[currentImageIndex] || ''}
+        onClose={() => setIsImageModalOpen(false)}
+      />
     </div>
   );
 }
