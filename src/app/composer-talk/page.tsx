@@ -11,6 +11,7 @@ import { useComposerStore } from '@/store/composerStore';
 export default function ComposerTalkPage() {
     const { searchTerm, filters } = useComposerTalk();
     const { composers, setComposers, selectComposer } = useComposerStore();
+    const [likedComposers, setLikedComposers] = React.useState<number[]>([]);
 
     // API 호출하여 작곡가 목록 가져오기 (필터 적용)
     useEffect(() => {
@@ -24,7 +25,7 @@ export default function ComposerTalkPage() {
                 if (filters.continent.length > 0) {
                     params.append('continents', filters.continent.join(','));
                 }
-                
+
                 const url = getApiUrl(`/composers${params.toString() ? '?' + params.toString() : ''}`);
                 const response = await fetch(url);
                 const data = await response.json();
@@ -33,17 +34,33 @@ export default function ComposerTalkPage() {
                 console.error('작곡가 목록 조회 실패:', error);
             }
         };
-        
+
         fetchComposers();
     }, [setComposers, filters]);
 
+    // 좋아요 토글 핸들러
+    const handleLikeToggle = (composerId: number) => {
+        setLikedComposers((prev) =>
+            prev.includes(composerId)
+                ? prev.filter((id) => id !== composerId)
+                : [...prev, composerId]
+        );
+    };
+
     // API에서 필터링된 데이터 사용 (검색어만 클라이언트에서 필터링)
-    const filteredCards = composers.filter((composer) => {
-        // 검색어 필터링
-        const matchesSearch = searchTerm === '' ||
-            composer.koreanName.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesSearch;
-    });
+    const filteredCards = composers
+        .filter((composer) => {
+            // 검색어 필터링
+            const matchesSearch = searchTerm === '' ||
+                composer.koreanName.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesSearch;
+        })
+        .sort((a, b) => {
+            // 좋아요한 작곡가를 상단에 배치
+            const aLiked = likedComposers.includes(a.composerId);
+            const bLiked = likedComposers.includes(b.composerId);
+            return aLiked ? -1 : bLiked ? 1 : 0;
+        });
 
     return (
         <div className="relative">
@@ -67,8 +84,8 @@ export default function ComposerTalkPage() {
                     </div>
                 ) : (
                     filteredCards.map((composer) => (
-                        <Link 
-                            key={composer.composerId} 
+                        <Link
+                            key={composer.composerId}
                             href={`/composer-talk-room/${composer.composerId}`}
                             onClick={() => selectComposer(composer.composerId)}
                         >
@@ -77,7 +94,10 @@ export default function ComposerTalkPage() {
                                     <div className="text-stone-300 text-xs font-semibold">{composer.bio}</div>
                                     <div className="text-zinc-900 text-xl font-semibold">{composer.koreanName}</div>
                                 </div>
-                                <HeartButton />
+                                <HeartButton
+                                    isSelected={likedComposers.includes(composer.composerId)}
+                                    onToggle={() => handleLikeToggle(composer.composerId)}
+                                />
                             </div>
                         </Link>
                     ))
