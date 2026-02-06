@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { fetchApi } from '@/lib/api';
 import ComposerProfile from './composer-profile';
 import FloatingButtons from './floating-buttons';
@@ -124,6 +124,7 @@ function PostItem({ post }: { post: Post }) {
 export default function ComposerTalkPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,6 +132,7 @@ export default function ComposerTalkPage() {
   const [hasLoadedComposer, setHasLoadedComposer] = useState(false);
   const { selectedComposer, selectComposer, hasHydrated } = useComposerStore();
   const params = useParams<{ id: string | string[] }>();
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -146,6 +148,7 @@ export default function ComposerTalkPage() {
       if (!composerId) return;
 
       setLoading(true);
+      setError(null);
 
       try {
         const response = await fetchApi(
@@ -188,11 +191,16 @@ export default function ComposerTalkPage() {
             setPosts(formattedPosts);
             console.log('✅ Composer posts loaded:', formattedPosts);
           }
+        } else if (response.status === 401) {
+          setError('로그인이 필요합니다.');
+          router.push('/loginpage');
         } else {
           console.error(`Failed to fetch composer posts: ${response.status}`);
+          setError('게시글을 불러올 수 없습니다.');
         }
       } catch (error) {
         console.error('Failed to fetch composer data:', error);
+        setError('오류가 발생했습니다. 다시 시도해주세요.');
       } finally {
         setLoading(false);
         setHasLoadedComposer(true);
@@ -203,7 +211,7 @@ export default function ComposerTalkPage() {
     if (!hasLoadedComposer) {
       fetchData();
     }
-  }, [hasHydrated, isClient, params, hasLoadedComposer, selectComposer, selectedComposer]);
+  }, [hasHydrated, isClient, params, hasLoadedComposer, selectComposer, selectedComposer, router]);
 
   // 필터 제거 핸들러
   const handleRemoveFilter = (filterId: string) => {
@@ -254,7 +262,11 @@ export default function ComposerTalkPage() {
       {selectedComposer && <ComposerProfile data={selectedComposer} />}
       <div className="px-5">
         <section>
-          {filteredPosts.length === 0 ? (
+          {error ? (
+            <div className="py-10 text-center">
+              <p className="text-red-500 font-medium">{error}</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
             loading ? (
               <PostsSkeleton />
             ) : (
