@@ -133,13 +133,21 @@ apiClient.interceptors.response.use(
         }
       );
 
+      console.log('✅ Refresh response received:', {
+        status: response.status,
+        hasAccessToken: Boolean(response.data?.accessToken || response.data?.token),
+      });
+
       const newAccessToken = response.data.accessToken || response.data.token;
 
       if (!newAccessToken) {
         throw new Error('No access token in refresh response');
       }
 
-      console.log('✅ Token refreshed successfully');
+      console.log('✅ Token refreshed successfully:', {
+        tokenLength: newAccessToken.length,
+        tokenPreview: `${newAccessToken.slice(0, 8)}...${newAccessToken.slice(-6)}`,
+      });
 
       // 새로운 Access Token 저장
       useAuthStore.getState().setAccessToken(newAccessToken);
