@@ -7,11 +7,11 @@ import { getApiUrl } from '@/lib/api';
 import Link from 'next/link';
 import { useComposerTalk } from './context';
 import { useComposerStore } from '@/store/composerStore';
+import { apiClient } from '@/lib/apiClient';
 
 export default function ComposerTalkPage() {
     const { searchTerm, filters } = useComposerTalk();
     const { composers, setComposers, selectComposer } = useComposerStore();
-    const [likedComposers, setLikedComposers] = React.useState<number[]>([]);
 
     // API 호출하여 작곡가 목록 가져오기 (필터 적용)
     useEffect(() => {
@@ -26,10 +26,9 @@ export default function ComposerTalkPage() {
                     params.append('continents', filters.continent.join(','));
                 }
 
-                const url = getApiUrl(`/composers${params.toString() ? '?' + params.toString() : ''}`);
-                const response = await fetch(url);
-                const data = await response.json();
-                setComposers(data);
+                const endpoint = `/composers${params.toString() ? '?' + params.toString() : ''}`;
+                const response = await apiClient.get(endpoint);
+                setComposers(response.data);
             } catch (error) {
                 console.error('작곡가 목록 조회 실패:', error);
             }
@@ -39,12 +38,22 @@ export default function ComposerTalkPage() {
     }, [setComposers, filters]);
 
     // 좋아요 토글 핸들러
-    const handleLikeToggle = (composerId: number) => {
-        setLikedComposers((prev) =>
-            prev.includes(composerId)
-                ? prev.filter((id) => id !== composerId)
-                : [...prev, composerId]
+    const handleLikeToggle = async (composerId: number) => {
+        const prevComposers = composers;
+        const updatedComposers = composers.map((composer) =>
+            composer.composerId === composerId
+                ? { ...composer, isLiked: !composer.isLiked }
+                : composer
         );
+
+        setComposers(updatedComposers);
+
+        try {
+            await apiClient.post(`/composers/${composerId}/like`);
+        } catch (error) {
+            console.error('작곡가 좋아요 토글 실패:', error);
+            setComposers(prevComposers);
+        }
     };
 
     // API에서 필터링된 데이터 사용 (검색어만 클라이언트에서 필터링)
@@ -57,8 +66,8 @@ export default function ComposerTalkPage() {
         })
         .sort((a, b) => {
             // 좋아요한 작곡가를 상단에 배치
-            const aLiked = likedComposers.includes(a.composerId);
-            const bLiked = likedComposers.includes(b.composerId);
+            const aLiked = a.isLiked;
+            const bLiked = b.isLiked;
             return aLiked ? -1 : bLiked ? 1 : 0;
         });
 
@@ -95,7 +104,7 @@ export default function ComposerTalkPage() {
                                     <div className="text-zinc-900 text-xl font-semibold">{composer.koreanName}</div>
                                 </div>
                                 <HeartButton
-                                    isSelected={likedComposers.includes(composer.composerId)}
+                                    isSelected={composer.isLiked}
                                     onToggle={() => handleLikeToggle(composer.composerId)}
                                 />
                             </div>

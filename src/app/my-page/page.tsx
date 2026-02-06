@@ -213,7 +213,7 @@ export default function MyPage() {
         <ListItem title="스크랩한 글" href="/my-page/scraps" />
 
         <SectionHeader title="이용안내" />
-        <ListItem title="이용 제한 내역" href="/my-page/restrictions" />
+        <ListItem title="이용 제한 안내" href="/my-page/restrictions" />
         <ListItem title="FAQ 및 문의하기" href="/my-page/faq" />
         <ListItem title="공지사항" href="/my-page/notices" />
         <ListItem title="서비스 이용약관" href="/my-page/terms" />
