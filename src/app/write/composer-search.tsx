@@ -57,9 +57,18 @@ export default function ComposerSearch({
         fetchComposers();
     }, []);
 
-    const filteredComposers = composers.filter(composer =>
-        composer.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredComposers = composers
+        .filter(composer => composer.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => {
+            const aSelected = selectedComposers.includes(a.name);
+            const bSelected = selectedComposers.includes(b.name);
+
+            if (aSelected === bSelected) {
+                return 0;
+            }
+
+            return aSelected ? -1 : 1;
+        });
 
     const handleComposerClick = (composerName: string) => {
         if (selectedComposers.includes(composerName)) {

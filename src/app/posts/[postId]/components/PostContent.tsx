@@ -68,13 +68,41 @@ export default function PostContent({
 
   // YouTube URL을 embed URL로 변환
   const getYouTubeEmbedUrl = (url: string): string | null => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    
-    if (match && match[2].length === 11) {
-      return `https://www.youtube.com/embed/${match[2]}`;
+    try {
+      const parsed = new URL(url);
+      const hostname = parsed.hostname.replace('www.', '');
+      let videoId = '';
+
+      if (hostname === 'youtu.be') {
+        videoId = parsed.pathname.replace('/', '');
+      } else if (
+        hostname.endsWith('youtube.com') ||
+        hostname.endsWith('youtube-nocookie.com') ||
+        hostname.endsWith('music.youtube.com')
+      ) {
+        if (parsed.pathname.startsWith('/watch')) {
+          videoId = parsed.searchParams.get('v') || '';
+        } else if (parsed.pathname.startsWith('/embed/')) {
+          videoId = parsed.pathname.split('/')[2] || '';
+        } else if (parsed.pathname.startsWith('/shorts/')) {
+          videoId = parsed.pathname.split('/')[2] || '';
+        } else if (parsed.pathname.startsWith('/v/')) {
+          videoId = parsed.pathname.split('/')[2] || '';
+        }
+      }
+
+      if (!videoId || videoId.length !== 11) {
+        return null;
+      }
+
+      const start = parsed.searchParams.get('start') || parsed.searchParams.get('t');
+      const startSeconds = start ? start.replace('s', '') : '';
+      const startParam = startSeconds ? `?start=${startSeconds}` : '';
+
+      return `https://www.youtube.com/embed/${videoId}${startParam}`;
+    } catch {
+      return null;
     }
-    return null;
   };
 
   return (
