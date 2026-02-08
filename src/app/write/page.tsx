@@ -653,12 +653,12 @@ function WritePageInner() {
                 hashtags: hashtags.filter(tag => tag.trim()),
                 images: validImages,
                 videoUrl: link,
-                postStatus: 'DRAFT',
+                postStatus: 'DRAFT' as const,
             };
 
             // ========== 엔드포인트 및 payload 구성 ==========
             let endpoint = '';
-            let payload: any = { ...basePayload };
+            const payload: UpdatePayload = { ...basePayload };
 
             if (isEditMode && editPostId) {
                 // ===== EDIT MODE =====
