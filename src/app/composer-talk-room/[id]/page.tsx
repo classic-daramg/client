@@ -68,12 +68,20 @@ function PostsSkeleton() {
 }
 
 // --- Single Post Item Component ---
-function PostItem({ post }: { post: Post }) {
+function PostItem({ post, composerName }: { post: Post; composerName?: string }) {
+  const isCuration = post.type === 'CURATION';
+  const postTypeLabel = isCuration ? '큐레이션글' : `${composerName ?? '작곡가'} 이야기`;
+  const postTypeIcon = isCuration ? '/icons/white_check.svg' : '/icons/write-white.svg';
+
   return (
     <article className="py-4 border-t border-zinc-200">
       <div className="flex justify-between items-start gap-4">
         {/* Post Content */}
         <div className="flex flex-col gap-2 flex-1">
+          <div className="flex items-center gap-1 text-[11px] text-zinc-400 font-medium">
+            <Image src={postTypeIcon} alt="글 종류" width={12} height={12} className="brightness-0 opacity-40" />
+            <span>{postTypeLabel}</span>
+          </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-zinc-900 text-sm font-semibold">{post.title}</h2>
             <p className="text-neutral-500 text-xs font-medium line-clamp-2">{post.content}</p>
@@ -263,7 +271,7 @@ export default function ComposerTalkPage() {
           ) : (
             filteredPosts.map((post) => (
               <Link key={post.id} href={`/posts/${post.id}`}>
-                <PostItem post={post} />
+                <PostItem post={post} composerName={selectedComposer?.koreanName} />
               </Link>
             ))
           )}

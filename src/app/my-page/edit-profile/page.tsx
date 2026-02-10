@@ -5,12 +5,15 @@ import { useUserProfileStore } from "@/store/userProfileStore";
 import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 import { getApiUrl } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 export default function EditProfilePage() {
 	const { profile, updateProfile, setProfileImage, resetToDefaultImage, getProfileImage } = useUserProfileStore();
 	const { accessToken } = useAuthStore();
+	const router = useRouter();
 	const [nickname, setNickname] = useState(profile?.nickname || "");
 	const [bio, setBio] = useState(profile?.bio || "");
+	const [isMounted, setIsMounted] = useState(false);
 
 		const [saving, setSaving] = useState(false);
 		const [showPhotoPopup, setShowPhotoPopup] = useState(false);
@@ -19,6 +22,8 @@ export default function EditProfilePage() {
 
 	// 프로필 데이터 로드
 	useEffect(() => {
+		setIsMounted(true);
+
 		const loadProfile = async () => {
 			try {
 				const headers: Record<string, string> = {
@@ -53,6 +58,8 @@ export default function EditProfilePage() {
 		loadProfile();
 	}, [accessToken, setProfileImage]);
 
+	const profileImageSrc = isMounted ? (getProfileImage() || "/icons/DefaultImage.svg") : "/icons/DefaultImage.svg";
+
 	// 색상 팔레트: DefaultImage.svg의 연한 회색(#F4F5F7), 진한 파랑(#293A92), 흰색, 연회색(#E5E7EB)
 	const mainBg = "#F4F5F7";
 	const cardBg = "#fff";
@@ -73,18 +80,26 @@ export default function EditProfilePage() {
 					// 백엔드로 업로드
 					try {
 						const formData = new FormData();
-						formData.append("profileImage", file);
-						// 실제 서버 주소로 변경 필요
-						const res = await fetch("/api/upload-profile-image", {
+						formData.append("images", file);
+						const headers: Record<string, string> = {};
+						if (accessToken) {
+							headers['Authorization'] = `Bearer ${accessToken}`;
+						}
+						const res = await fetch(getApiUrl('/images/upload'), {
 							method: "POST",
+							headers,
+							credentials: 'include',
 							body: formData,
 						});
 						if (!res.ok) {
 							// 오류 처리
 							console.error("이미지 업로드 실패");
 						} else {
-							// 필요시 서버에서 받은 URL 등 처리
-							// const data = await res.json();
+							const data = await res.json();
+							const uploadedImageUrl = data?.imageUrls?.[0];
+							if (uploadedImageUrl) {
+								setProfileImage(uploadedImageUrl);
+							}
 						}
 					} catch (err) {
 						console.error("이미지 업로드 중 오류", err);
@@ -146,6 +161,7 @@ export default function EditProfilePage() {
 				message: '프로필이 성공적으로 저장되었습니다.',
 				type: 'success'
 			});
+			router.push('/my-page');
 
 			// 3초 후 메시지 숨기기
 			setTimeout(() => setSaveMessage(null), 3000);
@@ -177,7 +193,7 @@ export default function EditProfilePage() {
 						<div className="relative w-[130px] h-[130px] mb-6 flex items-center justify-center">
 							<div className="rounded-full border-4" style={{ borderColor: blue, background: cardBg, width: 130, height: 130, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 								<Image
-									src={getProfileImage() || "/icons/DefaultImage.svg"}
+									src={profileImageSrc}
 									alt="프로필 이미지"
 									width={120}
 									height={120}
