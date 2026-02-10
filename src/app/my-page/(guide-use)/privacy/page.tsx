@@ -84,9 +84,9 @@ export default function PrivacyPage() {
 제8조 (문의처)
 개인정보와 관련한 문의는 아래 연락처로 문의해 주세요.
 
-- <메일입력>
+- <classicaldaramz@gmail.com>
 
-본 개인정보 처리방침은 2025년 2월 21일부터 적용됩니다.`}
+본 개인정보 처리방침은 2026년 1월 1일부터 적용됩니다.`}
             </p>
           </div>
         </div>

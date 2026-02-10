@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSafeBack } from "@/hooks/useSafeBack";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import apiClient from "@/lib/apiClient";
 
@@ -35,7 +35,7 @@ interface ScrapsResponse {
 }
 
 export default function Scraps() {
-	const handleSafeBack = useSafeBack("/my-page");
+	const router = useRouter();
 	const { accessToken, userId: storedUserId, getUserIdFromToken } = useAuthStore();
 	const [scraps, setScraps] = useState<Scrap[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -121,7 +121,7 @@ export default function Scraps() {
 				<div className="bg-white px-[20px] pb-[12px]">
 					<div className="flex items-center gap-[4px]">
 						<button
-							onClick={handleSafeBack}
+							onClick={() => router.back()}
 							className="bg-none border-none p-0 cursor-pointer w-6 h-6 flex items-center justify-center"
 							aria-label="뒤로가기"
 						>

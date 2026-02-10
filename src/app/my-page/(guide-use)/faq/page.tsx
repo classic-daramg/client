@@ -39,7 +39,7 @@ export default function FAQ() {
 					<p>서비스 사용 중 궁금하신 사항은</p>
 					<p>공식 이메일로 문의 부탁드립니다.</p>
 				</div>
-				<p className="text-[#a6a6a6] text-[14px] font-semibold">classicsquirrel@gmail.com</p>
+				<p className="text-[#a6a6a6] text-[14px] font-semibold">classicaldaramz@gmail.com</p>
 			</main>
 		</div>
 	);

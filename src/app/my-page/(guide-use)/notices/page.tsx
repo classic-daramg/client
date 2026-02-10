@@ -1,40 +1,64 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import apiClient from '@/lib/apiClient';
 
 const backIcon = '/icons/back.svg';
 
 export default function Notices() {
-	const notices = [
-		{
-			id: 1,
-			title: '서비스 점검 안내',
-			content: '2025년 08월 30일 (금) 01:00 ~ 04:00 에 정기 점검을 실시합니다.',
-			date: '25/08/28 14:26',
-		},
-		{
-			id: 2,
-			title: '새로운 기능 추가',
-			content: '글 작성 시 음악을 함께 첨부할 수 있는 기능이 추가되었습니다.',
-			date: '25/08/25 10:15',
-		},
-		{
-			id: 3,
-			title: '이용약관 개정 안내',
-			content: '개인정보 보호 강화를 위해 이용약관이 개정되었습니다. 자세한 내용을 확인해주세요.',
-			date: '25/08/20 14:26',
-		},
-	];
+	const router = useRouter();
+	const [notices, setNotices] = useState<Array<{ id: number; title: string; content: string; createdAt: string }>>([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const loadNotices = async () => {
+			try {
+				setIsLoading(true);
+				setError(null);
+				const response = await apiClient.get('/notice');
+				const content = response.data?.content ?? [];
+				setNotices(content);
+			} catch (err) {
+				console.error('Failed to load notices:', err);
+				setError('공지사항을 불러오는 중 오류가 발생했습니다.');
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		loadNotices();
+	}, []);
+
+	const formatDate = (dateString: string): string => {
+		try {
+			const date = new Date(dateString);
+			const year = String(date.getFullYear()).slice(-2);
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+			const hours = String(date.getHours()).padStart(2, '0');
+			const minutes = String(date.getMinutes()).padStart(2, '0');
+			return `${year}/${month}/${day} ${hours}:${minutes}`;
+		} catch {
+			return dateString;
+		}
+	};
 
 	return (
 		<div className="relative w-[375px] min-h-screen bg-white flex flex-col">
 			{/* Header */}
 			<div className="flex h-[54px] items-center px-4 bg-white border-b border-[#f4f5f7]">
 				<div className="flex gap-[4px] items-center w-full">
-					<div className="relative w-6 h-6 flex items-center justify-center">
+					<button
+						type="button"
+						onClick={() => router.back()}
+						className="relative w-6 h-6 flex items-center justify-center"
+						aria-label="뒤로가기"
+					>
 						<Image src={backIcon} alt="back" width={20} height={20} />
-					</div>
+					</button>
 					<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
 						<p>공지사항</p>
 					</div>
@@ -43,6 +67,19 @@ export default function Notices() {
 
 			{/* Notices List */}
 			<div className="flex flex-col w-full">
+				{isLoading && (
+					<div className="w-full py-8 text-center text-[#a6a6a6]">
+						공지사항을 불러오는 중입니다...
+					</div>
+				)}
+				{error && (
+					<div className="w-full py-8 text-center text-red-500">{error}</div>
+				)}
+				{!isLoading && !error && notices.length === 0 && (
+					<div className="w-full py-8 text-center text-[#a6a6a6]">
+						공지사항이 없습니다.
+					</div>
+				)}
 				{notices.map((notice) => (
 					<div
 						key={notice.id}
@@ -50,7 +87,7 @@ export default function Notices() {
 					>
 						<h3 className="text-[14px] font-semibold text-[#1a1a1a] mb-1">{notice.title}</h3>
 						<p className="text-[12px] text-[#a6a6a6] mb-2">{notice.content}</p>
-						<p className="text-[11px] text-[#d9d9d9]">{notice.date}</p>
+						<p className="text-[11px] text-[#d9d9d9]">{formatDate(notice.createdAt)}</p>
 					</div>
 				))}
 			</div>

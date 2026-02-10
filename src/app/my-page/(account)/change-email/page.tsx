@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { apiClient } from '@/lib/apiClient';
+import { useRouter } from 'next/navigation';
 
 function Popup({ message, onClose }: { message: string; onClose: () => void }) {
   return (
@@ -15,6 +16,7 @@ function Popup({ message, onClose }: { message: string; onClose: () => void }) {
 }
 
 export default function ChangeEmail() {
+  const router = useRouter();
   // 상태 관리
   const [currentEmail, setCurrentEmail] = useState('');
   const [inputCurrentEmail, setInputCurrentEmail] = useState('');
@@ -142,7 +144,11 @@ export default function ChangeEmail() {
   return (
     <div className="bg-white min-h-screen flex flex-col items-center">
       <header className="w-full max-w-[375px] flex items-center px-5 pt-[21px] pb-[12px] bg-white sticky top-0 z-10">
-        <button className="bg-none border-none p-0 mr-1 cursor-pointer w-[30px] h-[30px] flex items-center justify-center" aria-label="뒤로가기">
+        <button
+          className="bg-none border-none p-0 mr-1 cursor-pointer w-[30px] h-[30px] flex items-center justify-center"
+          onClick={() => router.back()}
+          aria-label="뒤로가기"
+        >
           <Image src="/icons/back.svg" alt="뒤로가기" width={30} height={30} />
         </button>
         <h1 className="flex-1 text-center text-[#1a1a1a] text-[16px] font-semibold">이메일 변경</h1>

@@ -4,11 +4,11 @@ import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSafeBack } from '@/hooks/useSafeBack';
 import Image from 'next/image';
-import Link from 'next/link';
 import { AxiosError } from 'axios';
 import { apiClient } from '@/lib/apiClient';
 import { patchPost, PostUpdateRequest, normalizePostUpdateData } from '@/lib/postApi';
 import ToastNotification from '@/components/ToastNotification';
+import { useDraftStore } from '@/store/draftStore';
 
 // ================== TypeScript Interfaces ==================
 
@@ -67,7 +67,11 @@ function EditPageInner() {
   
   // URL 파라미터
   const postId = searchParams.get('edit');
-  const handleSafeBack = useSafeBack(postId ? `/posts/${postId}` : '/');
+  const draftId = searchParams.get('draftId');
+  const { draft } = useDraftStore();
+  const handleSafeBack = useSafeBack(
+    draftId ? '/my-page/drafts' : postId ? `/posts/${postId}` : '/'
+  );
 
   // 상태 관리
   const [post, setPost] = useState<PostDetail | null>(null);
@@ -92,6 +96,50 @@ function EditPageInner() {
   // ========== Data Fetching ==========
   useEffect(() => {
     const fetchPost = async () => {
+      if (draftId) {
+        if (!draft || String(draft.id) !== draftId) {
+          setError('임시저장 데이터를 찾을 수 없습니다.');
+          setLoading(false);
+          return;
+        }
+
+        const draftPost: PostDetail = {
+          id: draft.id,
+          type: draft.type as PostDetail['type'],
+          title: draft.title,
+          content: draft.content,
+          writerNickname: draft.writerNickname,
+          writerProfileImage: '',
+          createdAt: draft.createdAt,
+          updatedAt: draft.createdAt,
+          postStatus: 'DRAFT',
+          isLiked: Boolean(draft.isLiked),
+          isScrapped: Boolean(draft.isScrapped),
+          isBlocked: false,
+          likeCount: draft.likeCount,
+          commentCount: draft.commentCount,
+          images: draft.thumbnailImageUrl ? [draft.thumbnailImageUrl] : [],
+          hashtags: draft.hashtags || [],
+          videoUrl: null,
+          comments: [],
+        };
+
+        setPost(draftPost);
+        setFormData({
+          title: draft.title,
+          content: draft.content,
+          hashtags: draft.hashtags || [],
+          images: draft.thumbnailImageUrl ? [draft.thumbnailImageUrl] : [],
+          videoUrl: '',
+          postStatus: 'DRAFT',
+          primaryComposerId: 0,
+          additionalComposersId: [],
+        });
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
       if (!postId) {
         setError('포스트 ID가 없습니다.');
         setLoading(false);
@@ -137,7 +185,7 @@ function EditPageInner() {
     };
 
     fetchPost();
-  }, [postId]);
+  }, [draft, draftId, postId]);
 
   // ========== Event Handlers ==========
 
@@ -303,9 +351,14 @@ function EditPageInner() {
       <div className="bg-white w-full max-w-md mx-auto">
         {/* ========== Header ========== */}
         <div className="px-5 py-3 flex items-center gap-1 border-b border-[#f4f5f7] sticky top-0 bg-white z-10">
-          <Link href={`/posts/${postId}`} className="flex-shrink-0">
+          <button
+            type="button"
+            onClick={handleSafeBack}
+            className="flex-shrink-0"
+            aria-label="뒤로가기"
+          >
             <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
-          </Link>
+          </button>
           <h1 className="flex-1 text-center text-[#1a1a1a] text-base font-semibold">
             포스트 수정
           </h1>

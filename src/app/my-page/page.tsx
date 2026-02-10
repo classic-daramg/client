@@ -220,7 +220,7 @@ export default function MyPage() {
         <ListItem title="개인정보 처리방침" href="/my-page/privacy" />
 
         <SectionHeader title="기타" />
-        <ListItem title="알림설정-" href="/my-page/notifications" />
+        <ListItem title="알림설정-" href="/my-page/notification-setting" />
         <ListItem title="회원탈퇴" href="/my-page/delete-account" />
         <ListItem title="로그아웃" onClick={() => setShowLogoutPopup(true)} />
       </div>

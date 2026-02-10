@@ -10,6 +10,7 @@ import HashtagInput from './components/HashtagInput';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
 import { AxiosError } from 'axios';
+import { useDraftStore } from '@/store/draftStore';
 
 // 한국 시간(KST, UTC+9) ISO 문자열 생성 함수
 const getKSTISOString = (): string => {
@@ -71,11 +72,12 @@ type UpdatePayload = {
     additionalComposersId?: number[];
 };
 
-function WritePageInner() {
+export function WritePageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isClient, setIsClient] = useState(false);
     const { isAuthenticated } = useAuthStore();
+    const { draft } = useDraftStore();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [hashtags, setHashtags] = useState<string[]>([]);
@@ -103,6 +105,7 @@ function WritePageInner() {
         : null;
     const postTypeParam = searchParams.get('type'); // 'curation', 'free'
     const editIdParam = searchParams.get('edit');
+    const draftId = searchParams.get('draftId');
 
     const getFallbackHref = () => {
         if (editIdParam) {
@@ -222,6 +225,7 @@ function WritePageInner() {
     useEffect(() => {
         if (!isClient) return;
         if (isEditMode) return;
+        if (draftId) return;
         
         if (typeof window !== 'undefined') {
             const draftStr = localStorage.getItem('draft-edit');
@@ -245,7 +249,49 @@ function WritePageInner() {
                 } catch {}
             }
         }
-    }, [isClient, isEditMode]);
+    }, [draftId, isClient, isEditMode]);
+
+    // draftId가 있으면 store의 임시저장 데이터를 초기값으로 사용
+    useEffect(() => {
+        if (!isClient) return;
+        if (isEditMode) return;
+        if (!draftId) return;
+        if (!draft || String(draft.id) !== draftId) return;
+
+        const draftComposerId = draft.primaryComposer?.id ?? draft.primaryComposer?.composerId ?? null;
+        const draftComposerName =
+            draft.primaryComposer?.koreanName ?? draft.primaryComposer?.englishName ?? '';
+
+        const nextType = draft.type === 'CURATION'
+            ? '큐레이션 글'
+            : draft.type === 'FREE'
+                ? '자유 글'
+                : draftComposerName
+                    ? `${draftComposerName} 이야기`
+                    : '작곡가 이야기';
+
+        setSelectedType(nextType);
+        setTitle(draft.title || '');
+        setContent(draft.content || '');
+        setHashtags(draft.hashtags || []);
+        setLink('');
+        setImageFiles([]);
+        setImagePreviewUrls(draft.thumbnailImageUrl ? [draft.thumbnailImageUrl] : []);
+
+        if (draftComposerId && draftComposerName) {
+            setSelectedComposers([{ id: draftComposerId, name: draftComposerName }]);
+            setPrimaryComposerId(draftComposerId);
+        } else {
+            setSelectedComposers([]);
+            setPrimaryComposerId(null);
+        }
+
+        if (draft.type === 'STORY') {
+            setCurationMode('none');
+        } else {
+            setCurationMode(null);
+        }
+    }, [draft, draftId, isClient, isEditMode]);
 
     // postType 변경 시 curationMode 초기화 로직
     useEffect(() => {

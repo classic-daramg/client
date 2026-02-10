@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSafeBack } from '@/hooks/useSafeBack';
 import Image from 'next/image';
-import Link from 'next/link';
 import { AxiosError } from 'axios';
 import { apiClient } from '@/lib/apiClient';
 import { usePostAuth } from '@/hooks/usePostAuth';
@@ -119,6 +118,14 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleBackClick = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/');
+    }
   };
 
   // 로그인 필수 액션 체크
@@ -303,16 +310,6 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     return '포스트';
   };
 
-  // ========== Get Back URL Based on Type ==========
-  const getBackUrl = () => {
-    if (post.type === 'CURATION') return '/curation';
-    if (post.type === 'FREE') return '/free-talk';
-    if (post.type === 'STORY' && post.primaryComposer) {
-      return `/composer-talk-room/${post.primaryComposer.composerId}`;
-    }
-    return '/';
-  };
-
   // ========== Main Render ==========
   
   return (
@@ -320,9 +317,14 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
       <div className="bg-white w-full max-w-md mx-auto">
         {/* ========== Header ========== */}
         <div className="px-5 py-3 flex items-center gap-1 border-b border-[#f4f5f7] sticky top-0 bg-white z-10">
-          <Link href={getBackUrl()} className="flex-shrink-0">
+          <button
+            type="button"
+            onClick={handleBackClick}
+            className="flex-shrink-0"
+            aria-label="뒤로가기"
+          >
             <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
-          </Link>
+          </button>
           <h1 className="flex-1 text-center text-[#1a1a1a] text-base font-semibold">
             {getHeaderTitle()}
           </h1>

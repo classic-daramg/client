@@ -184,6 +184,14 @@ export default function EditProfilePage() {
 				<div className="absolute bg-white h-[54px] w-full left-0 top-0 z-10" />
 				{/* Header */}
 				<div className="absolute bg-white flex items-center left-0 top-[54px] w-full h-[42px] px-5 z-20 border-b" style={{ borderColor: borderGray }}>
+					<button
+						type="button"
+						onClick={() => router.back()}
+						className="absolute left-5"
+						aria-label="뒤로가기"
+					>
+						<Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
+					</button>
 					<span className="text-[#1a1a1a] text-[16px] font-semibold mx-auto">프로필 편집</span>
 				</div>
 				{/* Main Card */}

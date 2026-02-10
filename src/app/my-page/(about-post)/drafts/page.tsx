@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useAuthStore } from "@/store/authStore";
 import apiClient from "@/lib/apiClient";
+import { useDraftStore } from "@/store/draftStore";
 
 // Local SVG assets
 const backIcon = "/icons/back.svg";
@@ -24,6 +25,12 @@ interface Draft {
 	commentCount: number;
 	thumbnailImageUrl: string | null;
 	type: string;
+	primaryComposer?: {
+		id?: number;
+		composerId?: number;
+		koreanName?: string;
+		englishName?: string;
+	} | null;
 	isLiked: boolean | null;
 	isScrapped: boolean | null;
 }
@@ -37,6 +44,7 @@ interface DraftsResponse {
 export default function Drafts() {
 	const handleSafeBack = useSafeBack("/my-page");
 	const { accessToken, userId: storedUserId, getUserIdFromToken } = useAuthStore();
+	const { setDraft } = useDraftStore();
 	const [drafts, setDrafts] = useState<Draft[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -148,7 +156,8 @@ export default function Drafts() {
 					{drafts.map((draft, index) => (
 						<Link
 							key={draft.id}
-							href={`/posts/${draft.id}`}
+							href={`/write?draftId=${draft.id}`}
+							onClick={() => setDraft(draft)}
 							className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${
 								index > 0 ? "border-t border-[#f4f5f7]" : ""
 							}`}

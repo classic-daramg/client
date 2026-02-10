@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { apiClient } from '@/lib/apiClient';
+import { useRouter } from 'next/navigation';
 
 function Popup({ message, onClose }: { message: string; onClose: () => void }) {
 	return (
@@ -15,6 +16,7 @@ function Popup({ message, onClose }: { message: string; onClose: () => void }) {
 }
 
 export default function ChangePassword() {
+	const router = useRouter();
 
 	// 상태 관리
 	const [step, setStep] = useState<'current'|'new'|'confirm'|'done'>('current');
@@ -97,7 +99,11 @@ export default function ChangePassword() {
 	return (
 		<div className="bg-white min-h-screen flex flex-col items-center">
 			<header className="w-full max-w-[375px] flex items-center px-5 pt-[21px] pb-[12px] bg-white sticky top-0 z-10">
-				<button className="bg-none border-none p-0 mr-1 cursor-pointer w-[30px] h-[30px] flex items-center justify-center" aria-label="뒤로가기">
+				<button
+					className="bg-none border-none p-0 mr-1 cursor-pointer w-[30px] h-[30px] flex items-center justify-center"
+					onClick={() => router.back()}
+					aria-label="뒤로가기"
+				>
 					<Image src="/icons/back.svg" alt="뒤로가기" width={30} height={30} />
 				</button>
 				<h1 className="flex-1 text-center text-[#1a1a1a] text-[16px] font-semibold">비밀번호 변경</h1>
@@ -105,7 +111,7 @@ export default function ChangePassword() {
 			<main className="w-full max-w-[375px] px-5 flex flex-col gap-[30px]">
 				<section className="w-full flex flex-col gap-[11px] mt-2">
 					<label className="text-[#4c4c4c] text-[14px] font-semibold">비밀번호 재설정</label>
-					<div className="text-[#bfbfbf] text-[12px] mb-1">비밀번호 규약 여기에 설명하기</div>
+					<div className="text-[#bfbfbf] text-[12px] mb-1">새 비밀번호 (영어 대/소문자, 숫자, 특수문자 포함 10자 이상)</div>
 					{/* 기존 비밀번호 입력 */}
 					<div className="flex gap-[10px] items-end mb-[6px]">
 						<input

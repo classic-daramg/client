@@ -2,10 +2,12 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const backIcon = '/icons/back.svg';
 
 export default function Notification() {
+	const router = useRouter();
 	const notifications = [
 		{
 			id: 1,
@@ -26,9 +28,14 @@ export default function Notification() {
 			{/* Header */}
 			<div className="flex h-[54px] items-center px-4 bg-white border-b border-[#f4f5f7]">
 				<div className="flex gap-[4px] items-center w-full">
-					<div className="relative w-6 h-6 flex items-center justify-center">
+					<button
+						type="button"
+						onClick={() => router.back()}
+						className="relative w-6 h-6 flex items-center justify-center"
+						aria-label="뒤로가기"
+					>
 						<Image src={backIcon} alt="back" width={20} height={20} />
-					</div>
+					</button>
 					<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
 						<p>알림</p>
 					</div>
