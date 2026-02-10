@@ -53,7 +53,7 @@ export default function ReportPage() {
           {/* Email */}
           <div className="text-center">
             <p className="text-[#a6a6a6] text-[16px] font-semibold">
-              classicsquirrel@gmail.com
+              classicaldaramz@gmail.com
             </p>
           </div>
         </div>
