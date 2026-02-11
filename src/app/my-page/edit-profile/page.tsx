@@ -15,10 +15,10 @@ export default function EditProfilePage() {
 	const [bio, setBio] = useState(profile?.bio || "");
 	const [isMounted, setIsMounted] = useState(false);
 
-		const [saving, setSaving] = useState(false);
-		const [showPhotoPopup, setShowPhotoPopup] = useState(false);
-		const fileInputRef = useRef<HTMLInputElement>(null);
-		const [saveMessage, setSaveMessage] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+	const [saving, setSaving] = useState(false);
+	const [showPhotoPopup, setShowPhotoPopup] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [saveMessage, setSaveMessage] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
 	// 프로필 데이터 로드
 	useEffect(() => {
@@ -67,62 +67,71 @@ export default function EditProfilePage() {
 	const borderGray = "#E5E7EB";
 
 
-			const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-				if (e.target.files && e.target.files[0]) {
-					const file = e.target.files[0];
-					// 미리보기용으로 상태에 저장
-					const reader = new FileReader();
-					reader.onload = (ev) => {
-						if (ev.target?.result) setProfileImage(ev.target.result as string);
-					};
-					reader.readAsDataURL(file);
+	const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files && e.target.files[0]) {
+			const file = e.target.files[0];
+			// 미리보기용으로 상태에 저장
+			const reader = new FileReader();
+			reader.onload = (ev) => {
+				if (ev.target?.result) setProfileImage(ev.target.result as string);
+			};
+			reader.readAsDataURL(file);
 
-					// 백엔드로 업로드
-					try {
-						const formData = new FormData();
-						formData.append("images", file);
-						const headers: Record<string, string> = {};
-						if (accessToken) {
-							headers['Authorization'] = `Bearer ${accessToken}`;
-						}
-						const res = await fetch(getApiUrl('/images/upload'), {
-							method: "POST",
-							headers,
-							credentials: 'include',
-							body: formData,
-						});
-						if (!res.ok) {
-							// 오류 처리
-							console.error("이미지 업로드 실패");
-						} else {
-							const data = await res.json();
-							const uploadedImageUrl = data?.imageUrls?.[0];
-							if (uploadedImageUrl) {
-								setProfileImage(uploadedImageUrl);
-							}
-						}
-					} catch (err) {
-						console.error("이미지 업로드 중 오류", err);
+			// 백엔드로 업로드
+			try {
+				const formData = new FormData();
+				formData.append("images", file);
+				const headers: Record<string, string> = {};
+				if (accessToken) {
+					headers['Authorization'] = `Bearer ${accessToken}`;
+				}
+				const res = await fetch(getApiUrl('/images/upload'), {
+					method: "POST",
+					headers,
+					credentials: 'include',
+					body: formData,
+				});
+				if (!res.ok) {
+					// 오류 처리
+					console.error("이미지 업로드 실패");
+				} else {
+					const data = await res.json();
+					const uploadedImageUrl = data?.imageUrls?.[0];
+					if (uploadedImageUrl) {
+						setProfileImage(uploadedImageUrl);
 					}
 				}
-				setShowPhotoPopup(false);
-			};
+			} catch (err) {
+				console.error("이미지 업로드 중 오류", err);
+			}
+		}
+		setShowPhotoPopup(false);
+	};
 
-		const handlePhotoEditClick = () => {
-			setShowPhotoPopup(true);
-		};
+	const handlePhotoEditClick = () => {
+		setShowPhotoPopup(true);
+	};
 
-		const handleSelectFromAlbum = () => {
-			setShowPhotoPopup(false);
-			setTimeout(() => fileInputRef.current?.click(), 100); // allow popup to close before file dialog
-		};
+	const handleSelectFromAlbum = () => {
+		setShowPhotoPopup(false);
+		setTimeout(() => fileInputRef.current?.click(), 100); // allow popup to close before file dialog
+	};
 
-		const handleSetDefaultImage = () => {
-			resetToDefaultImage();
-			setShowPhotoPopup(false);
-		};
+	const handleSetDefaultImage = () => {
+		resetToDefaultImage();
+		setShowPhotoPopup(false);
+	};
 
 	const handleSave = async () => {
+		// 닉네임 유효성 검사
+		if (!/^[a-zA-Z0-9가-힣]+$/.test(nickname) || nickname.length < 2 || nickname.length > 8) {
+			setSaveMessage({
+				message: '닉네임 규칙을 확인해주세요.',
+				type: 'error'
+			});
+			return;
+		}
+
 		setSaving(true);
 		setSaveMessage(null);
 		try {
@@ -209,48 +218,48 @@ export default function EditProfilePage() {
 									priority
 								/>
 							</div>
-											<input
-												id="profile-upload"
-												type="file"
-												accept="image/*"
-												className="hidden"
-												ref={fileInputRef}
-												onChange={handleImageChange}
-											/>
+							<input
+								id="profile-upload"
+								type="file"
+								accept="image/*"
+								className="hidden"
+								ref={fileInputRef}
+								onChange={handleImageChange}
+							/>
+							<button
+								type="button"
+								className="absolute left-1/2 -translate-x-1/2 bottom-[-28px] text-xs text-[#293A92] underline font-medium"
+								onClick={handlePhotoEditClick}
+							>
+								프로필 사진 편집
+							</button>
+							{/* 프로필 사진 편집 팝업 */}
+							{showPhotoPopup && (
+								<div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'transparent' }} onClick={() => setShowPhotoPopup(false)}>
+									<div className="w-full max-w-[375px] bg-white rounded-t-2xl shadow-lg p-0 pb-4 animate-slideup" style={{ minHeight: 160 }} onClick={e => e.stopPropagation()}>
+										<div className="flex flex-col divide-y divide-[#F4F5F7]">
 											<button
-												type="button"
-												className="absolute left-1/2 -translate-x-1/2 bottom-[-28px] text-xs text-[#293A92] underline font-medium"
-												onClick={handlePhotoEditClick}
+												className="w-full py-4 text-base text-[#293A92] font-semibold hover:bg-[#F4F5F7] transition-colors"
+												onClick={handleSelectFromAlbum}
 											>
-												프로필 사진 편집
+												앨범에서 선택
 											</button>
-			{/* 프로필 사진 편집 팝업 */}
-					{showPhotoPopup && (
-						<div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'transparent' }} onClick={() => setShowPhotoPopup(false)}>
-							<div className="w-full max-w-[375px] bg-white rounded-t-2xl shadow-lg p-0 pb-4 animate-slideup" style={{ minHeight: 160 }} onClick={e => e.stopPropagation()}>
-								<div className="flex flex-col divide-y divide-[#F4F5F7]">
-									<button
-										className="w-full py-4 text-base text-[#293A92] font-semibold hover:bg-[#F4F5F7] transition-colors"
-										onClick={handleSelectFromAlbum}
-									>
-										앨범에서 선택
-									</button>
-									<button
-										className="w-full py-4 text-base text-[#4C4C4C] font-semibold hover:bg-[#F4F5F7] transition-colors"
-										onClick={handleSetDefaultImage}
-									>
-										기본 이미지로 변경
-									</button>
+											<button
+												className="w-full py-4 text-base text-[#4C4C4C] font-semibold hover:bg-[#F4F5F7] transition-colors"
+												onClick={handleSetDefaultImage}
+											>
+												기본 이미지로 변경
+											</button>
+										</div>
+										<button
+											className="w-full py-3 text-[#A6A6A6] text-base font-medium hover:bg-[#F4F5F7] rounded-b-2xl mt-2"
+											onClick={() => setShowPhotoPopup(false)}
+										>
+											취소
+										</button>
+									</div>
 								</div>
-								<button
-									className="w-full py-3 text-[#A6A6A6] text-base font-medium hover:bg-[#F4F5F7] rounded-b-2xl mt-2"
-									onClick={() => setShowPhotoPopup(false)}
-								>
-									취소
-								</button>
-							</div>
-						</div>
-					)}
+							)}
 						</div>
 						{/* Nickname */}
 						<div className="w-full max-w-[320px] mb-4">
@@ -259,19 +268,39 @@ export default function EditProfilePage() {
 								type="text"
 								value={nickname}
 								onChange={e => setNickname(e.target.value)}
-								maxLength={12}
+								maxLength={8}
 								className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg bg-white text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#293A92]/20"
 								placeholder="닉네임을 입력하세요"
 							/>
 						</div>
+
+						{/* Nickname Convention Rules */}
+						<div className="w-full max-w-[320px] mb-6 p-3 bg-[#F8F9FA] rounded-lg border border-[#E5E7EB]">
+							<h3 className="text-xs font-semibold text-[#4C4C4C] mb-2">닉네임 생성 규칙</h3>
+							<ul className="space-y-1.5">
+								<li className={`text-xs flex items-center gap-1.5 ${nickname.length >= 2 && nickname.length <= 8 ? 'text-[#293A92] font-medium' : 'text-[#A6A6A6]'}`}>
+									<div className={`w-1.5 h-1.5 rounded-full ${nickname.length >= 2 && nickname.length <= 8 ? 'bg-[#293A92]' : 'bg-[#D9D9D9]'}`} />
+									2자 이상 8자 이하
+								</li>
+								<li className={`text-xs flex items-center gap-1.5 ${/^[a-zA-Z0-9가-힣]*$/.test(nickname) && nickname.length > 0 ? 'text-[#293A92] font-medium' : 'text-[#A6A6A6]'}`}>
+									<div className={`w-1.5 h-1.5 rounded-full ${/^[a-zA-Z0-9가-힣]*$/.test(nickname) && nickname.length > 0 ? 'bg-[#293A92]' : 'bg-[#D9D9D9]'}`} />
+									한글, 영문, 숫자만 사용 가능
+								</li>
+								<li className={`text-xs flex items-center gap-1.5 ${!/\s/.test(nickname) && nickname.length > 0 ? 'text-[#293A92] font-medium' : 'text-[#A6A6A6]'}`}>
+									<div className={`w-1.5 h-1.5 rounded-full ${!/\s/.test(nickname) && nickname.length > 0 ? 'bg-[#293A92]' : 'bg-[#D9D9D9]'}`} />
+									공백 및 특수문자 불가
+								</li>
+							</ul>
+						</div>
+
 						{/* Bio */}
 						<div className="w-full max-w-[320px] mb-8">
-							<label className="block text-[#1a1a1a] text-sm font-semibold mb-1">한 줄 소개 (최대 20자)</label>
+							<label className="block text-[#1a1a1a] text-sm font-semibold mb-1">한 줄 소개 (최대 12자)</label>
 							<input
 								type="text"
 								value={bio}
 								onChange={e => setBio(e.target.value)}
-								maxLength={20}
+								maxLength={12}
 								className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg bg-white text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#293A92]/20"
 								placeholder="한 줄 소개를 입력하세요"
 							/>
@@ -288,9 +317,8 @@ export default function EditProfilePage() {
 				</div>
 			</div>
 			{saveMessage && (
-				<div className={`fixed bottom-5 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg text-white font-semibold text-sm max-w-[300px] z-50 ${
-					saveMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-				}`}>
+				<div className={`fixed bottom-5 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg text-white font-semibold text-sm max-w-[300px] z-50 ${saveMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+					}`}>
 					{saveMessage.message}
 				</div>
 			)}
