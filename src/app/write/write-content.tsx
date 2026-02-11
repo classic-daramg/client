@@ -63,7 +63,7 @@ export default function WriteContent() {
                     const draft = JSON.parse(draftStr);
                     if (draft.title) setTitle(draft.title);
                     if (draft.content) setContent(draft.content);
-                } catch {}
+                } catch { }
             }
         }
     }, []);
@@ -321,9 +321,8 @@ export default function WriteContent() {
                         <button
                             onClick={handleRegister}
                             disabled={!isButtonEnabled}
-                            className={`px-3 py-1.5 rounded-full flex items-center gap-0.5 ${
-                                isButtonEnabled ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
-                            }`}
+                            className={`px-3 py-1.5 rounded-full flex items-center gap-0.5 ${isButtonEnabled ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
+                                }`}
                         >
                             <span className="text-white text-[13px] font-semibold font-['Pretendard']">등록</span>
                         </button>
@@ -334,7 +333,7 @@ export default function WriteContent() {
             {/* Main Form */}
             <main>
                 {/* 게시글 유형 */}
-                <SectionHeader title="게시글 유형" />
+                <SectionHeader title="토크룸" />
                 <div className="bg-white px-6 py-[18px] flex items-center gap-2">
                     <div className="w-3 h-3 flex-shrink-0">
                         <Image
@@ -350,15 +349,15 @@ export default function WriteContent() {
                 {/* 큐레이션 옵션 드롭다운 ({composer} 이야기일 때만 렌더링) */}
                 {isComposerTalkRoom && curationMode !== null && (
                     <>
-                        <SectionHeader title="큐레이션 옵션을 추가할까요?" />
+                        <SectionHeader title="게시글 유형" />
                         <div className="bg-white px-6 py-[18px] w-full">
                             <select
                                 value={curationMode}
                                 onChange={(e) => setCurationMode(e.target.value as 'none' | 'curation')}
                                 className="w-full px-4 py-2.5 bg-[#f4f5f7] rounded-[10px] text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none border border-transparent"
                             >
-                                <option value="none">{selectedType.replace(' 이야기', '')}</option>
-                                <option value="curation">{selectedType.replace(' 이야기', '')}의 큐레이션</option>
+                                <option value="none">{selectedType}</option>
+                                <option value="curation">큐레이션 글</option>
                             </select>
                         </div>
                     </>
@@ -374,9 +373,8 @@ export default function WriteContent() {
                                     onClick={handleOpenComposerSearch}
                                     className="flex-1 bg-[#f4f5f7] rounded-full px-5 py-2.5 text-left"
                                 >
-                                    <span className={`text-sm font-medium font-['Pretendard'] ${
-                                        selectedComposers.length > 0 ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'
-                                    }`}>
+                                    <span className={`text-sm font-medium font-['Pretendard'] ${selectedComposers.length > 0 ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'
+                                        }`}>
                                         {selectedComposers.length > 0
                                             ? selectedComposers.length === 1
                                                 ? selectedComposers[0].name

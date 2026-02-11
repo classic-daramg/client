@@ -88,10 +88,10 @@ export function WritePageInner() {
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
 
-        // ========== Edit Mode States ==========
-        const [isEditMode, setIsEditMode] = useState(false);
-        const [editPostId, setEditPostId] = useState<string | null>(null);
-        const [editPostData, setEditPostData] = useState<EditPostData | null>(null);
+    // ========== Edit Mode States ==========
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editPostId, setEditPostId] = useState<string | null>(null);
+    const [editPostData, setEditPostData] = useState<EditPostData | null>(null);
 
     // 클라이언트 사이드 마운트 확인
     useEffect(() => {
@@ -246,7 +246,7 @@ export function WritePageInner() {
                             setHashtags(nextTags);
                         }
                     }
-                } catch {}
+                } catch { }
             }
         }
     }, [draftId, isClient, isEditMode]);
@@ -474,7 +474,7 @@ export function WritePageInner() {
             }
 
             // 기본 포스트 데이터
-                interface PostData {
+            interface PostData {
                 title: string;
                 content: string;
                 postStatus: string;
@@ -780,9 +780,8 @@ export function WritePageInner() {
                         <button
                             onClick={handleRegister}
                             disabled={!isButtonEnabled || isSubmitting}
-                            className={`px-3 py-1.5 rounded-full flex items-center gap-0.5 ${
-                                isButtonEnabled && !isSubmitting ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
-                            }`}
+                            className={`px-3 py-1.5 rounded-full flex items-center gap-0.5 ${isButtonEnabled && !isSubmitting ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'
+                                }`}
                         >
                             <span className="text-white text-[13px] font-semibold font-['Pretendard']">
                                 {isEditMode ? '수정' : '등록'}
@@ -794,8 +793,8 @@ export function WritePageInner() {
 
             {/* Main Form */}
             <main>
-                {/* 게시글 유형 */}
-                <SectionHeader title="게시글 유형" />
+                {/* 토크룸 */}
+                <SectionHeader title="토크룸" />
                 <div className="bg-white px-6 py-[18px] flex items-center gap-2">
                     <div className="w-3 h-3 flex-shrink-0">
                         <Image
@@ -805,21 +804,21 @@ export function WritePageInner() {
                             height={12}
                         />
                     </div>
-                    <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">{selectedType}</p>
+                    <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">{selectedType.replace(' 이야기', '')}</p>
                 </div>
 
                 {/* 큐레이션 옵션 드롭다운 ({composer} 이야기일 때만 렌더링) */}
                 {isComposerTalkRoom && curationMode !== null && (
                     <>
-                        <SectionHeader title="큐레이션 옵션을 추가할까요?" />
+                        <SectionHeader title="게시글 유형" />
                         <div className="bg-white px-6 py-[18px] w-full">
                             <select
                                 value={curationMode}
                                 onChange={(e) => setCurationMode(e.target.value as 'none' | 'curation')}
                                 className="w-full px-4 py-2.5 bg-[#f4f5f7] rounded-[10px] text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none border border-transparent"
                             >
-                                <option value="none">{selectedType.replace(' 이야기', '')}</option>
-                                <option value="curation">{selectedType.replace(' 이야기', '')}의 큐레이션</option>
+                                <option value="none">{selectedType}</option>
+                                <option value="curation">큐레이션 글</option>
                             </select>
                         </div>
                     </>
@@ -835,9 +834,8 @@ export function WritePageInner() {
                                     onClick={handleOpenComposerSearch}
                                     className="flex-1 bg-[#f4f5f7] rounded-full px-5 py-2.5 text-left"
                                 >
-                                    <span className={`text-sm font-medium font-['Pretendard'] ${
-                                        selectedComposers.length > 0 ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'
-                                    }`}>
+                                    <span className={`text-sm font-medium font-['Pretendard'] ${selectedComposers.length > 0 ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'
+                                        }`}>
                                         {selectedComposers.length > 0
                                             ? selectedComposers.length === 1
                                                 ? selectedComposers[0].name
