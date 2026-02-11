@@ -48,7 +48,7 @@ export default function HomePage() {
         </Link>
 
         <div className="flex items-center gap-[10px]">
-          <Link href="/notification">
+          <Link href="/my-page/notification-setting">
             <Image src="/icons/alarm.svg" alt="알림" width={30} height={30} />
           </Link>
           <Link href={isLoggedIn ? "/my-page" : "/loginpage"}>
