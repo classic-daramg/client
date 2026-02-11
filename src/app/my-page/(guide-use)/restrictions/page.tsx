@@ -1,18 +1,24 @@
 'use client';
 
 import React from 'react';
-
-const backIcon = 'http://localhost:3845/assets/f6fb8db06e8bb7eb7b96d5a76189474699ecdd7e.svg';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function Restrictions() {
+	const router = useRouter();
+
 	return (
 		<div className="w-full min-h-screen bg-white">
 			<div className="w-full bg-white">
 				<div className="h-[54px] pt-[21px]" />
 				<div className="bg-white px-[20px] pb-[12px]">
 					<div className="flex items-center gap-[4px] h-[30px]">
-						<button type="button" className="flex size-[20px] items-center justify-center">
-							<img src={backIcon} alt="뒤로가기" className="block h-[15px] w-[7px]" />
+						<button
+							type="button"
+							onClick={() => router.back()}
+							className="flex size-[30px] items-center justify-center"
+						>
+							<Image src="/icons/back.svg" alt="뒤로가기" width={20} height={20} className="block" />
 						</button>
 						<h1 className="text-[16px] font-semibold text-[#1a1a1a]">이용 제한 안내</h1>
 					</div>

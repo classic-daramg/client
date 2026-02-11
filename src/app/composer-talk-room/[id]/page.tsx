@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { fetchApi } from '@/lib/api';
 import ComposerProfile from './composer-profile';
 import FloatingButtons from './floating-buttons';
@@ -139,6 +139,7 @@ export default function ComposerTalkPage() {
   const [hasLoadedComposer, setHasLoadedComposer] = useState(false);
   const { selectedComposer, selectComposer, hasHydrated } = useComposerStore();
   const params = useParams<{ id: string | string[] }>();
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -151,7 +152,15 @@ export default function ComposerTalkPage() {
     const fetchData = async () => {
       const rawId = params?.id;
       const composerId = Array.isArray(rawId) ? rawId[0] : rawId;
-      if (!composerId) return;
+      if (!composerId || composerId === 'undefined') {
+        const fallbackId = selectedComposer?.composerId;
+        if (fallbackId) {
+          router.replace(`/composer-talk-room/${fallbackId}`);
+        } else {
+          router.replace('/composer-talk');
+        }
+        return;
+      }
 
       setLoading(true);
 
@@ -211,7 +220,7 @@ export default function ComposerTalkPage() {
     if (!hasLoadedComposer) {
       fetchData();
     }
-  }, [hasHydrated, isClient, params, hasLoadedComposer, selectComposer, selectedComposer]);
+  }, [hasHydrated, isClient, params, hasLoadedComposer, router, selectComposer, selectedComposer]);
 
   // 필터 제거 핸들러
   const handleRemoveFilter = (filterId: string) => {
