@@ -23,6 +23,9 @@ const menuItems = [
   },
 ];
 
+// Onboarding Modal Component
+
+
 export default function HomePage() {
   const profile = useUserProfileStore((state) => state.profile);
   const [mounted, setMounted] = useState(false);
@@ -67,9 +70,19 @@ export default function HomePage() {
       <div className="px-5 pt-0">
         <div className="flex flex-col gap-3">
           {/* Image Slide */}
-          <div className="w-full aspect-[335/148] bg-white rounded-[20px] flex items-center justify-center overflow-hidden">
-            <span className="text-[#A6A6A6] text-[20px] font-semibold">IMAGE</span>
-          </div>
+          {/* Image Slide */}
+          {/* Image Slide */}
+          <Link href="/onboarding" className="w-full">
+            <div className="w-full aspect-[335/148] relative rounded-[20px] overflow-hidden bg-white shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)]">
+              <Image
+                src="/icons/onboarding_baner.png"
+                alt="Onboarding Banner"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          </Link>
 
           {/* Menu Cards */}
           <Link href="/composer-talk">
@@ -81,7 +94,7 @@ export default function HomePage() {
                   <p className="text-[#BFBFBF] text-[11px]">{menuItems[0].description}</p>
                 </div>
                 <svg width="7" height="15" viewBox="0 0 7 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </div>
             </div>
@@ -96,7 +109,7 @@ export default function HomePage() {
                   <p className="text-[#BFBFBF] text-[11px]">{menuItems[1].description}</p>
                 </div>
                 <svg width="7" height="15" viewBox="0 0 7 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </div>
             </div>
@@ -111,7 +124,7 @@ export default function HomePage() {
                   <p className="text-[#BFBFBF] text-[11px]">{menuItems[2].description}</p>
                 </div>
                 <svg width="7" height="15" viewBox="0 0 7 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </div>
             </div>
