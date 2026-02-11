@@ -59,8 +59,8 @@ const UserProfileSection = () => {
           </div>
 
           {/* Edit Profile Button */}
-          <Link 
-            href="/my-page/edit-profile" 
+          <Link
+            href="/my-page/edit-profile"
             className="text-neutral-400 text-[12px] font-semibold flex items-center gap-2"
           >
             <Image src="/icons/write.svg" alt="편집" width={10} height={10} />
@@ -176,7 +176,7 @@ export default function MyPage() {
         method: 'DELETE',
         credentials: 'include', // 쿠키를 함께 전송
       });
-      
+
       if (!response.ok) {
         console.error('로그아웃 API 실패:', response.status);
       }
@@ -220,7 +220,7 @@ export default function MyPage() {
         <ListItem title="개인정보 처리방침" href="/my-page/privacy" />
 
         <SectionHeader title="기타" />
-        <ListItem title="알림설정-" href="/my-page/notification-setting" />
+        <ListItem title="알림설정" href="/my-page/notification-setting" />
         <ListItem title="회원탈퇴" href="/my-page/delete-account" />
         <ListItem title="로그아웃" onClick={() => setShowLogoutPopup(true)} />
       </div>

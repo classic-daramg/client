@@ -17,10 +17,12 @@ export const apiClient = axios.create({
 let isRefreshing = false;
 
 // 토큰 갱신 대기 중인 요청 큐
-let failedQueue: Array<{
+interface FailedRequest {
   resolve: (token: string) => void;
   reject: (error: AxiosError) => void;
-}> = [];
+}
+
+let failedQueue: FailedRequest[] = [];
 
 // 큐에 있는 요청들 처리
 const processQueue = (error: AxiosError | null = null, token: string | null = null) => {
@@ -41,28 +43,31 @@ apiClient.interceptors.request.use(
     const token = useAuthStore.getState().accessToken;
     const url = config.url || '';
 
-    // 인증 관련 요청에는 Authorization 헤더를 붙이지 않음
+    // 인증 관련 요청에는 Authorization 헤더를 붙이지 않음 (refresh 제외, refresh는 아래 로직에서 처리 가능성 있음)
+    // 단, refresh 요청은 별도로 처리하므로 여기서는 일반적인 제외 리스트로 관리
     const isAuthRequest =
       url.includes('/auth/login') ||
       url.includes('/auth/signup') ||
       url.includes('/auth/verify-email') ||
       url.includes('/auth/email-verifications') ||
       url.includes('/auth/password-reset') ||
-      url.includes('/auth/refresh') ||
       url.includes('/auth/logout') ||
       url.includes('/auth/signout');
 
-    if (!isAuthRequest && token && config.headers) {
+    // /auth/refresh는 이 인터셉터에서 Authorization 헤더를 붙이지 않도록 함 (쿠키 or 별도 헤더 사용)
+    const isRefreshRequest = url.includes('/auth/refresh');
+
+    if (!isAuthRequest && !isRefreshRequest && token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('✅ Request with token:', url);
+      // console.log('✅ Request with token:', url);
     } else {
-      console.log('ℹ️ Request without token:', url);
+      // console.log('ℹ️ Request without token:', url);
     }
 
     // 디버깅: 최종 요청 URL 확인
-    if (config.baseURL) {
-      console.log('🔎 Request URL:', `${config.baseURL}${url}`);
-    }
+    // if (config.baseURL) {
+    //   console.log('🔎 Request URL:', `${config.baseURL}${url}`);
+    // }
 
     return config;
   },
@@ -74,7 +79,6 @@ apiClient.interceptors.request.use(
 // Response Interceptor: 401 에러 처리 및 토큰 갱신
 apiClient.interceptors.response.use(
   (response) => {
-    // 성공 응답은 그대로 반환
     return response;
   },
   async (error: AxiosError) => {
@@ -82,16 +86,22 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
+    // 요청 설정이 없으면 에러 반환
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
     // 401 에러가 아니거나 이미 재시도한 요청이면 에러 반환
     if (!error.response || error.response.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 
-    // 토큰 갱신 요청 자체가 실패한 경우
+    // 토큰 갱신 요청 자체가 실패한 경우 (400, 401 등)
     if (originalRequest.url?.includes('/auth/refresh')) {
-      console.error('❌ Refresh token failed, logging out...');
+      console.error('❌ Refresh token failed (in interceptor), logging out...');
+      processQueue(error, null); // 대기 중인 요청들도 모두 실패 처리
       useAuthStore.getState().clearTokens();
-      // 로그인 페이지로 리다이렉트 (클라이언트 사이드에서 처리)
+
       if (typeof window !== 'undefined') {
         window.location.href = '/loginpage';
       }
@@ -124,13 +134,28 @@ apiClient.interceptors.response.use(
     try {
       console.log('🔄 Refreshing access token...');
 
-      // 토큰 갱신 API 호출 (refresh token은 쿠키에서 자동으로 전송됨)
+      // Store에서 refreshToken 가져오기 (쿠키 실패 시 대비)
+      const storedRefreshToken = useAuthStore.getState().refreshToken;
+
+      // 토큰 갱신 API 호출
+      // 쿠키는 withCredentials: true로 자동 전송되지만, 
+      // 일부 환경/백엔드 설정을 위해 헤더에도 추가할 수 있음 (백엔드 지원 필요)
+      // 여기서는 쿠키를 메인으로 하되, 필요시 헤더 추가 로직을 고려
+
+      const refreshConfig: InternalAxiosRequestConfig = {
+        headers: new axios.AxiosHeaders(), // AxiosHeaders 인스턴스 사용
+        withCredentials: true,
+      };
+
+      if (storedRefreshToken) {
+        refreshConfig.headers.set('Authorization', `Bearer ${storedRefreshToken}`);
+        // 혹은 'Refresh-Token' 커스텀 헤더 등 백엔드 규약에 맞게 수정 가능
+      }
+
       const response = await axios.post(
         `${BASE_URL}/auth/refresh`,
         {},
-        {
-          withCredentials: true, // 쿠키의 refresh token 사용
-        }
+        refreshConfig
       );
 
       console.log('✅ Refresh response received:', {
@@ -139,35 +164,41 @@ apiClient.interceptors.response.use(
       });
 
       const newAccessToken = response.data.accessToken || response.data.token;
+      // 응답 구조에 따라 refreshToken도 같이 갱신될 수 있음
+      const newRefreshToken = response.data.refreshToken;
 
       if (!newAccessToken) {
         throw new Error('No access token in refresh response');
       }
 
-      console.log('✅ Token refreshed successfully:', {
-        tokenLength: newAccessToken.length,
-        tokenPreview: `${newAccessToken.slice(0, 8)}...${newAccessToken.slice(-6)}`,
-      });
+      console.log('✅ Token refreshed successfully');
 
-      // 새로운 Access Token 저장
-      useAuthStore.getState().setAccessToken(newAccessToken);
-
-      // 원래 요청에 새 토큰 추가
-      if (originalRequest.headers) {
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      // 새로운 토큰 저장
+      if (newRefreshToken) {
+        useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
+      } else {
+        useAuthStore.getState().setAccessToken(newAccessToken);
       }
 
       // 큐에 있는 요청들 처리
       processQueue(null, newAccessToken);
 
-      // 원래 요청 재시도
-      return apiClient(originalRequest);
-    } catch (refreshError) {
-      console.error('❌ Token refresh failed:', refreshError);
-      processQueue(refreshError as AxiosError, null);
-      useAuthStore.getState().clearTokens();
+      // 원래 요청에 새 토큰 적용 후 재시도
+      if (originalRequest.headers) {
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      }
 
-      // 로그인 페이지로 리다이렉트
+      // isRefreshing은 finally에서 false로 변경됨
+      return apiClient(originalRequest);
+
+    } catch (refreshError) {
+      console.error('❌ Token refresh process failed:', refreshError);
+
+      // 갱신 실패 시 큐의 모든 요청 거부
+      processQueue(refreshError as AxiosError, null);
+
+      // 로그아웃 처리
+      useAuthStore.getState().clearTokens();
       if (typeof window !== 'undefined') {
         window.location.href = '/loginpage';
       }
