@@ -158,7 +158,7 @@ export default function CommentItem({
               className="w-[26px] h-[26px] flex items-center justify-center"
             >
               <Image
-                src="/icons/Icons_comment.svg"
+                src="/icons/icons_comment.svg"
                 alt="답글"
                 width={12}
                 height={12}

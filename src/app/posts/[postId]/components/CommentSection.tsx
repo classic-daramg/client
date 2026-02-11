@@ -118,7 +118,7 @@ export default function CommentSection({
         <div className="flex flex-col items-center justify-center py-20 bg-white">
           <div className="mb-4">
             <Image
-              src="/icons/Icons_comment.svg"
+              src="/icons/icons_comment.svg"
               alt="댓글 없음"
               width={48}
               height={48}
