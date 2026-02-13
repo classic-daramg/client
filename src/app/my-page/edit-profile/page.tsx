@@ -214,7 +214,7 @@ export default function EditProfilePage() {
 
 			// 3초 후 메시지 숨기기
 			setTimeout(() => setSaveMessage(null), 3000);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error('Profile save error:', error);
 
 			// API 에러 응답 처리 (COMMON_400 등)
