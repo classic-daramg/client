@@ -218,7 +218,13 @@ export default function NotificationPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-[#a6a6a6] text-[12px]">프로필</span>
+                      <Image
+                        src="/icons/DefaultImage.svg"
+                        alt="프로필"
+                        width={34}
+                        height={34}
+                        className="w-full h-full object-cover"
+                      />
                     )}
                   </div>
                 </div>
