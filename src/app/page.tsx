@@ -1,9 +1,10 @@
 
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useUserProfileStore } from '../store/userProfileStore';
 import Link from 'next/link';
 import Image from 'next/image';
+import apiClient from '@/lib/apiClient';
 
 const menuItems = [
   {
@@ -29,10 +30,36 @@ const menuItems = [
 export default function HomePage() {
   const profile = useUserProfileStore((state) => state.profile);
   const [mounted, setMounted] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // 안읽은 알림 수 조회
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const response = await apiClient.get<number>('/notifications/unread-count');
+      setUnreadCount(response.data);
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
+  }, []);
+
+  // 마운트 후 안읽은 알림 수 조회 및 주기적 갱신
+  useEffect(() => {
+    if (!mounted) return;
+
+    // 초기 로드
+    fetchUnreadCount();
+
+    // 30초마다 갱신
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [mounted, fetchUnreadCount]);
 
   // hydration이 끝난 후에만 isLoggedIn을 계산
   const isLoggedIn = mounted && profile !== null;
@@ -51,8 +78,13 @@ export default function HomePage() {
         </Link>
 
         <div className="flex items-center gap-[10px]">
-          <Link href="/my-page/notification-setting">
+          <Link href="/notification" className="relative">
             <Image src="/icons/alarm.svg" alt="알림" width={30} height={30} />
+            {unreadCount > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full w-[18px] h-[18px] flex items-center justify-center">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Link>
           <Link href={isLoggedIn ? "/my-page" : "/loginpage"}>
             <Image
