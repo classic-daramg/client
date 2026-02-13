@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 import { getApiUrl } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import ToastNotification from '@/components/ToastNotification';
 
 export default function EditProfilePage() {
 	const { profile, updateProfile, setProfileImage, resetToDefaultImage, getProfileImage } = useUserProfileStore();
@@ -19,6 +20,16 @@ export default function EditProfilePage() {
 	const [showPhotoPopup, setShowPhotoPopup] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [saveMessage, setSaveMessage] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+	// ========== Error Handling States ==========
+	const [showToast, setShowToast] = useState(false);
+	const [toastMessage, setToastMessage] = useState('');
+	const [isShaking, setIsShaking] = useState(false);
+	const [errorField, setErrorField] = useState<'nickname' | 'bio' | null>(null);
+
+	// Refs for focus management
+	const nicknameRef = useRef<HTMLInputElement>(null);
+	const bioRef = useRef<HTMLInputElement>(null);
 
 	// 프로필 데이터 로드
 	useEffect(() => {
@@ -155,10 +166,39 @@ export default function EditProfilePage() {
 			});
 
 			if (!res.ok) {
-				const errorData = await res.text();
-				console.error('Profile save error:', errorData);
+				const errorData = await res.json(); // text() 대신 json()으로 파싱 시도
+				console.error('Profile save error data:', errorData);
+
+				// COMMON_400 에러 처리 (비속어 포함 등)
+				if (errorData?.code === 'COMMON_400' && errorData?.fieldErrors) {
+					const firstError = errorData.fieldErrors[0];
+					const message = firstError?.reason || errorData.message || '비적절한 내용이 포함되어 있습니다.';
+					const field = firstError?.field; // 'nickname' or 'bio'
+
+					setSaveMessage(null); // 기존 메시지 초기화
+					setToastMessage(message);
+					setShowToast(true);
+					setIsShaking(true);
+					alert(message);
+
+					// 에러 필드 설정 및 포커스
+					if (field === 'nickname') {
+						setErrorField('nickname');
+						nicknameRef.current?.focus();
+					} else if (field === 'bio') {
+						setErrorField('bio');
+						bioRef.current?.focus();
+					}
+
+					// 쉐이크 애니메이션 0.5초 후 해제
+					setTimeout(() => setIsShaking(false), 500);
+
+					setSaving(false);
+					return;
+				}
+
 				setSaveMessage({
-					message: '프로필 저장에 실패했습니다. 다시 시도해주세요.',
+					message: errorData.message || '프로필 저장에 실패했습니다. 다시 시도해주세요.',
 					type: 'error'
 				});
 				return;
@@ -174,8 +214,19 @@ export default function EditProfilePage() {
 
 			// 3초 후 메시지 숨기기
 			setTimeout(() => setSaveMessage(null), 3000);
-		} catch (error) {
+		} catch (error: any) {
 			console.error('Profile save error:', error);
+
+			// API 에러 응답 처리 (COMMON_400 등)
+			// fetch API는 기본적으로 error를 throw하지 않고 ok: false로 오지만, 
+			// 만약 클라이언트 라이브러리(axios 등)를 쓰거나 위에서 throw한 경우를 대비
+			// 여기서는 위 fetch 로직에서 res.ok 체크 후 별도 처리가 없으므로, 
+			// 아래 catch 블록은 네트워크 에러 등을 잡습니다. 
+			// 하지만 res.ok가 아닐 때의 로직을 try 블록 안에서 처리해야 정확한 에러 핸들링이 가능합니다.
+			// 따라서 위 try 블록 내의 res.ok 체크 부분을 수정하는 것이 좋습니다.
+			// 하지만 현재 구조상 위에서 return 해버리므로, 아래 catch는 실행되지 않을 수 있습니다.
+			// 정확한 구현을 위해 res.ok가 아닐 때 json()을 파싱하여 에러를 throw 하거나 처리해야 합니다.
+
 			setSaveMessage({
 				message: '프로필 저장에 실패했습니다. 다시 시도해주세요.',
 				type: 'error'
@@ -265,11 +316,16 @@ export default function EditProfilePage() {
 						<div className="w-full max-w-[320px] mb-4">
 							<label className="block text-[#1a1a1a] text-sm font-semibold mb-1">닉네임</label>
 							<input
+								ref={nicknameRef}
 								type="text"
 								value={nickname}
-								onChange={e => setNickname(e.target.value)}
+								onChange={e => {
+									setNickname(e.target.value);
+									if (errorField === 'nickname') setErrorField(null);
+								}}
 								maxLength={8}
-								className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg bg-white text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#293A92]/20"
+								className={`w-full px-4 py-2 border rounded-lg bg-white text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#293A92]/20 transition-all duration-200 ${errorField === 'nickname' ? 'border-red-500 bg-red-50' : 'border-[#E5E7EB]'
+									} ${isShaking && errorField === 'nickname' ? 'animate-shake' : ''}`}
 								placeholder="닉네임을 입력하세요"
 							/>
 						</div>
@@ -297,11 +353,16 @@ export default function EditProfilePage() {
 						<div className="w-full max-w-[320px] mb-8">
 							<label className="block text-[#1a1a1a] text-sm font-semibold mb-1">한 줄 소개 (최대 12자)</label>
 							<input
+								ref={bioRef}
 								type="text"
 								value={bio}
-								onChange={e => setBio(e.target.value)}
+								onChange={e => {
+									setBio(e.target.value);
+									if (errorField === 'bio') setErrorField(null);
+								}}
 								maxLength={12}
-								className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg bg-white text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#293A92]/20"
+								className={`w-full px-4 py-2 border rounded-lg bg-white text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#293A92]/20 transition-all duration-200 ${errorField === 'bio' ? 'border-red-500 bg-red-50' : 'border-[#E5E7EB]'
+									} ${isShaking && errorField === 'bio' ? 'animate-shake' : ''}`}
 								placeholder="한 줄 소개를 입력하세요"
 							/>
 						</div>
@@ -322,6 +383,13 @@ export default function EditProfilePage() {
 					{saveMessage.message}
 				</div>
 			)}
+
+			{/* Toast Notification */}
+			<ToastNotification
+				message={toastMessage}
+				isVisible={showToast}
+				onClose={() => setShowToast(false)}
+			/>
 		</div>
 	);
 }

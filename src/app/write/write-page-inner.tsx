@@ -7,6 +7,7 @@ import { useSafeBack } from '@/hooks/useSafeBack';
 import { SectionHeader } from './components/SectionHeader';
 import ComposerSearch from './composer-search';
 import HashtagInput from './components/HashtagInput';
+import ToastNotification from '@/components/ToastNotification';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
 import { AxiosError } from 'axios';
@@ -87,6 +88,13 @@ export function WritePageInner() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
     const [showComposerSearch, setShowComposerSearch] = useState(false);
+
+    // ========== Error Handling States ==========
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [isShaking, setIsShaking] = useState(false);
+    const [hasError, setHasError] = useState(false);
+    const contentRef = useRef<HTMLTextAreaElement>(null);
 
     // ========== Edit Mode States ==========
     const [isEditMode, setIsEditMode] = useState(false);
@@ -625,20 +633,45 @@ export function WritePageInner() {
             alert('자유글이 등록되었습니다.');
             router.push('/free-talk');
         } catch (error: unknown) {
-            const axiosError = error as AxiosError<{ message?: string }>;
+            const axiosError = error as AxiosError<{
+                message?: string;
+                code?: string;
+                fieldErrors?: Array<{ field: string; value: string; reason: string }>;
+            }>;
             console.error('❌ An error occurred while creating the post:', axiosError);
 
             if (axiosError.response) {
                 let errorMessage = '게시글 등록에 실패했습니다.';
-
                 const errorData = axiosError.response.data;
+
+                // COMMON_400 에러 처리 (비속어 포함 등)
+                if (errorData?.code === 'COMMON_400' && errorData?.fieldErrors) {
+                    const firstError = errorData.fieldErrors[0];
+                    const message = firstError?.reason || errorData.message || '비속어가 포함되어 있습니다.';
+
+                    setHasError(true);
+                    setToastMessage(message);
+                    setShowToast(true);
+                    setIsShaking(true);
+                    alert(message);
+
+                    // 쉐이크 애니메이션 0.5초 후 해제
+                    setTimeout(() => setIsShaking(false), 500);
+
+                    // 에디터 포커스
+                    contentRef.current?.focus();
+
+                    setIsSubmitting(false); // 제출 상태 해제
+                    return; // 함수 종료 (페이지 이동 안함)
+                }
+
                 if (errorData?.message) {
                     errorMessage = errorData.message;
                 }
 
                 switch (axiosError.response.status) {
                     case 400:
-                        errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
+                        if (!errorData?.code) errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
                         break;
                     case 401:
                         errorMessage = '로그인이 필요합니다.';
@@ -855,7 +888,10 @@ export function WritePageInner() {
                         type="text"
                         placeholder="제목을 입력하세요"
                         value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        onChange={(e) => {
+                            setTitle(e.target.value);
+                            if (hasError) setHasError(false);
+                        }}
                         className="w-full text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#d9d9d9]"
                     />
                 </div>
@@ -864,12 +900,16 @@ export function WritePageInner() {
                 <SectionHeader title="게시글 내용" />
                 <div className="w-full px-5 py-[18px] bg-white">
                     <textarea
+                        ref={contentRef}
                         placeholder={selectedType === '큐레이션 글'
                             ? "나만의 이야기를 담아 클래식 음악을 추천해주세요!"
                             : "작곡가에 대해 같은 음악 취향을 가진 사람들과 나누고픈 이야기를 자유롭게 적어보세요!"}
                         value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className="w-full h-48 resize-none text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#d9d9d9]"
+                        onChange={(e) => {
+                            setContent(e.target.value);
+                            if (hasError) setHasError(false);
+                        }}
+                        className={`w-full h-48 resize-none text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#d9d9d9] p-2 rounded-md transition-all duration-200 ${hasError ? 'border border-red-500 bg-red-50' : 'border-none'} ${isShaking ? 'animate-shake' : ''}`}
                     />
                 </div>
 
@@ -941,9 +981,16 @@ export function WritePageInner() {
                 <ComposerSearch
                     onSelectComposer={handleSelectComposer}
                     onClose={handleCloseComposerSearch}
-                    initialSelected={selectedComposers.map((c: { id: number; name: string }) => c.name)}
+                    initialSelected={selectedComposers.map(c => c.name)}
                 />
             )}
+
+            {/* Toast Notification */}
+            <ToastNotification
+                message={toastMessage}
+                isVisible={showToast}
+                onClose={() => setShowToast(false)}
+            />
         </div>
     );
 }
