@@ -5,10 +5,10 @@ import './globals.css';
 import ScrollButton from '@/components/scroll_button';
 
 export const metadata: Metadata = {
-  title: '다람쥐 - 클래식 음악 커뮤니티',
+  title: '클래식 듣는 다람쥐 다람쥐 - 클래식 음악 커뮤니티',
   description: '작곡가별 토크룸, 클래식 큐레이션, 자유 토크룸을 통해 클래식 음악 애호가들과 소통하는 공간',
   openGraph: {
-    title: '다람쥐 - 클래식 음악 커뮤니티',
+    title: '클래식 듣는 다람쥐 - 클래식 음악 커뮤니티',
     description: '작곡가별 토크룸, 클래식 큐레이션, 자유 토크룸을 통해 클래식 음악 애호가들과 소통하는 공간',
     type: 'website',
     url: 'https://www.classicaldaramz.com',
