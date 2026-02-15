@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import PostItem from './PostItem';
 import { getApiUrl } from '@/lib/api';
+import { trackSearch } from '@/lib/ga';
 
 interface ApiPost {
   id: number;
@@ -96,11 +97,14 @@ export default function PostList({ searchTerm }: { searchTerm?: string }) {
       setFilteredPosts(posts);
     } else {
       const query = searchTerm.toLowerCase();
+      // GA4 검색 이벤트 추적
+      trackSearch(searchTerm, 'free-talk');
+
       const filtered = posts.filter(post => {
         const titleMatch = post.title.toLowerCase().includes(query);
         const contentMatch = post.content.toLowerCase().includes(query);
         const hashtagMatch = post.hashtags.some(tag => tag.toLowerCase().includes(query));
-        
+
         // 제목, 내용, 해시태그 중 하나라도 일치하면 포함
         return titleMatch || contentMatch || hashtagMatch;
       });

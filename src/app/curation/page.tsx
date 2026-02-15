@@ -6,6 +6,7 @@ import InfoBanner from './components/InfoBanner';
 import SearchFilterBar from './components/SearchFilterBar';
 import PostList from './components/PostList';
 import FloatingButtons from './components/FloatingButtons';
+import { trackSearch } from '@/lib/ga';
 
 // ============================================================
 // 필터 및 검색 상태 타입
@@ -23,6 +24,15 @@ export default function CurationPage() {
     eras: [],
     continents: [],
   });
+
+  // ========== GA4 검색 이벤트 핸들러 ==========
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value);
+    // 검색어가 3글자 이상일 때만 GA4 이벤트 발생
+    if (value.trim().length >= 1) {
+      trackSearch(value, 'curation');
+    }
+  };
 
   // ========== 필터 상태 핸들러 ==========
   // 시대 필터 토글
@@ -68,7 +78,7 @@ export default function CurationPage() {
         {/* SearchFilterBar에 상태 및 핸들러 전달 */}
         <SearchFilterBar
           searchValue={searchValue}
-          onSearchChange={setSearchValue}
+          onSearchChange={handleSearchChange}
           filters={filters}
           onEraToggle={handleEraToggle}
           onContinentToggle={handleContinentToggle}

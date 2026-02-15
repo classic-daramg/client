@@ -9,6 +9,7 @@ import FloatingButtons from './floating-buttons';
 import RoomFilter from './filter';
 import RoomHeader from './header';
 import { useComposerStore } from '@/store/composerStore';
+import { trackSearch } from '@/lib/ga';
 
 // --- Type Definition for Post Data ---
 type Post = {
@@ -255,6 +256,13 @@ export default function ComposerTalkPage() {
 
     return true;
   });
+
+  // GA4 검색 이벤트 추적
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      trackSearch(searchQuery, 'composer-talk');
+    }
+  }, [searchQuery]);
 
   if (!isClient || !hasHydrated) {
     return null;
