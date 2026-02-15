@@ -6,41 +6,27 @@
  */
 
 // ========== 환경 변수 검증 ==========
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// Vercel 프로덕션 환경에서는 프록시를 통해 /api 사용, 로컬 개발에서는 NEXT_PUBLIC_API_URL 사용
+const API_URL =
+  process.env.NODE_ENV === 'production'
+    ? '/api'  // Vercel 배포: 프록시를 통한 요청
+    : process.env.NEXT_PUBLIC_API_URL || 'https://classic-daramg.duckdns.org';  // 로컬 개발: 환경변수 또는 기본값
 
 if (!API_URL) {
   const errorMessage = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ❌ CRITICAL ERROR: API URL이 설정되지 않았습니다!
-
-환경 변수 'NEXT_PUBLIC_API_URL'을 설정해주세요.
-
-📌 로컬 개발 환경 설정:
-   1. 프로젝트 루트에 .env.local 파일 생성
-   2. 다음 내용 추가:
-      NEXT_PUBLIC_API_URL=https://classic-daramg.duckdns.org
-
-📌 Vercel 배포 환경 설정:
-   1. Vercel Dashboard → Settings → Environment Variables
-   2. Name: NEXT_PUBLIC_API_URL
-   3. Value: https://classic-daramg.duckdns.org
-   4. Environments: Production, Preview 체크
-   5. Save 후 Redeploy 필수!
-
-자세한 가이드: https://nextjs.org/docs/basic-features/environment-variables
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   `.trim();
 
   if (typeof window === 'undefined') {
-    // 서버 사이드에서는 콘솔에만 출력
     console.error(errorMessage);
   } else {
-    // 클라이언트 사이드에서는 alert도 띄움
-    alert('API 설정 오류: NEXT_PUBLIC_API_URL이 설정되지 않았습니다. 콘솔을 확인하세요.');
+    alert('API 설정 오류: 콘솔을 확인하세요.');
     console.error(errorMessage);
   }
-  
-  throw new Error('NEXT_PUBLIC_API_URL is not defined');
+
+  throw new Error('API_URL is not defined');
 }
 
 // ========== API 기본 URL ==========
