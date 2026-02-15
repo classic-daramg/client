@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
+import { useAuthStore } from '@/store/authStore';
 
 interface Notification {
   id: number;
@@ -94,8 +95,11 @@ export default function NotificationPage() {
     }
   }, []);
 
-  // 초기 로드
+  // 초기 로드 (로그인한 경우에만)
   useEffect(() => {
+    const token = useAuthStore.getState().accessToken;
+    if (!token) return;
+
     fetchNotifications();
     fetchUnreadCount();
   }, [fetchNotifications, fetchUnreadCount]);

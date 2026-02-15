@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserProfileStore } from '../store/userProfileStore';
+import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import Image from 'next/image';
 import apiClient from '@/lib/apiClient';
@@ -49,6 +50,10 @@ export default function HomePage() {
   // 마운트 후 안읽은 알림 수 조회 및 주기적 갱신
   useEffect(() => {
     if (!mounted) return;
+
+    // 로그인한 경우에만 알림 수 조회
+    const token = useAuthStore.getState().accessToken;
+    if (!token) return;
 
     // 초기 로드
     fetchUnreadCount();
