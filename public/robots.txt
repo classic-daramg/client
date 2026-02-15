@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /private
+
+# Host
+Host: https://www.classicaldaramz.com
+
+# Sitemaps
+Sitemap: https://www.classicaldaramz.com/sitemap.xml
