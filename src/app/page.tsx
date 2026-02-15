@@ -25,6 +25,22 @@ const menuItems = [
   },
 ];
 
+// 배너 슬라이더 데이터
+const bannerSlides = [
+  {
+    id: 1,
+    image: '/icons/onboarding_baner.png',
+    href: '/onboarding',
+    alt: 'Banner 1',
+  },
+  {
+    id: 2,
+    image: '/icons/banner2.png',
+    href: '/fortune-receipt',
+    alt: 'Banner 2',
+  },
+];
+
 // Onboarding Modal Component
 
 
@@ -32,9 +48,19 @@ export default function HomePage() {
   const profile = useUserProfileStore((state) => state.profile);
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // 배너 자동 슬라이드
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+    }, 4000); // 4초 간격
+
+    return () => clearInterval(timer);
   }, []);
 
   // 안읽은 알림 수 조회
@@ -106,20 +132,43 @@ export default function HomePage() {
       {/* Main Content */}
       <div className="px-5 pt-0">
         <div className="flex flex-col gap-3">
-          {/* Image Slide */}
-          {/* Image Slide */}
-          {/* Image Slide */}
-          <Link href="/onboarding" className="w-full">
-            <div className="w-full aspect-[335/148] relative rounded-[20px] overflow-hidden bg-white shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)]">
-              <Image
-                src="/icons/onboarding_baner.png"
-                alt="Onboarding Banner"
-                fill
-                className="object-cover"
-                priority
-              />
+          {/* Banner Slider */}
+          <div className="w-full aspect-[335/148] relative rounded-[20px] overflow-hidden bg-white shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)]">
+            <div className="relative w-full h-full">
+              {bannerSlides.map((slide, index) => (
+                <Link
+                  key={index}
+                  href={slide.href}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    index === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <Image
+                    src={slide.image}
+                    alt={slide.alt}
+                    fill
+                    className="object-cover"
+                    priority={index === currentSlide}
+                  />
+                </Link>
+              ))}
             </div>
-          </Link>
+            {/* 슬라이드 인디케이터 */}
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-10">
+              {bannerSlides.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentSlide ? 'bg-white' : 'bg-white/50'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentSlide(index);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
 
           {/* Menu Cards */}
           <Link href="/composer-talk">

@@ -1,0 +1,1402 @@
+[
+  {
+    "id": 1,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 2,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 3,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 4,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 5,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 6,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 7,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 8,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 9,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 10,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 11,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 12,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 13,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 14,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 15,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 16,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 17,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 18,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 19,
+    "category": "집중/영감",
+    "message": "하나의 목표에 집중하면 놀라운 성과를 얻을 것입니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 20,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 21,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 22,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 23,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 24,
+    "category": "집중/영감",
+    "message": "하나의 목표에 집중하면 놀라운 성과를 얻을 것입니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 25,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 26,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 27,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 28,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 29,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 30,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 31,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 32,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 33,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 34,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 35,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 36,
+    "category": "에너지/성공",
+    "message": "새로운 시작을 하기에 최적의 날입니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 37,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 38,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 39,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 40,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 41,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 42,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 43,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 44,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 45,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 46,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 47,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 48,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 49,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 50,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 51,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 52,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 53,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 54,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 55,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 56,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 57,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 58,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 59,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 60,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 61,
+    "category": "에너지/성공",
+    "message": "새로운 시작을 하기에 최적의 날입니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 62,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 63,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 64,
+    "category": "집중/영감",
+    "message": "하나의 목표에 집중하면 놀라운 성과를 얻을 것입니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 65,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 66,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 67,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 68,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 69,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 70,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 71,
+    "category": "에너지/성공",
+    "message": "새로운 시작을 하기에 최적의 날입니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 72,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 73,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 74,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 75,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 76,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 77,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 78,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 79,
+    "category": "집중/영감",
+    "message": "하나의 목표에 집중하면 놀라운 성과를 얻을 것입니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 80,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 81,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 82,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 83,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 84,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 85,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 86,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 87,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 88,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 89,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 90,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 91,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 92,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 93,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 94,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 95,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 96,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 97,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 98,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 99,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 100,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 101,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 102,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 103,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 104,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 105,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 106,
+    "category": "에너지/성공",
+    "message": "새로운 시작을 하기에 최적의 날입니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 107,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 108,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 109,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 110,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 111,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 112,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 113,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 114,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 115,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 116,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 117,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 118,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 119,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 120,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 121,
+    "category": "에너지/성공",
+    "message": "새로운 시작을 하기에 최적의 날입니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 122,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 123,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 124,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 125,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 126,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 127,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 128,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 129,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 130,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 131,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 132,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 133,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 134,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 135,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 136,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 137,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 138,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 139,
+    "category": "집중/영감",
+    "message": "하나의 목표에 집중하면 놀라운 성과를 얻을 것입니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 140,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 141,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 142,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 143,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 144,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 145,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 146,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 147,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 148,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 149,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 150,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 151,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 152,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 153,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 154,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 155,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 156,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 157,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 158,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 159,
+    "category": "집중/영감",
+    "message": "하나의 목표에 집중하면 놀라운 성과를 얻을 것입니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 160,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 161,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 162,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 163,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 164,
+    "category": "집중/영감",
+    "message": "하나의 목표에 집중하면 놀라운 성과를 얻을 것입니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 165,
+    "category": "행운/반전",
+    "message": "긍정적인 변화의 물결이 시작되는 날입니다.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 166,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 167,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 168,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 169,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 170,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 171,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 172,
+    "category": "사랑/인연",
+    "message": "예상치 못한 설렘이 찾아올 수 있는 날입니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 173,
+    "category": "휴식/위로",
+    "message": "지친 마음을 달래줄 편안한 소식이 들려옵니다.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 174,
+    "category": "집중/영감",
+    "message": "하나의 목표에 집중하면 놀라운 성과를 얻을 것입니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 175,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 176,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 177,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 178,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 179,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 180,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 181,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "안토니오 비발디 (Antonio Vivaldi) - 사계 중 '봄' (The Four Seasons - Spring)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 182,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "요한 제바스티안 바흐 (J.S. Bach) - G선상의 아리아 (Air on the G String)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 183,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "조지 프리더릭 헨델 (G.F. Handel) - 수상 음악 (Water Music)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 184,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "프란츠 요제프 하이든 (Franz Joseph Haydn) - 교향곡 101번 '시계' (Symphony No. 101 'The Clock')",
+    "link": "/curation"
+  },
+  {
+    "id": 185,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "볼프강 아마데우스 모차르트 (W.A. Mozart) - 아이네 클라이네 나흐트무지크 (Eine kleine Nachtmusik)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 186,
+    "category": "에너지/성공",
+    "message": "목표한 바를 이룰 수 있는 활기찬 하루입니다.",
+    "music": "루드비히 판 베토벤 (Ludwig van Beethoven) - 엘리제를 위하여 (Für Elise)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 187,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "프란츠 슈베르트 (Franz Schubert) - 군대 행진곡 (Marche Militaire No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 188,
+    "category": "휴식/위로",
+    "message": "바쁜 일상 속에서 나만을 위한 시간을 가져보세요.",
+    "music": "펠릭스 멘델스존 (Felix Mendelssohn) - 축혼 행진곡 (Wedding March)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 189,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "프레데리크 쇼팽 (Frédéric Chopin) - 강아지 왈츠 (Minute Waltz)",
+    "link": "/curation"
+  },
+  {
+    "id": 190,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "로베르트 슈만 (Robert Schumann) - 트로이메라이 (Träumerei)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 191,
+    "category": "에너지/성공",
+    "message": "새로운 시작을 하기에 최적의 날입니다.",
+    "music": "프란츠 리스트 (Franz Liszt) - 라 캄파넬라 (La Campanella)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 192,
+    "category": "사랑/인연",
+    "message": "주변 사람들과 따뜻한 마음을 나누게 됩니다.",
+    "music": "요하네스 브람스 (Johannes Brahms) - 헝가리 무곡 5번 (Hungarian Dance No. 5)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 193,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "표트르 일리치 차이코프스키 (P.I. Tchaikovsky) - 호두까기 인형 - 꽃의 왈츠 (The Nutcracker - Waltz of the Flowers)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 194,
+    "category": "집중/영감",
+    "message": "창의적인 에너지가 가득한 날입니다.",
+    "music": "안토닌 드보르자크 (Antonin Dvořák) - 유모레스크 (Humoresque)",
+    "link": "/curation"
+  },
+  {
+    "id": 195,
+    "category": "행운/반전",
+    "message": "생각지도 못한 행운이 당신을 기다립니다.",
+    "music": "에드바르드 그리그 (Edvard Grieg) - 페르 귄트 - 아침의 기분 (Peer Gynt - Morning Mood)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 196,
+    "category": "에너지/성공",
+    "message": "자신감 있게 밀어붙이세요. 승리의 기운이 따릅니다.",
+    "music": "클로드 드뷔시 (Claude Debussy) - 아라베스크 1번 (Arabesque No. 1)",
+    "link": "/talk/composer"
+  },
+  {
+    "id": 197,
+    "category": "사랑/인연",
+    "message": "소중한 사람과의 관계가 더욱 깊어집니다.",
+    "music": "모리스 라벨 (Maurice Ravel) - 볼레로 (Boléro)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 198,
+    "category": "휴식/위로",
+    "message": "잠시 쉬어가도 괜찮습니다. 마음의 평온을 찾으세요.",
+    "music": "에드워드 엘가 (Edward Elgar) - 위풍당당 행진곡 (Pomp and Circumstance March No. 1)",
+    "link": "/talk/free"
+  },
+  {
+    "id": 199,
+    "category": "집중/영감",
+    "message": "머릿속이 맑아지고 좋은 아이디어가 떠오릅니다.",
+    "music": "구스타프 홀스트 (Gustav Holst) - 행성 중 '목성' (The Planets - Jupiter)",
+    "link": "/curation"
+  },
+  {
+    "id": 200,
+    "category": "행운/반전",
+    "message": "기분 좋은 우연이 일상의 활력이 되어줄 거예요.",
+    "music": "가브리엘 포레 (Gabriel Fauré) - 시칠리아노 (Sicilienne)",
+    "link": "/talk/free"
+  }
+]
