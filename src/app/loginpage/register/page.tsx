@@ -6,7 +6,6 @@ import React, { useState, useCallback } from 'react';
 import { getApiUrl } from '@/lib/api';
 import DatePickerWheels from './date';
 import { useRegistrationStore } from '../../../store/registrationStore';
-import RegistrationDebug from '../../../components/RegistrationDebug';
 
 const SignupPage = () => {
   const router = useRouter();
@@ -539,8 +538,6 @@ const SignupPage = () => {
       {/* Home Indicator */}
       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[375px] h-[34px] invisible"></div>
 
-      {/* Debug Component (remove in production) */}
-      <RegistrationDebug />
     </div>
   );
 };

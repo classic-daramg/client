@@ -211,8 +211,6 @@ export default function WriteContent() {
 
                     // S3 URL 배열을 postData에 추가
                     postData.images = uploadRes.data.imageUrls;
-
-                    console.log('Uploaded image URLs:', uploadRes.data.imageUrls);
                 } catch (error) {
                     console.error('Image upload error:', error);
                     alert('이미지 업로드에 실패했습니다.');
@@ -235,18 +233,10 @@ export default function WriteContent() {
                 ? '/posts/curation'
                 : '/posts/free';
 
-            console.log('--- JSON Data to be Sent ---');
-            console.log(JSON.stringify(postData, null, 2));
-            console.log('--------------------------');
-
             // Axios를 사용하여 POST 요청 (자동으로 토큰 포함 및 401 에러 처리)
             const response = await apiClient.post(apiEndpoint, postData);
 
-            console.log('Response status:', response.status);
-            console.log('Response data:', response.data);
-
             if (response.status === 200 || response.status === 201) {
-                console.log('Post created successfully:', response.data);
                 alert('등록되었습니다.');
                 router.push(isCuration ? '/curation' : '/free-talk');
             }

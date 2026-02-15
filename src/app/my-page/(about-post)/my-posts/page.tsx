@@ -57,12 +57,10 @@ export default function MyPosts() {
 				setIsLoading(true);
 				setError(null);
 
-				console.log('Loading posts for userId:', userId);
 				const response = await apiClient.get<PostsResponse>(`/posts/${userId}/published`, {
 					params: { size: 10 },
 				});
 
-				console.log('Posts response:', response.data);
 				const data = response.data;
 				setPosts(data.content);
 			} catch (error) {

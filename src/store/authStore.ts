@@ -61,13 +61,10 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
-          console.log('JWT Payload:', payload);
           // JWT에서 userId 찾기 (여러 가능한 필드 확인)
           const userId = payload.userId || payload.sub || payload.user_id || null;
-          console.log('Extracted userId:', userId);
           return userId;
         } catch (error) {
-          console.error('Error decoding JWT:', error);
           return null;
         }
       },

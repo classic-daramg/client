@@ -57,12 +57,10 @@ export default function Scraps() {
 				setIsLoading(true);
 				setError(null);
 
-				console.log('Loading scraps for userId:', userId);
 				const response = await apiClient.get<ScrapsResponse>(`/posts/${userId}/scraps`, {
 					params: { size: 10 },
 				});
 
-				console.log('Scraps response:', response.data);
 				const data = response.data;
 				setScraps(data.content);
 			} catch (error) {

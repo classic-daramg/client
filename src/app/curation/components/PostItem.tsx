@@ -58,9 +58,6 @@ export default function PostItem({ post, isFirst = false }: PostItemProps) {
     ));
   };
 
-  // ========== 디버깅: tags 데이터 확인 ==========
-  console.log('PostItem tags:', post.tags);
-
   return (
     <>
       <Link

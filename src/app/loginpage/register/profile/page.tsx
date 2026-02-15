@@ -103,11 +103,6 @@ const ProfileSetupPage = () => {
                 setProfileImage(dataUrl);
                 setProfileImageBlob(blob);
                 setUploadLoading(false);
-
-                console.log('=== 이미지 업로드 완료 ===');
-                console.log('Blob size:', blob.size, 'bytes');
-                console.log('Blob type:', blob.type);
-                console.log('========================');
               };
               reader2.onerror = () => {
                 setUploadError('이미지 미리보기 생성 실패');
@@ -198,12 +193,6 @@ const ProfileSetupPage = () => {
         bio: completeData.profile.bio.trim() || null, // 빈 문자열은 null로
       };
 
-      // 디버깅: 요청 데이터 확인
-      console.log('=== 회원가입 요청 데이터 ===');
-      console.log('signupRequest:', signupRequest);
-      console.log('profileImageBlob:', profileImageBlob);
-      console.log('========================');
-
       // form-data 본문 구성 (signupRequest JSON Blob + image 파일)
       const formData = new FormData();
       
@@ -287,13 +276,7 @@ const ProfileSetupPage = () => {
     try {
       const response = await fetch(getApiUrl(`/users/check-nickname?nickname=${encodeURIComponent(nickname)}`));
 
-      console.log('===== 닉네임 중복 체크 시작 =====');
-      console.log('요청 닉네임:', nickname);
-      console.log('응답 상태 코드:', response.status);
-      console.log('응답 OK:', response.ok);
-
       const contentType = response.headers.get('content-type');
-      console.log('응답 Content-Type:', contentType);
 
       let data = null;
       let isAvailable = false;
@@ -302,61 +285,45 @@ const ProfileSetupPage = () => {
       if (contentType && contentType.includes('application/json')) {
         try {
           data = await response.json();
-          console.log('파싱된 응답 데이터:', data);
-          console.log('응답 데이터 타입:', typeof data);
-          console.log('응답 데이터 키:', Object.keys(data || {}));
 
           // isNicknameAvailable 필드 확인
           if (data && data.isNicknameAvailable !== undefined) {
             isAvailable = data.isNicknameAvailable;
-            console.log('isNicknameAvailable 필드 발견:', isAvailable);
           } else if (data && data.available !== undefined) {
             isAvailable = data.available;
-            console.log('available 필드 발견:', isAvailable);
-          } else {
-            console.log('사용 가능 여부 필드를 찾을 수 없음');
           }
-        } catch (e) {
-          console.log('JSON 파싱 실패:', e);
+        } catch {
+          // JSON 파싱 실패
         }
       }
 
-      console.log('최종 isAvailable 값:', isAvailable);
-
       // 응답 본문에서 사용 가능 여부를 판단 (우선순위)
       if (isAvailable) {
-        console.log('결정: 사용 가능한 닉네임 (응답 본문 기반)');
         setIsNicknameChecked(true);
         setNicknameCheckError('');
       } else if (response.status === 200 || response.status === 204) {
         // 상태 코드로 판단 (응답 본문이 없거나 파싱 실패 시)
-        console.log('결정: 사용 가능한 닉네임 (상태 코드 기반)');
         setIsNicknameChecked(true);
         setNicknameCheckError('');
       } else if (response.status === 409) {
         // 409: 닉네임 이미 존재
-        console.log('결정: 이미 사용 중인 닉네임 (409)');
         setIsNicknameChecked(false);
         setNicknameCheckError('이미 사용 중인 닉네임입니다.');
       } else if (response.status === 400) {
         // 400: 잘못된 요청 (형식 오류 등)
-        console.log('결정: 유효하지 않은 닉네임 (400)');
         setIsNicknameChecked(false);
         setNicknameCheckError('유효하지 않은 닉네임입니다.');
       } else if (response.status === 500) {
         // 500: 서버 에러
-        console.log('결정: 서버 에러 (500)');
         setIsNicknameChecked(false);
         const errorMessage = data?.message || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
         setNicknameCheckError(errorMessage);
       } else {
         // 기타 에러
-        console.log('결정: 기타 에러 (' + response.status + ')');
         const errorMessage = data?.message || data?.error || '닉네임 확인 중 오류가 발생했습니다.';
         setIsNicknameChecked(false);
         setNicknameCheckError(errorMessage);
       }
-      console.log('===== 닉네임 중복 체크 종료 =====');
     } catch (error) {
       console.error('닉네임 중복 확인 에러:', error);
       setIsNicknameChecked(false);

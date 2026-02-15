@@ -203,7 +203,6 @@ export default function ComposerTalkPage() {
               isScrapped: post.isScrapped || false,
             }));
             setPosts(formattedPosts);
-            console.log('✅ Composer posts loaded:', formattedPosts);
           }
         } else {
           console.error(`Failed to fetch composer posts: ${response.status}`);

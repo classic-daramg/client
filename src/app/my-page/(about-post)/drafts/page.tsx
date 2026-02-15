@@ -65,12 +65,10 @@ export default function Drafts() {
 				setIsLoading(true);
 				setError(null);
 
-				console.log('Loading drafts for userId:', userId);
 				const response = await apiClient.get<DraftsResponse>(`/posts/${userId}/drafts`, {
 					params: { size: 10 },
 				});
 
-				console.log('Drafts response:', response.data);
 				const data = response.data;
 				setDrafts(data.content);
 			} catch (error) {

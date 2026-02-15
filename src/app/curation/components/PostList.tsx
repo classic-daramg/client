@@ -83,9 +83,6 @@ export default function PostList({ searchValue, filters }: PostListProps) {
 
         // ========== API 응답을 Post 형식으로 변환 ==========
         const formattedPosts = data.content?.map((post: ApiPost) => {
-          // 디버깅: API 응답 구조 확인
-          console.log('API Post Data:', post);
-          
           return {
             id: post.id,
             title: post.title,

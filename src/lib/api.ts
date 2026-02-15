@@ -88,7 +88,6 @@ export async function fetchApi(
     const response = await fetch(url, defaultOptions);
     return response;
   } catch (error) {
-    console.error(`API Request Failed: ${url}`, error);
     throw error;
   }
 }
@@ -117,15 +116,3 @@ export const ENV = {
   apiUrl: API_BASE_URL,
 } as const;
 
-/**
- * API 설정 상태 확인 (디버깅용)
- */
-export function checkApiConfig() {
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🔧 API Configuration:');
-  console.log('  - Environment:', process.env.NODE_ENV);
-  console.log('  - API Base URL:', API_BASE_URL);
-  console.log('  - Is Development:', ENV.isDevelopment);
-  console.log('  - Is Production:', ENV.isProduction);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-}

@@ -26,13 +26,11 @@ const LoginPage = () => {
       // JWT는 header.payload.signature 형식
       const parts = token.split('.');
       if (parts.length !== 3) {
-        console.error('Invalid JWT format');
         return { isExpired: true };
       }
 
       // payload 디코딩 (base64)
       const payload = JSON.parse(atob(parts[1]));
-      console.log('Decoded JWT payload:', payload);
 
       // exp 필드 확인 (Unix timestamp in seconds)
       if (payload.exp) {
@@ -40,19 +38,11 @@ const LoginPage = () => {
         const now = new Date();
         const isExpired = now >= expirationDate;
 
-        console.log('Token issued at (iat):', payload.iat ? new Date(payload.iat * 1000).toLocaleString() : 'N/A');
-        console.log('Token expires at (exp):', expirationDate.toLocaleString());
-        console.log('Current time:', now.toLocaleString());
-        console.log('Time until expiration:', isExpired ? 'EXPIRED' : `${Math.floor((expirationDate.getTime() - now.getTime()) / 1000 / 60)} minutes`);
-        console.log('Is token expired?', isExpired ? '❌ YES' : '✅ NO');
-
         return { isExpired, expiresAt: expirationDate, payload };
       } else {
-        console.warn('No expiration (exp) field in token - assuming valid');
         return { isExpired: false, payload };
       }
     } catch (error) {
-      console.error('Error decoding token:', error);
       return { isExpired: true };
     }
   };
@@ -103,20 +93,8 @@ const LoginPage = () => {
           document.cookie = `access_token=${accessToken}; path=/; SameSite=Lax`;
         }
 
-        console.log('=== JWT Token Saved to Memory & Cookie ===');
-        console.log('Access Token length:', accessToken.length);
-        console.log('Refresh Token:', refreshToken ? 'Present' : 'Not present (using cookie)');
-        console.log('✅ Saved access_token to cookie for API requests');
-        
         // 토큰 만료 정보 확인
-        const tokenStatus = checkTokenExpiration(accessToken);
-        if (tokenStatus.isExpired) {
-          console.error('⚠️ Warning: Received token is already expired!');
-        } else if (tokenStatus.expiresAt) {
-          const minutesUntilExpiry = Math.floor((tokenStatus.expiresAt.getTime() - new Date().getTime()) / 1000 / 60);
-          console.log(`✅ Token is valid for ${minutesUntilExpiry} minutes`);
-        }
-        console.log('=================================');
+        checkTokenExpiration(accessToken);
 
         // 사용자 정보 처리
         const userInfo = data.user || {};
@@ -138,7 +116,7 @@ const LoginPage = () => {
             const parsed = JSON.parse(savedProfile);
             profileData = parsed.state?.profile;
           } catch (error) {
-            console.log('localStorage 프로필 파싱 실패:', error);
+            // localStorage 프로필 파싱 실패
           }
         }
 

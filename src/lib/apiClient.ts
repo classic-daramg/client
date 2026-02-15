@@ -90,7 +90,6 @@ apiClient.interceptors.response.use(
 
     // 토큰 갱신 요청 자체가 실패한 경우 (400, 401 등) -> 로그아웃
     if (originalRequest.url?.includes('/auth/refresh')) {
-      console.error('❌ Refresh token failed (in interceptor), logging out...');
       processQueue(error, null); // 대기 중인 요청들도 모두 실패 처리
       useAuthStore.getState().clearTokens();
 
@@ -102,7 +101,6 @@ apiClient.interceptors.response.use(
 
     // 토큰 갱신이 진행 중이면 큐에 추가 (Concurrent Requests Handling)
     if (isRefreshing) {
-      console.log('⏳ Token refresh in progress, adding request to queue...');
       return new Promise((resolve, reject) => {
         failedQueue.push({
           resolve: (token: string) => {
@@ -122,8 +120,6 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      console.log('🔄 Refreshing access token...');
-
       // Store에서 refreshToken 가져오기 (쿠키 실패 시 대비)
       const storedRefreshToken = useAuthStore.getState().refreshToken;
 
@@ -137,8 +133,6 @@ apiClient.interceptors.response.use(
           withCredentials: true,
         }
       );
-
-      console.log('✅ Refresh response received');
 
       const { accessToken, refreshToken: newRefreshToken, token } = refreshResponse.data;
       const newAccessToken = accessToken || token; // 백엔드 응답 필드명 확인 필요
@@ -154,8 +148,6 @@ apiClient.interceptors.response.use(
         useAuthStore.getState().setAccessToken(newAccessToken);
       }
 
-      console.log('✅ Token refreshed and stored successfully');
-
       // 큐에 있는 요청들 처리 (재시도)
       processQueue(null, newAccessToken);
 
@@ -167,8 +159,6 @@ apiClient.interceptors.response.use(
       return apiClient(originalRequest);
 
     } catch (refreshError) {
-      console.error('❌ Token refresh process failed:', refreshError);
-
       // 갱신 실패 시 큐의 모든 요청 거부
       processQueue(refreshError as AxiosError, null);
 

@@ -46,7 +46,7 @@ export default function PostFooter({
           url: url,
         });
       } catch (err) {
-        console.log('Share cancelled or failed:', err);
+        // Share cancelled or failed
       }
     } else {
       // Web Share API를 지원하지 않는 경우 클립보드에 복사

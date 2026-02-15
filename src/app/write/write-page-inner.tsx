@@ -472,7 +472,6 @@ export function WritePageInner() {
                     });
 
                     uploadedImages = uploadRes.data.imageUrls;
-                    console.log('✅ Images uploaded:', uploadedImages);
                 } catch (error) {
                     console.error('❌ Image upload error:', error);
                     alert('이미지 업로드에 실패했습니다.');
@@ -516,7 +515,6 @@ export function WritePageInner() {
                 if (link && link.trim()) storyData.videoUrl = link;
 
                 const response = await apiClient.post('/posts/story', storyData);
-                console.log('✅ [STORY] Post created:', response.data);
 
                 alert('작곡가 이야기가 등록되었습니다.');
                 router.push(`/composer-talk-room/${primaryComposerId}`);
@@ -548,7 +546,6 @@ export function WritePageInner() {
                     if (link && link.trim()) storyData.videoUrl = link;
 
                     const storyRes = await apiClient.post('/posts/story', storyData);
-                    console.log('✅ [STORY] Post created:', storyRes.data);
 
                     // 2단계: Curation 포스트 생성
                     const curationData: PostData = {
@@ -569,7 +566,6 @@ export function WritePageInner() {
                     if (link && link.trim()) curationData.videoUrl = link;
 
                     const curationRes = await apiClient.post('/posts/curation', curationData);
-                    console.log('✅ [CURATION] Post created:', curationRes.data);
 
                     alert('작곡가 이야기와 큐레이션이 등록되었습니다.');
                     router.push('/curation');
@@ -607,7 +603,6 @@ export function WritePageInner() {
                 if (link && link.trim()) curationData.videoUrl = link;
 
                 const response = await apiClient.post('/posts/curation', curationData);
-                console.log('✅ [CURATION] Post created:', response.data);
 
                 alert('큐레이션이 등록되었습니다.');
                 router.push('/curation');
@@ -628,7 +623,6 @@ export function WritePageInner() {
             if (link && link.trim()) freeData.videoUrl = link;
 
             const response = await apiClient.post('/posts/free', freeData);
-            console.log('✅ [FREE] Post created:', response.data);
 
             alert('자유글이 등록되었습니다.');
             router.push('/free-talk');
