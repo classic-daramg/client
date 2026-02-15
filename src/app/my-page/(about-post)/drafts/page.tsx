@@ -25,6 +25,8 @@ interface Draft {
 	commentCount: number;
 	thumbnailImageUrl: string | null;
 	type: string;
+	primaryComposerId?: number;
+	primaryComposerName?: string;
 	primaryComposer?: {
 		id?: number;
 		composerId?: number;
@@ -151,10 +153,18 @@ export default function Drafts() {
 							임시저장한 글이 없습니다.
 						</div>
 					)}
-					{drafts.map((draft, index) => (
+					{drafts.map((draft, index) => {
+						const composerId = draft.type === 'STORY' && draft.primaryComposer
+							? (draft.primaryComposer.id ?? draft.primaryComposer.composerId)
+							: null;
+						const href = composerId
+							? `/write?draftId=${draft.id}&composerId=${composerId}`
+							: `/write?draftId=${draft.id}`;
+
+						return (
 						<Link
 							key={draft.id}
-							href={`/write?draftId=${draft.id}`}
+							href={href}
 							onClick={() => setDraft(draft)}
 							className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${
 								index > 0 ? "border-t border-[#f4f5f7]" : ""
@@ -165,7 +175,9 @@ export default function Drafts() {
 									<div className="flex gap-[3px] items-center">
 										<Image src={getTypeIcon(draft.type)} alt={draft.type} width={12} height={12} />
 										<span className="text-[#d9d9d9] text-[11px] font-semibold">
-											{getTypeLabel(draft.type)}
+											{draft.type === 'STORY' && (draft.primaryComposerName || draft.primaryComposer?.koreanName)
+												? `${draft.primaryComposerName || draft.primaryComposer?.koreanName} 이야기`
+												: getTypeLabel(draft.type)}
 										</span>
 									</div>
 									<div className="flex flex-col gap-[4px] w-full">
@@ -213,7 +225,8 @@ export default function Drafts() {
 								) : null}
 							</div>
 						</Link>
-					))}
+						);
+					})}
 				</div>
 			</div>
 		</div>

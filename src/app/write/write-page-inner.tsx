@@ -70,6 +70,7 @@ type UpdatePayload = {
     videoUrl: string;
     postStatus: 'PUBLISHED' | 'DRAFT';
     primaryComposerId?: number;
+    primaryComposerName?: string;
     additionalComposersId?: number[];
 };
 
@@ -131,6 +132,10 @@ export function WritePageInner() {
     const getSelectedType = (): string => {
         if (composerName) {
             return `${composerName} 이야기`;
+        }
+        // composerName이 없지만 composerId가 있으면 (draft 로드 시)
+        if (composerId && draftId) {
+            return '작곡가 이야기';
         }
         if (postTypeParam === 'curation') {
             return '큐레이션 글';
@@ -270,13 +275,18 @@ export function WritePageInner() {
         const draftComposerName =
             draft.primaryComposer?.koreanName ?? draft.primaryComposer?.englishName ?? '';
 
+        // draft에 primaryComposer 정보가 없으면 query parameter의 composerId 사용
+        const finalComposerId = draftComposerId ?? composerId;
+
         const nextType = draft.type === 'CURATION'
             ? '큐레이션 글'
             : draft.type === 'FREE'
                 ? '자유 글'
                 : draftComposerName
                     ? `${draftComposerName} 이야기`
-                    : '작곡가 이야기';
+                    : finalComposerId
+                        ? '작곡가 이야기'
+                        : '자유 글';
 
         setSelectedType(nextType);
         setTitle(draft.title || '');
@@ -289,6 +299,10 @@ export function WritePageInner() {
         if (draftComposerId && draftComposerName) {
             setSelectedComposers([{ id: draftComposerId, name: draftComposerName }]);
             setPrimaryComposerId(draftComposerId);
+        } else if (finalComposerId) {
+            // draft에는 작곡가명이 없지만 query parameter로 composerId가 있으면 그것 사용
+            setSelectedComposers([]);
+            setPrimaryComposerId(finalComposerId);
         } else {
             setSelectedComposers([]);
             setPrimaryComposerId(null);

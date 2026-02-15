@@ -24,6 +24,14 @@ interface Scrap {
 	commentCount: number;
 	thumbnailImageUrl: string | null;
 	type: string;
+	primaryComposerId?: number;
+	primaryComposerName?: string;
+	primaryComposer?: {
+		id?: number;
+		composerId?: number;
+		koreanName?: string;
+		englishName?: string;
+	} | null;
 	isLiked: boolean | null;
 	isScrapped: boolean | null;
 }
@@ -156,7 +164,9 @@ export default function Scraps() {
 									<div className="flex gap-[3px] items-center">
 										<Image src={getTypeIcon(scrap.type)} alt={scrap.type} width={12} height={12} />
 										<span className="text-[#d9d9d9] text-[11px] font-semibold">
-											{getTypeLabel(scrap.type)}
+											{scrap.type === 'STORY' && (scrap.primaryComposerName || scrap.primaryComposer?.koreanName)
+												? `${scrap.primaryComposerName || scrap.primaryComposer?.koreanName} 이야기`
+												: getTypeLabel(scrap.type)}
 										</span>
 									</div>
 									<div className="flex flex-col gap-[4px] w-full">

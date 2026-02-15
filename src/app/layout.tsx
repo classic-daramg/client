@@ -1,7 +1,33 @@
 // src/app/layout.tsx
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { Metadata } from 'next';
 import './globals.css';
 import ScrollButton from '@/components/scroll_button';
+
+export const metadata: Metadata = {
+  title: '다람쥐 - 클래식 음악 커뮤니티',
+  description: '작곡가별 토크룸, 클래식 큐레이션, 자유 토크룸을 통해 클래식 음악 애호가들과 소통하는 공간',
+  openGraph: {
+    title: '다람쥐 - 클래식 음악 커뮤니티',
+    description: '작곡가별 토크룸, 클래식 큐레이션, 자유 토크룸을 통해 클래식 음악 애호가들과 소통하는 공간',
+    type: 'website',
+    url: 'https://classicaldaramz.com',
+    images: [
+      {
+        url: 'https://classicaldaramz.com/icons/윙크하는다람쥐.svg',
+        width: 1200,
+        height: 630,
+        alt: '다람쥐 - 클래식 음악 커뮤니티',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '다람쥐 - 클래식 음악 커뮤니티',
+    description: '작곡가별 토크룸, 클래식 큐레이션, 자유 토크룸을 통해 클래식 음악 애호가들과 소통하는 공간',
+    images: ['https://classicaldaramz.com/icons/윙크하는다람쥐.svg'],
+  },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
