@@ -14,18 +14,18 @@ export const metadata: Metadata = {
     url: 'https://www.classicaldaramz.com',
     images: [
       {
-        url: 'https://www.classicaldaramz.com/icons/윙크하는다람쥐.svg',
+        url: 'https://www.classicaldaramz.com/icons/DefaultImage.svg',
         width: 1200,
         height: 630,
-        alt: '다람쥐 - 클래식 음악 커뮤니티',
+        alt: '클래식 듣는 다람쥐 - 클래식 음악 커뮤니티',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '다람쥐 - 클래식 음악 커뮤니티',
+    title: '클래식 듣는 다람쥐 - 클래식 음악 커뮤니티',
     description: '작곡가별 토크룸, 클래식 큐레이션, 자유 토크룸을 통해 클래식 음악 애호가들과 소통하는 공간',
-    images: ['https://www.classicaldaramz.com/icons/윙크하는다람쥐.svg'],
+    images: ['https://www.classicaldaramz.com/icons/DefaultImage.svg'],
   },
 };
 
