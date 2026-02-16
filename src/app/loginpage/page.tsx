@@ -135,9 +135,10 @@ const LoginPage = () => {
         setToast({ show: true, message: '로그인되었습니다.' });
         setIsLoading(false);
 
+        // localStorage 저장 완료 대기 후 이동
         setTimeout(() => {
           router.push('/my-page');
-        }, 500);
+        }, 1000);
       }
     } catch (error) {
       console.error('로그인 오류:', error);

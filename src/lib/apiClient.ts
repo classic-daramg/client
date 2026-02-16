@@ -1,8 +1,9 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/authStore';
-import { API_BASE_URL } from './api';
 
-const BASE_URL = API_BASE_URL;
+// 클라이언트에서는 /api로 요청 → next.config.ts의 rewrites가 백엔드로 프록시
+// 서버 사이드에서만 API_BASE_URL 사용
+const BASE_URL = '/api';
 
 // Axios 인스턴스 생성
 export const apiClient = axios.create({

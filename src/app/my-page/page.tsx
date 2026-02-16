@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useUserProfileStore } from '@/store/userProfileStore';
+import { useAuthStore } from '@/store/authStore';
+import apiClient from '@/lib/apiClient';
 
 // --- Reusable Components for the New Design ---
 
@@ -126,60 +128,60 @@ const LogoutPopup = ({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
 // --- Main MyPage Component ---
 export default function MyPage() {
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { clearProfile } = useUserProfileStore();
+  const { accessToken } = useAuthStore();
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch(getApiUrl('/users'), {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+    setMounted(true);
+  }, []);
 
-        if (response.ok) {
-          const data = await response.json();
-          useUserProfileStore.setState({
-            profile: {
-              name: data.name ?? '',
-              nickname: data.nickname ?? '',
-              email: data.email ?? '',
-              bio: data.bio ?? '',
-              profileImage: data.profileImage ?? '/icons/DefaultImage.svg',
-              birthDate: data.birthDate ?? '',
-            },
-          });
-        } else if (response.status === 401) {
+  useEffect(() => {
+    if (!mounted) return;
+
+    const fetchUserProfile = async () => {
+      // 토큰이 없으면 로그인 페이지로
+      if (!accessToken) {
+        console.warn('토큰이 없습니다. 로그인 페이지로 이동합니다.');
+        router.push('/loginpage');
+        return;
+      }
+
+      try {
+        const response = await apiClient.get('/users');
+
+        const data = response.data;
+        useUserProfileStore.setState({
+          profile: {
+            name: data.name ?? '',
+            nickname: data.nickname ?? '',
+            email: data.email ?? '',
+            bio: data.bio ?? '',
+            profileImage: data.profileImage ?? '/icons/DefaultImage.svg',
+            birthDate: data.birthDate ?? '',
+          },
+        });
+      } catch (error: any) {
+        if (error.response?.status === 401) {
           // 인증 실패 - 토큰 만료 또는 유효하지 않음
           console.error('인증이 만료되었습니다. 다시 로그인 해주세요.');
           localStorage.removeItem('authToken');
           useUserProfileStore.setState({ profile: null });
           router.push('/loginpage');
         } else {
-          console.error('프로필 조회 실패:', response.status);
+          console.error('프로필 조회 에러:', error);
         }
-      } catch (error) {
-        console.error('프로필 조회 에러:', error);
       }
     };
 
     fetchUserProfile();
-  }, [router]);
+  }, [mounted, accessToken, router]);
 
   const handleLogout = async () => {
     try {
-      // 서버에 로그아웃 요청 (인증 쿠키 삭제)
-      const response = await fetch(getApiUrl('/auth/logout'), {
-        method: 'DELETE',
-        credentials: 'include', // 쿠키를 함께 전송
-      });
-
-      if (!response.ok) {
-        console.error('로그아웃 API 실패:', response.status);
-      }
+      // 서버에 로그아웃 요청
+      await apiClient.delete('/auth/logout');
 
       // 로컬 상태 초기화
       localStorage.removeItem('authToken');

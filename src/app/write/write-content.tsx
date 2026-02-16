@@ -238,7 +238,19 @@ export default function WriteContent() {
 
             if (response.status === 200 || response.status === 201) {
                 alert('등록되었습니다.');
-                router.push(isCuration ? '/curation' : '/free-talk');
+                // 포스트 타입에 따라 페이지 리다이렉트
+                if (isCurationPost || isCurationWithComposer) {
+                    router.push('/curation');
+                } else if (isComposerTalkRoom) {
+                    // 작곡가 이야기인 경우, 선택된 작곡가의 첫 번째 ID로 이동
+                    if (selectedComposers.length > 0) {
+                        router.push(`/composer-talk-room/${selectedComposers[0].id}`);
+                    } else {
+                        router.push('/free-talk');
+                    }
+                } else {
+                    router.push('/free-talk');
+                }
             }
         } catch (error: unknown) {
             console.error('An error occurred while creating the post:', error);

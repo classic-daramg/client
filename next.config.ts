@@ -17,6 +17,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // 로컬 개발 환경에서 API 프록시
+  rewrites: async () => {
+    return {
+      beforeFiles: [
+        {
+          source: "/api/:path*",
+          destination: "https://classic-daramg.duckdns.org/:path*",
+        },
+      ],
+    };
+  },
 };
 
 export default nextConfig;
