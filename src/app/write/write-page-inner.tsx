@@ -535,7 +535,7 @@ export function WritePageInner() {
                 return;
             }
 
-            // Case 2: Curation in Composer Talk Room (작곡가 이야기의 큐레이션)
+            // Case 2: Story + Curation (작곡가 이야기의 큐레이션)
             if (isCurationWithComposer) {
                 if (!primaryComposerId) {
                     alert('작곡가 ID를 찾을 수 없습니다.');
@@ -544,7 +544,24 @@ export function WritePageInner() {
                 }
 
                 try {
-                    // Curation 포스트 생성 (Story 생성 부분 제거됨)
+                    const currentTime = getKSTISOString();
+
+                    // 1단계: Story 포스트 생성
+                    const storyData: PostData = {
+                        title,
+                        content,
+                        postStatus: 'PUBLISHED',
+                        createdAt: currentTime,
+                        primaryComposerId,
+                    };
+
+                    if (uploadedImages) storyData.images = uploadedImages;
+                    if (hashtags.length > 0) storyData.hashtags = hashtags;
+                    if (link && link.trim()) storyData.videoUrl = link;
+
+                    const storyRes = await apiClient.post('/posts/story', storyData);
+
+                    // 2단계: Curation 포스트 생성
                     const curationData: PostData = {
                         title,
                         content,
@@ -552,13 +569,7 @@ export function WritePageInner() {
                         primaryComposerId,
                     };
 
-                    // 추가 작곡가가 있다면 포함 (기본적으로 primaryComposerId가 메인이므로 나머지만 추가)
                     if (selectedComposers.length > 0) {
-                        // selectedComposers에 primary가 포함되어 있는지 확인하여 중복 방지 로직 필요할 수 있으나,
-                        // 기존 로직(slice(1))을 유지하거나, 명시적으로 필터링.
-                        // 여기서는 기존 로직의 의도(첫번째는 메인이라고 가정?)를 따르되, 
-                        // Composer Talk모드에서는 selectedComposers가 비어있을 수 있음.
-                        // 만약 사용자가 추가 작곡가를 선택했다면 그것을 반영.
                         if (selectedComposers.length > 1) {
                             curationData.additionalComposerIds = selectedComposers.slice(1).map(c => c.id);
                         }
@@ -568,10 +579,9 @@ export function WritePageInner() {
                     if (hashtags.length > 0) curationData.hashtags = hashtags;
                     if (link && link.trim()) curationData.videoUrl = link;
 
-                    await apiClient.post('/posts/curation', curationData);
+                    const curationRes = await apiClient.post('/posts/curation', curationData);
 
-                    alert('큐레이션이 등록되었습니다.');
-                    // 큐레이션이므로 큐레이션 페이지나 해당 작곡가 방으로 이동
+                    alert('작곡가 이야기와 큐레이션이 등록되었습니다.');
                     router.push('/curation');
                     return;
                 } catch (error: unknown) {

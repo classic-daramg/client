@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useUserProfileStore } from '@/store/userProfileStore';
-import { useLogout } from '@/hooks/useLogout';
 
 // --- Reusable Components for the New Design ---
 
@@ -124,13 +123,11 @@ const LogoutPopup = ({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
 );
 
 
-
 // --- Main MyPage Component ---
 export default function MyPage() {
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const router = useRouter();
   const { clearProfile } = useUserProfileStore();
-  const { handleLogout: logout } = useLogout();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -158,8 +155,9 @@ export default function MyPage() {
         } else if (response.status === 401) {
           // 인증 실패 - 토큰 만료 또는 유효하지 않음
           console.error('인증이 만료되었습니다. 다시 로그인 해주세요.');
-          // Use centralized logout
-          await logout();
+          localStorage.removeItem('authToken');
+          useUserProfileStore.setState({ profile: null });
+          router.push('/loginpage');
         } else {
           console.error('프로필 조회 실패:', response.status);
         }
@@ -169,12 +167,33 @@ export default function MyPage() {
     };
 
     fetchUserProfile();
-  }, [router, logout]);
+  }, [router]);
 
   const handleLogout = async () => {
-    await logout();
-    clearProfile();
-    setShowLogoutPopup(false);
+    try {
+      // 서버에 로그아웃 요청 (인증 쿠키 삭제)
+      const response = await fetch(getApiUrl('/auth/logout'), {
+        method: 'DELETE',
+        credentials: 'include', // 쿠키를 함께 전송
+      });
+
+      if (!response.ok) {
+        console.error('로그아웃 API 실패:', response.status);
+      }
+
+      // 로컬 상태 초기화
+      localStorage.removeItem('authToken');
+      clearProfile();
+      setShowLogoutPopup(false);
+      router.push('/loginpage');
+    } catch (error) {
+      console.error('로그아웃 에러:', error);
+      // 에러가 발생해도 로컬 상태는 초기화
+      localStorage.removeItem('authToken');
+      clearProfile();
+      setShowLogoutPopup(false);
+      router.push('/loginpage');
+    }
   };
 
   return (

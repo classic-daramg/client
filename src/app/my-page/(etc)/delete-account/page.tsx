@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
 import { useUserProfileStore } from '@/store/userProfileStore';
-import { useAuthStore } from '@/store/authStore';
 import ToastNotification from '@/components/ToastNotification';
 
 export default function DeleteAccountPage() {
@@ -42,13 +41,11 @@ export default function DeleteAccountPage() {
             });
 
             if (response.ok) {
-                // Clear tokens and cookies via store
-                useAuthStore.getState().clearTokens();
+                localStorage.removeItem('authToken');
                 clearProfile();
                 setToast({ show: true, message: '회원 탈퇴가 완료되었습니다.' });
 
                 setTimeout(() => {
-                    router.refresh(); // Clear server cache
                     router.push('/loginpage');
                 }, 1000);
             } else {
@@ -140,8 +137,8 @@ export default function DeleteAccountPage() {
                 onClick={handlePasswordConfirm}
                 disabled={isLoading || !password.trim()}
                 className={`absolute bottom-[27px] left-1/2 transform -translate-x-1/2 w-[335px] h-[48px] rounded-md flex items-center justify-center transition-colors ${isLoading || !password.trim()
-                    ? 'bg-[#A6A6A6] cursor-not-allowed'
-                    : 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]'
+                        ? 'bg-[#A6A6A6] cursor-not-allowed'
+                        : 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]'
                     }`}
             >
                 <span className="font-pretendard font-semibold text-base text-white">
@@ -173,8 +170,8 @@ export default function DeleteAccountPage() {
                                 onClick={handleDeleteAccount}
                                 disabled={isLoading}
                                 className={`flex-1 rounded-full px-[14px] py-[6px] ${isLoading
-                                    ? 'bg-[#A6A6A6] cursor-not-allowed'
-                                    : 'bg-[#293A92] hover:bg-[#1e2c73]'
+                                        ? 'bg-[#A6A6A6] cursor-not-allowed'
+                                        : 'bg-[#293A92] hover:bg-[#1e2c73]'
                                     }`}
                             >
                                 <span className="font-pretendard font-semibold text-xs text-white">

@@ -93,10 +93,9 @@ apiClient.interceptors.response.use(
       processQueue(error, null); // 대기 중인 요청들도 모두 실패 처리
       useAuthStore.getState().clearTokens();
 
-      // We do NOT redirect here globally because it disrupts public pages (e.g. Home)
-      // that might optimistically fetch user data.
-      // Components on protected routes should handle auth checks themselves.
-
+      if (typeof window !== 'undefined') {
+        window.location.href = '/loginpage';
+      }
       return Promise.reject(error);
     }
 
@@ -105,7 +104,7 @@ apiClient.interceptors.response.use(
       return new Promise((resolve, reject) => {
         failedQueue.push({
           resolve: (token: string) => {
-            if (originalRequest.headers && token) {
+            if (originalRequest.headers) {
               originalRequest.headers.Authorization = `Bearer ${token}`;
             }
             resolve(apiClient(originalRequest));
@@ -121,33 +120,41 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // Store에서 refreshToken 가져오기 (쿠키 실패 또는 로컬 개발 환경 대비)
+      // Store에서 refreshToken 가져오기 (쿠키 실패 시 대비)
       const storedRefreshToken = useAuthStore.getState().refreshToken;
 
-      // 토큰 갱신 API 호출 (Cookie 기반 + Header Fallback)
-      await axios.post(
+      // 토큰 갱신 API 호출
+      // 별도의 axios 인스턴스나 axios.post를 사용하여 인터셉터 무한 루프 방지
+      const refreshResponse = await axios.post(
         `${BASE_URL}/auth/refresh`,
         {},
         {
           headers: storedRefreshToken ? { Authorization: `Bearer ${storedRefreshToken}` } : {},
-          withCredentials: true, // Critical for cookie-based refresh
+          withCredentials: true,
         }
       );
 
-      // 갱신 성공 (에러가 안 났으면 성공으로 간주)
+      const { accessToken, refreshToken: newRefreshToken, token } = refreshResponse.data;
+      const newAccessToken = accessToken || token; // 백엔드 응답 필드명 확인 필요
 
-      // 만약 백엔드가 Body에 토큰을 주는 경우 (Hybrid) - 만약 스펙과 다르게 동작할 경우를 대비
-      // const newAccessToken = refreshResponse.data?.accessToken;
-      // if (newAccessToken) {
-      //   useAuthStore.getState().setAccessToken(newAccessToken);
-      // }
+      if (!newAccessToken) {
+        throw new Error('No access token in refresh response');
+      }
 
-      // 중요: 쿠키 기반이므로, 클라이언트 스토어의 accessToken이 최신이 아닐 수 있음.
-      // 하지만 미들웨어와 API는 쿠키를 우선적으로 사용할 수 있음.
-      // Axios는 withCredentials: true로 다음 요청 시 새 쿠키를 보냄.
+      // 새로운 토큰 저장 (Zustand)
+      if (newRefreshToken) {
+        useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
+      } else {
+        useAuthStore.getState().setAccessToken(newAccessToken);
+      }
 
-      // 큐에 있는 요청들 처리 (토큰 없이 재시도 -> 쿠키 사용)
-      processQueue(null, 'cookie-refreshed');
+      // 큐에 있는 요청들 처리 (재시도)
+      processQueue(null, newAccessToken);
+
+      // 현재 실패했던 요청 재시도
+      if (originalRequest.headers) {
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      }
 
       return apiClient(originalRequest);
 
@@ -157,9 +164,9 @@ apiClient.interceptors.response.use(
 
       // 로그아웃 처리
       useAuthStore.getState().clearTokens();
-
-      // We do NOT redirect here globally because it disrupts public pages.
-      // If a protected page fails, it will likely catch this error and redirect itself.
+      if (typeof window !== 'undefined') {
+        window.location.href = '/loginpage';
+      }
 
       return Promise.reject(refreshError);
     } finally {

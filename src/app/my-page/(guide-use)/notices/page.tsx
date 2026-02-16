@@ -47,19 +47,19 @@ export default function Notices() {
 	};
 
 	return (
-		<div className="relative w-full max-w-md mx-auto min-h-screen bg-white flex flex-col font-['Pretendard']">
+		<div className="relative w-[375px] min-h-screen bg-white flex flex-col">
 			{/* Header */}
-			<div className="flex has-bottom-border h-[54px] items-center px-4 bg-white border-b border-[#f4f5f7]">
+			<div className="flex h-[54px] items-center px-4 bg-white border-b border-[#f4f5f7]">
 				<div className="flex gap-[4px] items-center w-full">
 					<button
 						type="button"
 						onClick={() => router.back()}
-						className="relative w-6 h-6 flex items-center justify-center -ml-1"
+						className="relative w-6 h-6 flex items-center justify-center"
 						aria-label="뒤로가기"
 					>
-						<Image src={backIcon} alt="back" width={24} height={24} />
+						<Image src={backIcon} alt="back" width={20} height={20} />
 					</button>
-					<div className="flex flex-col grow justify-center items-center text-[#1a1a1a] text-[16px] font-semibold pr-6">
+					<div className="flex flex-col grow justify-center text-[#1a1a1a] text-[16px] font-semibold">
 						<p>공지사항</p>
 					</div>
 				</div>
@@ -68,40 +68,32 @@ export default function Notices() {
 			{/* Notices List */}
 			<div className="flex flex-col w-full">
 				{isLoading && (
-					<div className="w-full py-20 text-center text-[#a6a6a6] text-sm">
+					<div className="w-full py-8 text-center text-[#a6a6a6]">
 						공지사항을 불러오는 중입니다...
 					</div>
 				)}
 				{error && (
-					<div className="w-full py-20 text-center text-red-500 text-sm">{error}</div>
+					<div className="w-full py-8 text-center text-red-500">{error}</div>
 				)}
 				{!isLoading && !error && notices.length === 0 && (
-					<div className="w-full py-20 text-center text-[#a6a6a6] text-sm">
-						등록된 공지사항이 없습니다.
+					<div className="w-full py-8 text-center text-[#a6a6a6]">
+						공지사항이 없습니다.
 					</div>
 				)}
 				{notices.map((notice) => (
 					<div
 						key={notice.id}
-						onClick={() => router.push(`/notice/${notice.id}`)}
-						className="border-b border-[#f4f5f7] px-5 py-5 hover:bg-zinc-50 cursor-pointer transition-colors active:bg-zinc-100"
+						className="border-b border-[#f4f5f7] px-4 py-4 hover:bg-[#f4f5f7] cursor-pointer transition-colors"
 					>
-						<div className="flex flex-col gap-1.5">
-							<div className="flex justify-between items-start gap-3">
-								<h3 className="text-[15px] font-semibold text-[#1a1a1a] line-clamp-1 leading-snug break-all">
-									{notice.title}
-								</h3>
-								{/* If new badge logic exists, add here */}
-							</div>
-							<div className="flex items-center gap-2 text-xs text-[#a6a6a6] font-medium">
-								<span className="line-clamp-1">{notice.content}</span>
-								<span>·</span>
-								<span className="shrink-0">{formatDate(notice.createdAt)}</span>
-							</div>
-						</div>
+						<h3 className="text-[14px] font-semibold text-[#1a1a1a] mb-1">{notice.title}</h3>
+						<p className="text-[12px] text-[#a6a6a6] mb-2">{notice.content}</p>
+						<p className="text-[11px] text-[#d9d9d9]">{formatDate(notice.createdAt)}</p>
 					</div>
 				))}
 			</div>
+
+			{/* Home Indicator */}
+			<div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[375px] h-[34px] invisible" />
 		</div>
 	);
 }
