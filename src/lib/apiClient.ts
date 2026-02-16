@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/authStore';
+import { getRefreshTokenFromCookie } from '@/lib/tokenUtils';
 
 // 클라이언트에서는 /api로 요청 → next.config.ts의 rewrites가 백엔드로 프록시
 // 서버 사이드에서만 API_BASE_URL 사용
@@ -122,7 +123,7 @@ apiClient.interceptors.response.use(
 
     try {
       // Store에서 refreshToken 가져오기 (쿠키 실패 시 대비)
-      const storedRefreshToken = useAuthStore.getState().refreshToken;
+      const storedRefreshToken = useAuthStore.getState().refreshToken || getRefreshTokenFromCookie();
 
       // 토큰 갱신 API 호출
       // 별도의 axios 인스턴스나 axios.post를 사용하여 인터셉터 무한 루프 방지

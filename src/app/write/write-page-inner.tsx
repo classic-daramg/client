@@ -395,118 +395,119 @@ export function WritePageInner() {
         }
 
         setIsSubmitting(true);
-        try {
-            // ========== EDIT MODE ==========
-            if (isEditMode && editPostId && editPostData) {
-                // 새로운 이미지만 업로드
-                let newUploadedImages: string[] = [];
-                if (imageFiles.length > 0) {
-                    const formData = new FormData();
-                    imageFiles.forEach((file: File) => {
-                        formData.append('images', file);
-                    });
 
-                    const uploadRes = await apiClient.post('/images/upload', formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    });
+        // ========== EDIT MODE ==========
+        if (isEditMode && editPostId && editPostData) {
+            // 새로운 이미지만 업로드
+            let newUploadedImages: string[] = [];
+            if (imageFiles.length > 0) {
+                const formData = new FormData();
+                imageFiles.forEach((file: File) => {
+                    formData.append('images', file);
+                });
 
-                    newUploadedImages = uploadRes.data.imageUrls;
+                const uploadRes = await apiClient.post('/images/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                newUploadedImages = uploadRes.data.imageUrls;
+            }
+
+            // 기존 이미지 (URL 기반) + 새 이미지 합치기
+            const existingImages = imagePreviewUrls.filter(
+                (url) => typeof url === 'string' && url.startsWith('http')
+            );
+            const finalImages = [...existingImages, ...newUploadedImages];
+
+            const updateData: UpdatePayload = {
+                title,
+                content,
+                hashtags: hashtags.length > 0 ? hashtags : [],
+                images: finalImages.length > 0 ? finalImages : [],
+                videoUrl: link?.trim() ? link.trim() : '',
+                postStatus: editPostData.postStatus || 'PUBLISHED',
+            };
+
+            // 포스트 타입별 엔드포인트
+            let endpoint = '';
+            const requestData: UpdatePayload = { ...updateData };
+
+            if (editPostData.type === 'FREE') {
+                endpoint = `/posts/free/${editPostId}`;
+            } else if (editPostData.type === 'STORY') {
+                endpoint = `/posts/story/${editPostId}`;
+                if (primaryComposerId !== null) {
+                    requestData.primaryComposerId = primaryComposerId;
                 }
-
-                // 기존 이미지 (URL 기반) + 새 이미지 합치기
-                const existingImages = imagePreviewUrls.filter(
-                    (url) => typeof url === 'string' && url.startsWith('http')
-                );
-                const finalImages = [...existingImages, ...newUploadedImages];
-
-                const updateData: UpdatePayload = {
-                    title,
-                    content,
-                    hashtags: hashtags.length > 0 ? hashtags : [],
-                    images: finalImages.length > 0 ? finalImages : [],
-                    videoUrl: link?.trim() ? link.trim() : '',
-                    postStatus: editPostData.postStatus || 'PUBLISHED',
-                };
-
-                // 포스트 타입별 엔드포인트
-                let endpoint = '';
-                const requestData: UpdatePayload = { ...updateData };
-
-                if (editPostData.type === 'FREE') {
-                    endpoint = `/posts/free/${editPostId}`;
-                } else if (editPostData.type === 'STORY') {
-                    endpoint = `/posts/story/${editPostId}`;
-                    if (primaryComposerId !== null) {
-                        requestData.primaryComposerId = primaryComposerId;
-                    }
-                } else if (editPostData.type === 'CURATION') {
-                    endpoint = `/posts/curation/${editPostId}`;
-                    const primaryId =
-                        selectedComposers[0]?.id ??
-                        primaryComposerId ??
-                        editPostData.primaryComposer?.id ??
-                        editPostData.primaryComposer?.composerId;
-                    if (primaryId) {
-                        requestData.primaryComposerId = primaryId;
-                    }
-                    const additionalIds = selectedComposers
-                        .slice(1)
-                        .map((c) => c.id)
-                        .filter((id) => typeof id === 'number');
-                    requestData.additionalComposersId = additionalIds;
+            } else if (editPostData.type === 'CURATION') {
+                endpoint = `/posts/curation/${editPostId}`;
+                const primaryId =
+                    selectedComposers[0]?.id ??
+                    primaryComposerId ??
+                    editPostData.primaryComposer?.id ??
+                    editPostData.primaryComposer?.composerId;
+                if (primaryId) {
+                    requestData.primaryComposerId = primaryId;
                 }
+                const additionalIds = selectedComposers
+                    .slice(1)
+                    .map((c) => c.id)
+                    .filter((id) => typeof id === 'number');
+                requestData.additionalComposersId = additionalIds;
+            }
 
-                await apiClient.patch(endpoint, requestData);
-                alert('포스트가 수정되었습니다.');
-                router.push(`/posts/${editPostId}`);
+            await apiClient.patch(endpoint, requestData);
+            alert('포스트가 수정되었습니다.');
+            router.push(`/posts/${editPostId}`);
+            return;
+        }
+
+        // 포스트 타입 판단
+        const isComposerTalkRoom = selectedType.includes('이야기');
+        const isCurationPost = selectedType === '큐레이션 글';
+        const isStoryPost = isComposerTalkRoom && curationMode === 'none';
+        const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
+
+        // 공통 이미지 업로드
+        let uploadedImages: string[] | undefined;
+        if (imageFiles.length > 0) {
+            try {
+                const formData = new FormData();
+                imageFiles.forEach((file: File) => {
+                    formData.append('images', file);
+                });
+
+                const uploadRes = await apiClient.post('/images/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                uploadedImages = uploadRes.data.imageUrls;
+            } catch (error) {
+                console.error('❌ Image upload error:', error);
+                alert('이미지 업로드에 실패했습니다.');
+                setIsSubmitting(false);
                 return;
             }
+        }
 
-            // 포스트 타입 판단
-            const isComposerTalkRoom = selectedType.includes('이야기');
-            const isCurationPost = selectedType === '큐레이션 글';
-            const isStoryPost = isComposerTalkRoom && curationMode === 'none';
-            const isCurationWithComposer = isComposerTalkRoom && curationMode === 'curation';
+        // 기본 포스트 데이터
+        interface PostData {
+            title: string;
+            content: string;
+            postStatus: string;
+            createdAt?: string;
+            primaryComposerId?: number;
+            additionalComposerIds?: number[];
+            images?: string[];
+            hashtags?: string[];
+            videoUrl?: string;
+        }
 
-            // 공통 이미지 업로드
-            let uploadedImages: string[] | undefined;
-            if (imageFiles.length > 0) {
-                try {
-                    const formData = new FormData();
-                    imageFiles.forEach((file: File) => {
-                        formData.append('images', file);
-                    });
-
-                    const uploadRes = await apiClient.post('/images/upload', formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    });
-
-                    uploadedImages = uploadRes.data.imageUrls;
-                } catch (error) {
-                    console.error('❌ Image upload error:', error);
-                    alert('이미지 업로드에 실패했습니다.');
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-
-            // 기본 포스트 데이터
-            interface PostData {
-                title: string;
-                content: string;
-                postStatus: string;
-                createdAt?: string;
-                primaryComposerId?: number;
-                additionalComposerIds?: number[];
-                images?: string[];
-                hashtags?: string[];
-                videoUrl?: string;
-            }
-
+        await (async () => {
             // Case 1: Story Post (작곡가 이야기 - 큐레이션 없음)
             if (isStoryPost) {
                 if (!primaryComposerId) {
@@ -544,24 +545,7 @@ export function WritePageInner() {
                 }
 
                 try {
-                    const currentTime = getKSTISOString();
-
-                    // 1단계: Story 포스트 생성
-                    const storyData: PostData = {
-                        title,
-                        content,
-                        postStatus: 'PUBLISHED',
-                        createdAt: currentTime,
-                        primaryComposerId,
-                    };
-
-                    if (uploadedImages) storyData.images = uploadedImages;
-                    if (hashtags.length > 0) storyData.hashtags = hashtags;
-                    if (link && link.trim()) storyData.videoUrl = link;
-
-                    const storyRes = await apiClient.post('/posts/story', storyData);
-
-                    // 2단계: Curation 포스트 생성
+                    // Curation 포스트 생성
                     const curationData: PostData = {
                         title,
                         content,
@@ -581,7 +565,7 @@ export function WritePageInner() {
 
                     const curationRes = await apiClient.post('/posts/curation', curationData);
 
-                    alert('작곡가 이야기와 큐레이션이 등록되었습니다.');
+                    alert('큐레이션이 등록되었습니다.');
                     router.push('/curation');
                     return;
                 } catch (error: unknown) {
@@ -640,69 +624,68 @@ export function WritePageInner() {
 
             alert('자유글이 등록되었습니다.');
             router.push('/free-talk');
-        } catch (error: unknown) {
-            const axiosError = error as AxiosError<{
-                message?: string;
-                code?: string;
-                fieldErrors?: Array<{ field: string; value: string; reason: string }>;
-            }>;
-            console.error('❌ An error occurred while creating the post:', axiosError);
+        })()
+            .catch((error: unknown) => {
+                const axiosError = error as AxiosError<{
+                    message?: string;
+                    code?: string;
+                    fieldErrors?: Array<{ field: string; value: string; reason: string }>;
+                }>;
+                console.error('❌ An error occurred while creating the post:', axiosError);
 
-            if (axiosError.response) {
-                let errorMessage = '게시글 등록에 실패했습니다.';
-                const errorData = axiosError.response.data;
+                if (axiosError.response) {
+                    let errorMessage = '게시글 등록에 실패했습니다.';
+                    const errorData = axiosError.response.data;
 
-                // COMMON_400 에러 처리 (비속어 포함 등)
-                if (errorData?.code === 'COMMON_400' && errorData?.fieldErrors) {
-                    const firstError = errorData.fieldErrors[0];
-                    const message = firstError?.reason || errorData.message || '비속어가 포함되어 있습니다.';
+                    // COMMON_400 에러 처리
+                    if (errorData?.code === 'COMMON_400' && errorData?.fieldErrors) {
+                        const firstError = errorData.fieldErrors[0];
+                        const message = firstError?.reason || errorData.message || '비속어가 포함되어 있습니다.';
 
-                    setHasError(true);
-                    setToastMessage(message);
-                    setShowToast(true);
-                    setIsShaking(true);
-                    alert(message);
+                        setHasError(true);
+                        setToastMessage(message);
+                        setShowToast(true);
+                        setIsShaking(true);
+                        alert(message);
 
-                    // 쉐이크 애니메이션 0.5초 후 해제
-                    setTimeout(() => setIsShaking(false), 500);
+                        setTimeout(() => setIsShaking(false), 500);
+                        contentRef.current?.focus();
+                        setIsSubmitting(false);
+                        return;
+                    }
 
-                    // 에디터 포커스
-                    contentRef.current?.focus();
+                    if (errorData?.message) {
+                        errorMessage = errorData.message;
+                    }
 
-                    setIsSubmitting(false); // 제출 상태 해제
-                    return; // 함수 종료 (페이지 이동 안함)
+                    switch (axiosError.response.status) {
+                        case 400:
+                            if (!errorData?.code) errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
+                            break;
+                        case 401:
+                            errorMessage = '로그인이 필요합니다.';
+                            break;
+                        case 403:
+                            errorMessage = '권한이 없습니다.';
+                            break;
+                        case 404:
+                            errorMessage = '요청한 리소스를 찾을 수 없습니다.';
+                            break;
+                        case 500:
+                            errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                            break;
+                    }
+
+                    alert(errorMessage);
+                } else {
+                    alert('오류가 발생했습니다.');
                 }
-
-                if (errorData?.message) {
-                    errorMessage = errorData.message;
-                }
-
-                switch (axiosError.response.status) {
-                    case 400:
-                        if (!errorData?.code) errorMessage = '잘못된 요청입니다. 입력 내용을 확인해주세요.';
-                        break;
-                    case 401:
-                        errorMessage = '로그인이 필요합니다.';
-                        break;
-                    case 403:
-                        errorMessage = '권한이 없습니다.';
-                        break;
-                    case 404:
-                        errorMessage = '요청한 리소스를 찾을 수 없습니다.';
-                        break;
-                    case 500:
-                        errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-                        break;
-                }
-
-                alert(errorMessage);
-            } else {
-                alert('오류가 발생했습니다.');
-            }
-        } finally {
-            setIsSubmitting(false);
-        }
+            })
+            .finally(() => {
+                setIsSubmitting(false);
+            });
     };
+
 
     const handleSaveDraft = async () => {
         const { userId } = useAuthStore.getState();
@@ -1002,3 +985,5 @@ export function WritePageInner() {
         </div>
     );
 }
+
+
