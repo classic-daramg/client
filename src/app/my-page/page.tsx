@@ -162,8 +162,9 @@ export default function MyPage() {
             birthDate: data.birthDate ?? '',
           },
         });
-      } catch (error: AxiosError) {
-        if (error.response?.status === 401) {
+      } catch (error: unknown) {
+        const axiosError = error as AxiosError;
+        if (axiosError.response?.status === 401) {
           // 인증 실패 - 토큰 만료 또는 유효하지 않음
           console.error('인증이 만료되었습니다. 다시 로그인 해주세요.');
           localStorage.removeItem('authToken');

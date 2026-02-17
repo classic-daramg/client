@@ -36,8 +36,9 @@ export default function NoticeDetailPage() {
                 // GET /notice/{noticeId}
                 const response = await apiClient.get(`/notice/${noticeId}`);
                 setNotice(response.data);
-            } catch (err: AxiosError) {
-                console.error('공지사항 상세 조회 실패:', err);
+            } catch (err: unknown) {
+                const axiosError = err as AxiosError;
+                console.error('공지사항 상세 조회 실패:', axiosError);
                 setError('공지사항을 불러올 수 없습니다.');
             } finally {
                 setIsLoading(false);
