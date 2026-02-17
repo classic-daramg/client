@@ -25,6 +25,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.12",
+    "@types/js-cookie": "^3.0.6",
     "@types/jwt-decode": "^2.2.1",
     "@types/node": "^20",
     "@types/react": "^19",
