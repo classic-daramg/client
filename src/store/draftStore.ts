@@ -19,6 +19,12 @@ type DraftData = {
     koreanName?: string;
     englishName?: string;
   } | null;
+  additionalComposers?: Array<{
+    id?: number;
+    composerId?: number;
+    koreanName?: string;
+    englishName?: string;
+  }>;
   isLiked: boolean | null;
   isScrapped: boolean | null;
 };

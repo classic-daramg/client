@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 
@@ -81,14 +82,13 @@ export default function Notices() {
 					</div>
 				)}
 				{notices.map((notice) => (
-					<div
-						key={notice.id}
-						className="border-b border-[#f4f5f7] px-4 py-4 hover:bg-[#f4f5f7] cursor-pointer transition-colors"
-					>
-						<h3 className="text-[14px] font-semibold text-[#1a1a1a] mb-1">{notice.title}</h3>
-						<p className="text-[12px] text-[#a6a6a6] mb-2">{notice.content}</p>
-						<p className="text-[11px] text-[#d9d9d9]">{formatDate(notice.createdAt)}</p>
-					</div>
+					<Link key={notice.id} href={`/notice/${notice.id}`}>
+						<div className="border-b border-[#f4f5f7] px-4 py-4 hover:bg-[#f4f5f7] cursor-pointer transition-colors">
+							<h3 className="text-[14px] font-semibold text-[#1a1a1a] mb-1">{notice.title}</h3>
+							<p className="text-[12px] text-[#a6a6a6] mb-2">{notice.content}</p>
+							<p className="text-[11px] text-[#d9d9d9]">{formatDate(notice.createdAt)}</p>
+						</div>
+					</Link>
 				))}
 			</div>
 

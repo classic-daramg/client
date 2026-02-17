@@ -736,7 +736,12 @@ export function WritePageInner() {
             if (selectedType === '큐레이션 글') {
                 postType = 'CURATION';
             } else if (selectedType.includes('이야기')) {
-                postType = 'STORY';
+                // {composer} 이야기인데, curationMode가 'curation'이면 큐레이션 글
+                if (curationMode === 'curation') {
+                    postType = 'CURATION';
+                } else {
+                    postType = 'STORY';
+                }
             }
 
             // 유효한 이미지 URL만 필터링 (blob URL 제외, http(s) URL만 포함)

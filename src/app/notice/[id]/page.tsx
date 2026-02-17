@@ -33,12 +33,19 @@ export default function NoticeDetailPage() {
         const fetchNoticeDetail = async () => {
             try {
                 setIsLoading(true);
+                console.log('공지사항 조회 시작 - noticeId:', noticeId);
                 // GET /notice/{noticeId}
                 const response = await apiClient.get(`/notice/${noticeId}`);
+                console.log('공지사항 조회 성공:', response);
+                console.log('응답 데이터:', response.data);
                 setNotice(response.data);
             } catch (err: unknown) {
                 const axiosError = err as AxiosError;
-                console.error('공지사항 상세 조회 실패:', axiosError);
+                console.error('공지사항 상세 조회 실패:');
+                console.error('에러 객체:', axiosError);
+                console.error('상태 코드:', axiosError.response?.status);
+                console.error('에러 메시지:', axiosError.response?.data);
+                console.error('전체 에러:', err);
                 setError('공지사항을 불러올 수 없습니다.');
             } finally {
                 setIsLoading(false);
