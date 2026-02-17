@@ -4,7 +4,7 @@ info:
   description: 클래식 듣는 다람쥐의 API 문서입니다.
   version: 0.1.0
 servers:
-- url: https://classic-daramg.duckdns.org
+- url: https://api.classicaldaramz.com
 tags: []
 paths:
   /auth/email-verifications:
@@ -12,23 +12,24 @@ paths:
       tags:
       - Auth API
       summary: 인증코드 이메일 발송
-      description: 이메일 주소로 인증코드를 발송합니다.
+      description: 이메일 주소로 인증코드를 발송합니다. 이메일 변경 시 기존 이메일(originalEmail)과 변경할 이메일(email)을
+        함께 전달합니다.
       operationId: 비밀번호_초기화를_위한_인증코드_메일_발송이메일_변경을_위한_인증코드_메일_발송회원가입을_위한_인증코드_메일_발송
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/auth-email-verifications1421738745"
+              $ref: "#/components/schemas/auth-email-verifications671592089"
             examples:
-              비밀번호_초기화를_위한_인증코드_메일_발송:
-                value: "{\"originalEmail\":null,\"email\":\"daramg123@gmail.com\"\
-                  ,\"emailPurpose\":\"PASSWORD_RESET\"}"
-              회원가입을_위한_인증코드_메일_발송:
-                value: "{\"originalEmail\":null,\"email\":\"daramg123@gmail.com\"\
-                  ,\"emailPurpose\":\"SIGNUP\"}"
               이메일_변경을_위한_인증코드_메일_발송:
                 value: "{\"originalEmail\":\"original@email.com\",\"email\":\"new@email.com\"\
                   ,\"emailPurpose\":\"EMAIL_CHANGE\"}"
+              회원가입을_위한_인증코드_메일_발송:
+                value: "{\"originalEmail\":null,\"email\":\"daramg123@gmail.com\"\
+                  ,\"emailPurpose\":\"SIGNUP\"}"
+              비밀번호_초기화를_위한_인증코드_메일_발송:
+                value: "{\"originalEmail\":null,\"email\":\"daramg123@gmail.com\"\
+                  ,\"emailPurpose\":\"PASSWORD_RESET\"}"
       responses:
         "200":
           description: "200"
@@ -483,14 +484,14 @@ paths:
                         "id" : 1,
                         "title" : "첫 번째 공지",
                         "writerNickname" : "관리자",
-                        "createdAt" : "2026-02-09T08:44:55.86139289",
+                        "createdAt" : "2026-02-16T08:59:26.118875089",
                         "content" : "공지 내용입니다.",
                         "thumbnailImageUrl" : "https://example.com/thumb1.jpg"
                       }, {
                         "id" : 2,
                         "title" : "두 번째 공지",
                         "writerNickname" : "관리자",
-                        "createdAt" : "2026-02-09T08:44:55.861414009",
+                        "createdAt" : "2026-02-16T08:59:26.118903522",
                         "content" : "공지 내용입니다.",
                         "thumbnailImageUrl" : null
                       } ],
@@ -550,7 +551,7 @@ paths:
                       "title" : "공지사항 제목",
                       "content" : "공지사항 상세 내용입니다.",
                       "images" : [ "https://example.com/image1.jpg" ],
-                      "createdAt" : "2026-02-09T08:44:56.040215694"
+                      "createdAt" : "2026-02-16T08:59:26.290573247"
                     }
     delete:
       tags:
@@ -1307,14 +1308,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/users-1254981572"
+                $ref: "#/components/schemas/users-2013947793"
               examples:
                 user-controller-test/유저_프로필을_조회한다:
                   value: |-
                     {
                       "profileImage" : "https://example.com/profile.jpg",
                       "nickname" : "테스트닉네임",
-                      "bio" : "테스트 소개글"
+                      "bio" : "테스트 소개글",
+                      "email" : "test@email.com"
                     }
   /users/change-email:
     post:
@@ -1739,18 +1741,6 @@ components:
         updatedAt:
           type: string
           description: 수정일시 (ISO 8601 형식)
-    auth-login466290637:
-      type: object
-      properties:
-        accessToken:
-          type: string
-          description: 액세스 토큰 (JWT)
-        userId:
-          type: number
-          description: 유저 ID
-        refreshToken:
-          type: string
-          description: 리프레시 토큰 (JWT)
     notice608458562:
       type: object
       properties:
@@ -1784,20 +1774,18 @@ components:
               content:
                 type: string
                 description: 공지사항 내용
-    auth-email-verifications1421738745:
+    auth-login466290637:
       type: object
       properties:
-        originalEmail:
-          description: 기존 이메일 (이메일 변경 시 필수)
-          oneOf:
-          - type: string
-          - null
-        emailPurpose:
+        accessToken:
           type: string
-          description: "이메일 인증코드 전송 목적(SIGNUP, PASSWORD_RESET, EMAIL_CHANGE)"
-        email:
+          description: 액세스 토큰 (JWT)
+        userId:
+          type: number
+          description: 유저 ID
+        refreshToken:
           type: string
-          description: 인증코드를 받을 이메일 (변경할 새 이메일)
+          description: 리프레시 토큰 (JWT)
     users-profile-633746575:
       type: object
       properties:
@@ -1808,18 +1796,6 @@ components:
           type: string
           description: 자기소개 (12자 이하)
         profileImageUrl:
-          type: string
-          description: 프로필 이미지 URL
-    users-1254981572:
-      type: object
-      properties:
-        nickname:
-          type: string
-          description: 닉네임
-        bio:
-          type: string
-          description: 자기소개
-        profileImage:
           type: string
           description: 프로필 이미지 URL
     users-change-password1647540412:
@@ -1912,6 +1888,21 @@ components:
         email:
           type: string
           description: 이메일
+    users-2013947793:
+      type: object
+      properties:
+        nickname:
+          type: string
+          description: 닉네임
+        bio:
+          type: string
+          description: 자기소개
+        profileImage:
+          type: string
+          description: 프로필 이미지 URL
+        email:
+          type: string
+          description: 이메일
     notice-noticeId-1661931541:
       type: object
       properties:
@@ -1936,6 +1927,20 @@ components:
         isPasswordMatch:
           type: boolean
           description: "비밀번호 일치 여부 (true: 일치, false: 불일치)"
+    auth-email-verifications671592089:
+      type: object
+      properties:
+        originalEmail:
+          description: null로 설정
+          oneOf:
+          - null
+          - type: string
+        emailPurpose:
+          type: string
+          description: "이메일 인증코드 전송 목적(SIGNUP, PASSWORD_RESET, EMAIL_CHANGE)"
+        email:
+          type: string
+          description: 이메일
     auth-signout486549215:
       type: object
     composers-composerId-posts-815860865:

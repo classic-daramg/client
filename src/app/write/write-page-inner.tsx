@@ -72,6 +72,7 @@ type UpdatePayload = {
     primaryComposerId?: number;
     primaryComposerName?: string;
     additionalComposersId?: number[];
+    additionalComposerIds?: number[];
 };
 
 export function WritePageInner() {
@@ -763,42 +764,47 @@ export function WritePageInner() {
                     endpoint = `/posts/free/${editPostId}`;
                 } else if (postType === 'STORY') {
                     endpoint = `/posts/story/${editPostId}`;
-                    if (selectedComposers.length > 0) {
-                        payload.primaryComposerId = selectedComposers[0].id;
-                        payload.primaryComposerName = selectedComposers[0].name;
-                        if (selectedComposers.length > 1) {
-                            payload.additionalComposersId = selectedComposers.slice(1).map(c => c.id);
-                        }
-                    }
+                    // Story update does not allow updating primaryComposerId in schema
                 } else if (postType === 'CURATION') {
                     endpoint = `/posts/curation/${editPostId}`;
+                    // Curation Update uses singular additionalComposersId
                     if (selectedComposers.length > 0) {
-                        payload.primaryComposerId = selectedComposers[0].id;
+                        // primaryComposerId is not in update schema explicitly but let's check if we want to update it?
+                        // Schema says only additionalComposersId. 
+                        // Wait, check posts-curation-postId-1538462666 in View File output step 32
+                        // It does NOT have primaryComposerId.
+                        // So we should NOT send primaryComposerId for Curation Update either.
+
                         if (selectedComposers.length > 1) {
                             payload.additionalComposersId = selectedComposers.slice(1).map(c => c.id);
                         }
                     }
                 }
-                await apiClient.patch(endpoint, payload);
+                const { ...finalPayload } = payload;
+                // Remove fields that shouldn't be in update payload if they were added from basePayload?
+                // basePayload has title, content, hashtags, images, videoUrl, postStatus. All good.
+
+                await apiClient.patch(endpoint, finalPayload);
             } else {
                 // ===== CREATE MODE =====
                 if (postType === 'FREE') {
                     endpoint = '/posts/free';
                 } else if (postType === 'STORY') {
                     endpoint = '/posts/story';
-                    if (selectedComposers.length > 0) {
-                        payload.primaryComposerId = selectedComposers[0].id;
-                        payload.primaryComposerName = selectedComposers[0].name;
-                        if (selectedComposers.length > 1) {
-                            payload.additionalComposersId = selectedComposers.slice(1).map(c => c.id);
-                        }
+                    // Use primaryComposerId state if available, fallback to selectedComposers, fallback to URL param
+                    const storyComposerId = primaryComposerId ?? (selectedComposers.length > 0 ? selectedComposers[0].id : null) ?? composerId;
+
+                    if (storyComposerId) {
+                        payload.primaryComposerId = storyComposerId;
                     }
+                    // Story Create does not have additionalComposerIds
                 } else if (postType === 'CURATION') {
                     endpoint = '/posts/curation';
                     if (selectedComposers.length > 0) {
                         payload.primaryComposerId = selectedComposers[0].id;
                         if (selectedComposers.length > 1) {
-                            payload.additionalComposersId = selectedComposers.slice(1).map(c => c.id);
+                            // Curation Create uses plural additionalComposerIds
+                            payload.additionalComposerIds = selectedComposers.slice(1).map(c => c.id);
                         }
                     }
                 }
