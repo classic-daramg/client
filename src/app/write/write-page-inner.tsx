@@ -153,6 +153,29 @@ export function WritePageInner() {
     const [curationMode, setCurationMode] = useState<'none' | 'curation' | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // ========== URL Parameter로부터 selectedComposers 초기화 ==========
+    useEffect(() => {
+        if (!isClient) return;
+        if (isEditMode) return;
+        if (draftId) return; // draft 로드 시 별도로 처리
+        if (!composerId || !composerName) return;
+
+        // URL parameter에 composerId와 composerName이 있으면 selectedComposers 설정
+        setSelectedComposers([{ id: composerId, name: composerName }]);
+    }, [composerId, composerName, isClient, isEditMode, draftId]);
+
+    // ========== Draft 로드 시 selectedComposers 설정 ==========
+    useEffect(() => {
+        if (!isClient || !draftId || !draft) return;
+        if (isEditMode) return;
+
+        // STORY 타입 draft의 composer 정보 설정
+        if (draft.type === 'STORY' && draft.primaryComposerId && draft.primaryComposerName) {
+            setSelectedComposers([{ id: draft.primaryComposerId, name: draft.primaryComposerName }]);
+            setSelectedType(`${draft.primaryComposerName} 이야기`);
+        }
+    }, [draft, draftId, isClient, isEditMode]);
+
     // ========== Edit Mode Initialization ==========
     const fetchPostDataForEdit = useCallback(async (postId: string) => {
         try {
@@ -275,15 +298,16 @@ export function WritePageInner() {
         const draftComposerName =
             draft.primaryComposer?.koreanName ?? draft.primaryComposer?.englishName ?? '';
 
-        // draft에 primaryComposer 정보가 없으면 query parameter의 composerId 사용
+        // draft에 primaryComposer 정보가 없으면 query parameter의 composerId/composerName 사용
         const finalComposerId = draftComposerId ?? composerId;
+        const finalComposerName = draftComposerName || composerName || '';
 
         const nextType = draft.type === 'CURATION'
             ? '큐레이션 글'
             : draft.type === 'FREE'
                 ? '자유 글'
-                : draftComposerName
-                    ? `${draftComposerName} 이야기`
+                : finalComposerName
+                    ? `${finalComposerName} 이야기`
                     : finalComposerId
                         ? '작곡가 이야기'
                         : '자유 글';
@@ -299,8 +323,11 @@ export function WritePageInner() {
         if (draftComposerId && draftComposerName) {
             setSelectedComposers([{ id: draftComposerId, name: draftComposerName }]);
             setPrimaryComposerId(draftComposerId);
+        } else if (finalComposerId && finalComposerName) {
+            // draft에는 작곡가명이 없지만 query parameter로 composerId와 composerName이 있으면 그것 사용
+            setSelectedComposers([{ id: finalComposerId, name: finalComposerName }]);
+            setPrimaryComposerId(finalComposerId);
         } else if (finalComposerId) {
-            // draft에는 작곡가명이 없지만 query parameter로 composerId가 있으면 그것 사용
             setSelectedComposers([]);
             setPrimaryComposerId(finalComposerId);
         } else {
@@ -313,7 +340,7 @@ export function WritePageInner() {
         } else {
             setCurationMode(null);
         }
-    }, [draft, draftId, isClient, isEditMode]);
+    }, [draft, draftId, isClient, isEditMode, composerId, composerName]);
 
     // postType 변경 시 curationMode 초기화 로직
     useEffect(() => {
@@ -736,8 +763,12 @@ export function WritePageInner() {
                     endpoint = `/posts/free/${editPostId}`;
                 } else if (postType === 'STORY') {
                     endpoint = `/posts/story/${editPostId}`;
-                    if (primaryComposerId) {
-                        payload.primaryComposerId = primaryComposerId;
+                    if (selectedComposers.length > 0) {
+                        payload.primaryComposerId = selectedComposers[0].id;
+                        payload.primaryComposerName = selectedComposers[0].name;
+                        if (selectedComposers.length > 1) {
+                            payload.additionalComposersId = selectedComposers.slice(1).map(c => c.id);
+                        }
                     }
                 } else if (postType === 'CURATION') {
                     endpoint = `/posts/curation/${editPostId}`;
@@ -755,8 +786,12 @@ export function WritePageInner() {
                     endpoint = '/posts/free';
                 } else if (postType === 'STORY') {
                     endpoint = '/posts/story';
-                    if (primaryComposerId) {
-                        payload.primaryComposerId = primaryComposerId;
+                    if (selectedComposers.length > 0) {
+                        payload.primaryComposerId = selectedComposers[0].id;
+                        payload.primaryComposerName = selectedComposers[0].name;
+                        if (selectedComposers.length > 1) {
+                            payload.additionalComposersId = selectedComposers.slice(1).map(c => c.id);
+                        }
                     }
                 } else if (postType === 'CURATION') {
                     endpoint = '/posts/curation';
@@ -828,7 +863,17 @@ export function WritePageInner() {
                             height={12}
                         />
                     </div>
-                    <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">{selectedType.replace(' 이야기', '')}</p>
+                    <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">
+                        {isComposerTalkRoom ? (
+                            <>
+                                {selectedComposers.length > 0
+                                    ? selectedComposers[0].name
+                                    : selectedType.replace(' 이야기', '')}
+                            </>
+                        ) : (
+                            selectedType
+                        )}
+                    </p>
                 </div>
 
                 {/* 큐레이션 옵션 드롭다운 ({composer} 이야기일 때만 렌더링) */}

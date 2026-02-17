@@ -4,7 +4,7 @@ import { useComposerStore } from '@/store/composerStore';
 
 export default function FloatingButtons() {
     const { selectedComposer } = useComposerStore();
-    
+
     // 선택된 작곡가 이름 (한글명 우선, 없으면 영문명)
     const composerName = selectedComposer?.koreanName || selectedComposer?.englishName || '';
     const composerId = selectedComposer?.composerId;

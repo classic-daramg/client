@@ -11,6 +11,8 @@ type DraftData = {
   commentCount: number;
   thumbnailImageUrl: string | null;
   type: string;
+  primaryComposerId?: number;
+  primaryComposerName?: string;
   primaryComposer?: {
     id?: number;
     composerId?: number;

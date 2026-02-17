@@ -72,7 +72,13 @@ export default function Drafts() {
 				});
 
 				const data = response.data;
-				setDrafts(data.content);
+				// primaryComposerName과 primaryComposerId 추가
+				const draftsWithComposerInfo = data.content.map((draft) => ({
+					...draft,
+					primaryComposerName: draft.primaryComposerName || draft.primaryComposer?.koreanName || '',
+					primaryComposerId: draft.primaryComposerId || draft.primaryComposer?.id || draft.primaryComposer?.composerId,
+				}));
+				setDrafts(draftsWithComposerInfo);
 			} catch (error) {
 				console.error('Failed to load drafts:', error);
 				setError('임시저장한 글을 불러오는 중 오류가 발생했습니다');
@@ -122,6 +128,84 @@ export default function Drafts() {
 		}
 	};
 
+	// Draft Item 렌더링 컴포넌트
+	const DraftItem = ({ draft, index, isFirstInSection }: { draft: Draft; index: number; isFirstInSection: boolean }) => {
+		const composerId = draft.type === 'STORY' && draft.primaryComposerId
+			? draft.primaryComposerId
+			: null;
+		const href = composerId
+			? `/write?draftId=${draft.id}&composerId=${composerId}&composer=${encodeURIComponent(
+				draft.primaryComposerName || ''
+			)}`
+			: `/write?draftId=${draft.id}`;
+
+		return (
+			<Link
+				key={draft.id}
+				href={href}
+				onClick={() => setDraft(draft)}
+				className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${
+					!isFirstInSection ? "border-t border-[#f4f5f7]" : ""
+				}`}
+			>
+				<div className="flex items-center justify-center w-[335px]">
+					<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
+						<div className="flex gap-[3px] items-center">
+							<Image src={getTypeIcon(draft.type)} alt={draft.type} width={12} height={12} />
+							<span className="text-[#d9d9d9] text-[11px] font-semibold">
+								{draft.type === 'STORY' && draft.primaryComposerName
+									? `${draft.primaryComposerName} 이야기`
+									: getTypeLabel(draft.type)}
+							</span>
+						</div>
+						<div className="flex flex-col gap-[4px] w-full">
+							<div className="text-[#1a1a1a] text-[14px] font-semibold w-full truncate">
+								{draft.title}
+							</div>
+							<div className="text-[#a6a6a6] text-[12px] w-full line-clamp-2">
+								{draft.content}
+							</div>
+						</div>
+						<div className="flex flex-col gap-[4px] w-full">
+							<div className="flex gap-[4px] text-[#d9d9d9] text-[12px] font-medium whitespace-nowrap overflow-hidden">
+								{draft.hashtags.slice(0, 3).map((tag: string) => (
+									<span key={tag}>{tag.startsWith("#") ? tag : `#${tag}`}</span>
+								))}
+							</div>
+							<div className="flex gap-[6px] items-center w-full">
+								<div className="flex gap-[2px] items-center">
+									<Image src={likeIcon} alt="좋아요" width={12} height={12} />
+									<span className="text-[#293a92] text-[12px] font-medium">
+										{draft.likeCount}
+									</span>
+								</div>
+								<div className="flex gap-[2px] items-center">
+									<Image src={commentIcon} alt="댓글" width={12} height={12} />
+									<span className="text-[#293a92] text-[12px] font-medium">
+										{draft.commentCount}
+									</span>
+								</div>
+								<span className="text-[#d9d9d9] text-[12px] font-medium">
+									{formatDate(draft.createdAt)}
+								</span>
+							</div>
+						</div>
+					</div>
+					{draft.thumbnailImageUrl ? (
+						<Image
+							src={draft.thumbnailImageUrl}
+							alt="thumbnail"
+							width={96}
+							height={96}
+							className="rounded-[8px] w-[96px] h-[96px] ml-4 object-cover"
+							unoptimized
+						/>
+					) : null}
+				</div>
+			</Link>
+		);
+	};
+
 	return (
 		<div className="bg-[#f4f5f7] min-h-screen w-full">
 			<div className="mx-auto w-full max-w-[375px]">
@@ -153,80 +237,14 @@ export default function Drafts() {
 							임시저장한 글이 없습니다.
 						</div>
 					)}
-					{drafts.map((draft, index) => {
-						const composerId = draft.type === 'STORY' && draft.primaryComposer
-							? (draft.primaryComposer.id ?? draft.primaryComposer.composerId)
-							: null;
-						const href = composerId
-							? `/write?draftId=${draft.id}&composerId=${composerId}`
-							: `/write?draftId=${draft.id}`;
 
-						return (
-						<Link
-							key={draft.id}
-							href={href}
-							onClick={() => setDraft(draft)}
-							className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${
-								index > 0 ? "border-t border-[#f4f5f7]" : ""
-							}`}
-						>
-							<div className="flex items-center justify-center w-[335px]">
-								<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
-									<div className="flex gap-[3px] items-center">
-										<Image src={getTypeIcon(draft.type)} alt={draft.type} width={12} height={12} />
-										<span className="text-[#d9d9d9] text-[11px] font-semibold">
-											{draft.type === 'STORY' && (draft.primaryComposerName || draft.primaryComposer?.koreanName)
-												? `${draft.primaryComposerName || draft.primaryComposer?.koreanName} 이야기`
-												: getTypeLabel(draft.type)}
-										</span>
-									</div>
-									<div className="flex flex-col gap-[4px] w-full">
-										<div className="text-[#1a1a1a] text-[14px] font-semibold w-full truncate">
-											{draft.title}
-										</div>
-										<div className="text-[#a6a6a6] text-[12px] w-full line-clamp-2">
-											{draft.content}
-										</div>
-									</div>
-									<div className="flex flex-col gap-[4px] w-full">
-										<div className="flex gap-[4px] text-[#d9d9d9] text-[12px] font-medium whitespace-nowrap overflow-hidden">
-											{draft.hashtags.slice(0, 3).map((tag: string) => (
-												<span key={tag}>{tag.startsWith("#") ? tag : `#${tag}`}</span>
-											))}
-										</div>
-										<div className="flex gap-[6px] items-center w-full">
-											<div className="flex gap-[2px] items-center">
-												<Image src={likeIcon} alt="좋아요" width={12} height={12} />
-												<span className="text-[#293a92] text-[12px] font-medium">
-													{draft.likeCount}
-												</span>
-											</div>
-											<div className="flex gap-[2px] items-center">
-												<Image src={commentIcon} alt="댓글" width={12} height={12} />
-												<span className="text-[#293a92] text-[12px] font-medium">
-													{draft.commentCount}
-												</span>
-											</div>
-											<span className="text-[#d9d9d9] text-[12px] font-medium">
-												{formatDate(draft.createdAt)}
-											</span>
-										</div>
-									</div>
-								</div>
-								{draft.thumbnailImageUrl ? (
-									<Image
-										src={draft.thumbnailImageUrl}
-										alt="thumbnail"
-										width={96}
-										height={96}
-										className="rounded-[8px] w-[96px] h-[96px] ml-4 object-cover"
-										unoptimized
-									/>
-								) : null}
-							</div>
-						</Link>
-						);
-					})}
+					{drafts.length > 0 && (
+						<>
+							{drafts.map((draft, index) => (
+								<DraftItem key={draft.id} draft={draft} index={index} isFirstInSection={index === 0} />
+							))}
+						</>
+					)}
 				</div>
 			</div>
 		</div>
