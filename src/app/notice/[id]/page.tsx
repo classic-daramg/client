@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
+import { AxiosError } from 'axios';
 
 interface NoticeDetail {
     id: number;
@@ -35,7 +36,7 @@ export default function NoticeDetailPage() {
                 // GET /notice/{noticeId}
                 const response = await apiClient.get(`/notice/${noticeId}`);
                 setNotice(response.data);
-            } catch (err: any) {
+            } catch (err: AxiosError) {
                 console.error('공지사항 상세 조회 실패:', err);
                 setError('공지사항을 불러올 수 없습니다.');
             } finally {

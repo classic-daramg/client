@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getApiUrl } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { AxiosError } from 'axios';
 import { useUserProfileStore } from '@/store/userProfileStore';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
@@ -162,7 +162,7 @@ export default function MyPage() {
             birthDate: data.birthDate ?? '',
           },
         });
-      } catch (error: any) {
+      } catch (error: AxiosError) {
         if (error.response?.status === 401) {
           // 인증 실패 - 토큰 만료 또는 유효하지 않음
           console.error('인증이 만료되었습니다. 다시 로그인 해주세요.');
