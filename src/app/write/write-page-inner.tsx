@@ -322,7 +322,23 @@ export function WritePageInner() {
         setImagePreviewUrls(draft.thumbnailImageUrl ? [draft.thumbnailImageUrl] : []);
 
         if (draftComposerId && draftComposerName) {
-            setSelectedComposers([{ id: draftComposerId, name: draftComposerName }]);
+            // Primary composer 먼저 추가
+            const composers: Array<{ id: number; name: string }> = [
+                { id: draftComposerId, name: draftComposerName }
+            ];
+
+            // 추가 작곡가들 처리
+            if (draft.additionalComposers && draft.additionalComposers.length > 0) {
+                draft.additionalComposers.forEach(composer => {
+                    const composerId = composer.id ?? composer.composerId;
+                    const composerName = composer.koreanName || composer.englishName;
+                    if (composerId && composerName) {
+                        composers.push({ id: composerId, name: composerName });
+                    }
+                });
+            }
+
+            setSelectedComposers(composers);
             setPrimaryComposerId(draftComposerId);
         } else if (finalComposerId && finalComposerName) {
             // draft에는 작곡가명이 없지만 query parameter로 composerId와 composerName이 있으면 그것 사용
@@ -336,8 +352,11 @@ export function WritePageInner() {
             setPrimaryComposerId(null);
         }
 
-        if (draft.type === 'STORY') {
-            setCurationMode('none');
+        // Draft 타입에 따라 curationMode 설정
+        if (draft.type === 'CURATION') {
+            setCurationMode(null); // 큐레이션 글이면 curationMode 표시 안함
+        } else if (draft.type === 'STORY') {
+            setCurationMode('none'); // {composer} 이야기이면 'none'으로 설정
         } else {
             setCurationMode(null);
         }
@@ -877,8 +896,8 @@ export function WritePageInner() {
                     <p className="flex-1 text-[#1a1a1a] text-sm font-semibold font-['Pretendard'] text-left">
                         {isComposerTalkRoom ? (
                             <>
-                                {selectedComposers.length > 0
-                                    ? selectedComposers[0].name
+                                {primaryComposerId
+                                    ? (draft?.primaryComposerName || selectedComposers[0]?.name || selectedType.replace(' 이야기', ''))
                                     : selectedType.replace(' 이야기', '')}
                             </>
                         ) : (
@@ -900,6 +919,11 @@ export function WritePageInner() {
                                 <option value="none">{selectedType}</option>
                                 <option value="curation">큐레이션 글</option>
                             </select>
+                            {curationMode === 'curation' && selectedComposers.length > 0 && (
+                                <div className="mt-3 text-sm text-[#666] font-['Pretendard']">
+                                    선택된 작곡가: {selectedComposers.map(c => c.name).join(', ')}
+                                </div>
+                            )}
                         </div>
                     </>
                 )}
