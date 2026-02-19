@@ -28,10 +28,10 @@ const menuItems = [
 // 배너 슬라이더 데이터
 const bannerSlides = [
   {
-    id: 1,
-    image: '/icons/onboarding_baner.png',
-    href: '/onboarding',
-    alt: 'Banner 1',
+    id: 3,
+    image: '/icons/banner3.png',
+    href: '/posts/231',
+    alt: 'Banner 3',
   },
   {
     id: 2,
@@ -40,10 +40,10 @@ const bannerSlides = [
     alt: 'Banner 2',
   },
   {
-    id: 3,
-    image: '/icons/banner3.png',
-    href: '/posts/231',
-    alt: 'Banner 3',
+    id: 1,
+    image: '/icons/onboarding_baner.png',
+    href: '/onboarding',
+    alt: 'Banner 1',
   },
 ];
 
