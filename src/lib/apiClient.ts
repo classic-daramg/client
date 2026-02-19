@@ -118,13 +118,23 @@ apiClient.interceptors.response.use(
       });
     }
 
+    const storedRefreshToken = useAuthStore.getState().refreshToken || getRefreshTokenFromCookie();
+    if (!storedRefreshToken) {
+      // 로그인 상태(access token 존재)인데 refresh token이 없는 비정상 상태 → 클리어 후 로그인 페이지로
+      if (useAuthStore.getState().accessToken) {
+        useAuthStore.getState().clearTokens();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/loginpage';
+        }
+      }
+      // 비로그인 상태 → 리다이렉트 없이 에러 반환
+      return Promise.reject(error);
+    }
+
     originalRequest._retry = true;
     isRefreshing = true;
 
     try {
-      // Store에서 refreshToken 가져오기 (쿠키 실패 시 대비)
-      const storedRefreshToken = useAuthStore.getState().refreshToken || getRefreshTokenFromCookie();
-
       // 토큰 갱신 API 호출
       // 별도의 axios 인스턴스나 axios.post를 사용하여 인터셉터 무한 루프 방지
       const refreshResponse = await axios.post(
