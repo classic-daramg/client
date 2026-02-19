@@ -2,7 +2,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserProfileStore } from '../store/userProfileStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '../store/authStore';
 import Link from 'next/link';
 import Image from 'next/image';
 import apiClient from '@/lib/apiClient';
@@ -46,6 +46,7 @@ const bannerSlides = [
 
 export default function HomePage() {
   const profile = useUserProfileStore((state) => state.profile);
+  const { isAuthenticated } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -93,7 +94,7 @@ export default function HomePage() {
   }, [mounted, fetchUnreadCount]);
 
   // hydration이 끝난 후에만 isLoggedIn을 계산
-  const isLoggedIn = mounted && profile !== null;
+  const isLoggedIn = mounted && (profile !== null || isAuthenticated());
 
   if (!mounted) {
     // hydration 전에는 아무것도 렌더링하지 않음 (또는 로딩 스피너 등)
