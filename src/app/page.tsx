@@ -39,6 +39,12 @@ const bannerSlides = [
     href: '/fortune-receipt',
     alt: 'Banner 2',
   },
+  {
+    id: 3,
+    image: '/icons/banner3.png',
+    href: '/posts/231',
+    alt: 'Banner 3',
+  },
 ];
 
 // Onboarding Modal Component
@@ -154,6 +160,32 @@ export default function HomePage() {
                 </Link>
               ))}
             </div>
+            {/* 왼쪽 화살표 */}
+            <button
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length);
+              }}
+            >
+              <svg width="7" height="13" viewBox="0 0 7 13" fill="none">
+                <path d="M6 1L1 6.5L6 12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+
+            {/* 오른쪽 화살표 */}
+            <button
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+              }}
+            >
+              <svg width="7" height="13" viewBox="0 0 7 13" fill="none">
+                <path d="M1 1L6 6.5L1 12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+
             {/* 슬라이드 인디케이터 */}
             <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-10">
               {bannerSlides.map((_, index) => (
