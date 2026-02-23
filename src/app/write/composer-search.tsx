@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface ComposerApiResponse {
     composerId: number;
@@ -31,6 +32,9 @@ export default function ComposerSearch({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Apply Body Scroll Lock
+    useBodyScrollLock(true);
+
     // API 연결 - 작곡가 목록 가져오기
     useEffect(() => {
         const fetchComposers = async () => {
@@ -43,7 +47,7 @@ export default function ComposerSearch({
                     id: composer.composerId,
                     name: composer.koreanName || composer.englishName || '알 수 없음',
                 }));
-                
+
                 setComposers(formattedComposers);
                 setError(null);
             } catch (err) {
@@ -53,7 +57,7 @@ export default function ComposerSearch({
                 setLoading(false);
             }
         };
-        
+
         fetchComposers();
     }, []);
 
@@ -83,7 +87,7 @@ export default function ComposerSearch({
             const selected = selectedComposers
                 .map(name => composers.find(c => c.name === name))
                 .filter((c): c is Composer => c !== undefined);
-            
+
             if (selected.length > 0) {
                 onSelectComposer(selected);
             }
@@ -92,16 +96,16 @@ export default function ComposerSearch({
     };
 
     return (
-        <div className="fixed inset-0 bg-transparent z-50 flex items-center justify-center">
-            <div className="bg-[#f4f5f7] w-[375px] h-screen max-h-screen overflow-y-auto flex flex-col">
+        <div className="fixed inset-0 z-50 flex justify-center bg-black/20">
+            <div className="bg-[#f4f5f7] w-full max-w-[375px] h-[100dvh] overflow-hidden flex flex-col shadow-2xl">
                 {/* Header */}
-                <div className="bg-white px-5 py-3 flex items-center sticky top-0 z-10 h-14">
-                    <button onClick={onClose} className="flex-shrink-0">
+                <div className="bg-white px-5 py-3 flex items-center sticky top-0 z-10 h-14 border-b border-[#f4f5f7]">
+                    <button onClick={onClose} className="flex-shrink-0 touch-none">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M15 18L9 12L15 6" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M15 18L9 12L15 6" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                     </button>
-                    <h1 className="flex-1 text-[#1a1a1a] text-base font-semibold font-['Pretendard'] ml-1">글쓰기</h1>
+                    <h1 className="flex-1 text-[#1a1a1a] text-base font-semibold font-['Pretendard'] ml-1">작곡가 선택</h1>
                 </div>
 
                 {/* 작곡가 선택 헤더 */}
@@ -120,16 +124,16 @@ export default function ComposerSearch({
                             className="w-full bg-transparent text-sm font-medium font-['Pretendard'] text-[#1a1a1a] focus:outline-none placeholder-[#d9d9d9]"
                         />
                     </div>
-                    <button 
+                    <button
                         onClick={handleComplete}
-                        className="bg-[#293a92] px-3.5 py-1.5 rounded-full"
+                        className="bg-[#293a92] px-3.5 py-1.5 rounded-full touch-none active:opacity-80"
                     >
                         <span className="text-white text-[13px] font-semibold font-['Pretendard']">완료</span>
                     </button>
                 </div>
 
                 {/* 작곡가 리스트 */}
-                <div className="bg-white flex-1 overflow-y-auto">
+                <div className="bg-white flex-1 overflow-y-auto overscroll-contain">
                     {loading ? (
                         <div className="flex justify-center items-center h-full">
                             <p className="text-zinc-400 text-sm">로딩 중...</p>
@@ -147,9 +151,8 @@ export default function ComposerSearch({
                             <button
                                 key={composer.id}
                                 onClick={() => handleComposerClick(composer.name)}
-                                className={`w-full px-6 py-[18px] flex items-center justify-between border-t border-[#d9d9d9] ${
-                                    index === 0 ? 'border-t-0' : ''
-                                } hover:bg-[#f4f5f7] transition-colors`}
+                                className={`w-full px-6 py-[18px] flex items-center justify-between border-t border-[#d9d9d9] ${index === 0 ? 'border-t-0' : ''
+                                    } hover:bg-[#f4f5f7] transition-colors`}
                             >
                                 <span className="text-[#1a1a1a] text-sm font-semibold font-['Pretendard']">
                                     {composer.name}
@@ -157,7 +160,7 @@ export default function ComposerSearch({
                                 {selectedComposers.includes(composer.name) && (
                                     <div className="w-3 h-3 bg-[#293a92] rounded-full flex items-center justify-center">
                                         <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </div>
                                 )}

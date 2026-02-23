@@ -21,26 +21,26 @@ const continentFilters = [
 ];
 
 export default function Filter() {
-    const { 
-        filters, 
-        setFilters, 
+    const {
+        filters,
+        setFilters,
         isFilterOpen,
         setIsFilterOpen,
-        setHasActiveFilters 
+        setHasActiveFilters
     } = useComposerTalk();
 
     const handleEraToggle = (eraId: string) => {
         const newSelectedEras = filters.era.includes(eraId)
             ? filters.era.filter(id => id !== eraId)
             : [...filters.era, eraId];
-        
+
         const newFilters = {
             era: newSelectedEras,
             continent: filters.continent
         };
-        
+
         setFilters(newFilters);
-        
+
         // 활성 필터 존재 여부 업데이트
         const hasActive = newSelectedEras.length > 0 || filters.continent.length > 0;
         setHasActiveFilters(hasActive);
@@ -50,14 +50,14 @@ export default function Filter() {
         const newSelectedContinents = filters.continent.includes(continentId)
             ? filters.continent.filter(id => id !== continentId)
             : [...filters.continent, continentId];
-        
+
         const newFilters = {
             era: filters.era,
             continent: newSelectedContinents
         };
-        
+
         setFilters(newFilters);
-        
+
         // 활성 필터 존재 여부 업데이트
         const hasActive = filters.era.length > 0 || newSelectedContinents.length > 0;
         setHasActiveFilters(hasActive);
@@ -99,7 +99,7 @@ export default function Filter() {
     return (
         <>
             {/* Backdrop */}
-            <div 
+            <div
                 className="fixed inset-0 bg-black/30 z-40"
                 onClick={() => setIsFilterOpen(false)}
             />
@@ -126,10 +126,10 @@ export default function Filter() {
                                         <span className="text-white text-[13px] font-semibold">
                                             {filter.label}
                                         </span>
-                                        <Image 
-                                            src="/icons/close-white.svg" 
-                                            alt="제거" 
-                                            width={12} 
+                                        <Image
+                                            src="/icons/close-white.svg"
+                                            alt="제거"
+                                            width={12}
                                             height={12}
                                         />
                                     </button>
@@ -148,11 +148,10 @@ export default function Filter() {
                                 <button
                                     key={filter.id}
                                     onClick={() => handleEraToggle(filter.id)}
-                                    className={`px-3 py-[6px] rounded-full border text-[13px] font-semibold ${
-                                        filters.era.includes(filter.id)
+                                    className={`px-3 py-[6px] rounded-full border text-[13px] font-semibold ${filters.era.includes(filter.id)
                                             ? 'bg-[#4c4c4c] border-[#4c4c4c] text-white'
                                             : 'bg-white border-[#d9d9d9] text-[#4c4c4c]'
-                                    }`}
+                                        }`}
                                 >
                                     {filter.label}
                                 </button>
@@ -171,11 +170,10 @@ export default function Filter() {
                                 <button
                                     key={filter.id}
                                     onClick={() => handleContinentToggle(filter.id)}
-                                    className={`px-3 py-[6px] rounded-full border text-[13px] font-semibold ${
-                                        filters.continent.includes(filter.id)
+                                    className={`px-3 py-[6px] rounded-full border text-[13px] font-semibold ${filters.continent.includes(filter.id)
                                             ? 'bg-[#4c4c4c] border-[#4c4c4c] text-white'
                                             : 'bg-white border-[#d9d9d9] text-[#4c4c4c]'
-                                    }`}
+                                        }`}
                                 >
                                     {filter.label}
                                 </button>
