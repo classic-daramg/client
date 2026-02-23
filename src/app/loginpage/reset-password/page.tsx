@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import PasswordChangePopup from '../../../components/PasswordChangePopup';
+import apiClient from '@/lib/apiClient';
+import { AxiosError } from 'axios';
 
 const ResetPasswordPage = () => {
   const router = useRouter();
@@ -47,27 +49,21 @@ const ResetPasswordPage = () => {
 
     setIsLoading(true);
     try {
-      // TODO: 백엔드 API 연결 후 주석 해제
-      /*
-      const response = await fetch('/api/auth/send-reset-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
+      const response = await apiClient.post('/auth/email-verifications', {
+        email: formData.email,
+        emailPurpose: 'PASSWORD_RESET'
       });
 
-      if (response.ok) {
-        setIsCodeSent(true);
+      if (response.status === 200) {
         setStep('verify');
-      } else {
-        alert('이메일을 찾을 수 없습니다.');
       }
-      */
-
-      // 테스트용
-      setStep('verify');
     } catch (error) {
       console.error('Reset password email error:', error);
-      alert('네트워크 오류가 발생했습니다.');
+      if (error instanceof AxiosError) {
+        alert(error.response?.data?.message || '이메일을 찾을 수 없습니다.');
+      } else {
+        alert('네트워크 오류가 발생했습니다.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -78,30 +74,21 @@ const ResetPasswordPage = () => {
 
     setIsLoading(true);
     try {
-      // TODO: 백엔드 API 연결 후 주석 해제
-      /*
-      const response = await fetch('/api/auth/verify-reset-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          code: formData.verificationCode
-        })
+      const response = await apiClient.post('/auth/verify-email', {
+        email: formData.email,
+        verificationCode: formData.verificationCode
       });
 
-      if (response.ok) {
-        setIsEmailVerified(true);
+      if (response.status === 200) {
         setStep('reset');
-      } else {
-        alert('인증코드가 올바르지 않습니다.');
       }
-      */
-
-      // 테스트용
-      setStep('reset');
     } catch (error) {
       console.error('Reset password verify error:', error);
-      alert('네트워크 오류가 발생했습니다.');
+      if (error instanceof AxiosError) {
+        alert(error.response?.data?.message || '인증코드가 올바르지 않습니다.');
+      } else {
+        alert('네트워크 오류가 발생했습니다.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -113,37 +100,25 @@ const ResetPasswordPage = () => {
     }
 
     setIsLoading(true);
-
-    // TODO: 백엔드 API 연결 후 주석 해제하고 테스트 코드 제거
-    /*
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          verificationCode: formData.verificationCode,
-          newPassword: formData.newPassword
-        })
+      const response = await apiClient.put('/auth/password-reset', {
+        email: formData.email,
+        password: formData.newPassword
       });
 
-      if (response.ok) {
+      if (response.status === 200) {
         setShowSuccessPopup(true);
-      } else {
-        alert('비밀번호 변경에 실패했습니다.');
       }
     } catch (error) {
-      alert('네트워크 오류가 발생했습니다.');
+      console.error('Reset password error:', error);
+      if (error instanceof AxiosError) {
+        alert(error.response?.data?.message || '비밀번호 변경에 실패했습니다.');
+      } else {
+        alert('네트워크 오류가 발생했습니다.');
+      }
     } finally {
       setIsLoading(false);
     }
-    */
-
-    // 테스트용 코드 (try-catch 없이)
-    setTimeout(() => {
-      setIsLoading(false);
-      setShowSuccessPopup(true);
-    }, 1000);
   };
 
   const handlePopupClose = () => {
@@ -154,8 +129,8 @@ const ResetPasswordPage = () => {
   const isEmailStepValid = formData.email.trim() !== '';
   const isVerifyStepValid = formData.verificationCode.trim() !== '';
   const isResetStepValid = formData.newPassword.trim() !== '' &&
-                           formData.confirmPassword.trim() !== '' &&
-                           passwordError === '';
+    formData.confirmPassword.trim() !== '' &&
+    passwordError === '';
 
   return (
     <div className="relative w-[375px] h-[812px] bg-white mx-auto">
@@ -175,7 +150,7 @@ const ResetPasswordPage = () => {
                 <Link href="/loginpage">
                   <button className="w-5 h-5 flex items-center justify-center">
                     <svg width="7" height="15" viewBox="0 0 7 15" fill="none" className="rotate-180">
-                      <path d="M1 1L6 7.5L1 14" stroke="#1A1A1A" strokeWidth="2"/>
+                      <path d="M1 1L6 7.5L1 14" stroke="#1A1A1A" strokeWidth="2" />
                     </svg>
                   </button>
                 </Link>
@@ -222,11 +197,10 @@ const ResetPasswordPage = () => {
                 <button
                   onClick={handleSendCode}
                   disabled={!isEmailStepValid || isLoading}
-                  className={`flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] rounded-md transition-colors ${
-                    isEmailStepValid && !isLoading
-                      ? 'bg-[#293A92] text-white hover:bg-[#1e2c73]'
-                      : 'bg-[#F4F5F7] text-[#A6A6A6]'
-                  }`}
+                  className={`flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] rounded-md transition-colors ${isEmailStepValid && !isLoading
+                    ? 'bg-[#293A92] text-white hover:bg-[#1e2c73]'
+                    : 'bg-[#F4F5F7] text-[#A6A6A6]'
+                    }`}
                 >
                   <span className="whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center">
                     {isLoading ? '전송중...' : '인증코드 전송'}
@@ -264,11 +238,10 @@ const ResetPasswordPage = () => {
                 <button
                   onClick={handleVerifyCode}
                   disabled={!isVerifyStepValid || isLoading}
-                  className={`flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] rounded-md transition-colors ${
-                    isVerifyStepValid && !isLoading
-                      ? 'bg-[#293A92] text-white hover:bg-[#1e2c73]'
-                      : 'bg-[#F4F5F7] text-[#A6A6A6]'
-                  }`}
+                  className={`flex flex-row justify-center items-center px-[14px] py-[10px] gap-[10px] w-[94px] h-[42px] rounded-md transition-colors ${isVerifyStepValid && !isLoading
+                    ? 'bg-[#293A92] text-white hover:bg-[#1e2c73]'
+                    : 'bg-[#F4F5F7] text-[#A6A6A6]'
+                    }`}
                 >
                   <span className="whitespace-nowrap h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center">
                     {isLoading ? '확인중...' : '인증코드 확인'}
@@ -336,11 +309,10 @@ const ResetPasswordPage = () => {
         <button
           onClick={handleResetPassword}
           disabled={!isResetStepValid || isLoading}
-          className={`absolute left-1/2 transform -translate-x-1/2 top-[737px] flex flex-row justify-center items-center px-5 py-[5px] gap-[2px] w-[335px] h-12 rounded-md transition-colors duration-200 ${
-            isResetStepValid && !isLoading
-              ? 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]'
-              : 'bg-[#A6A6A6] cursor-not-allowed'
-          }`}
+          className={`absolute left-1/2 transform -translate-x-1/2 top-[737px] flex flex-row justify-center items-center px-5 py-[5px] gap-[2px] w-[335px] h-12 rounded-md transition-colors duration-200 ${isResetStepValid && !isLoading
+            ? 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]'
+            : 'bg-[#A6A6A6] cursor-not-allowed'
+            }`}
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
