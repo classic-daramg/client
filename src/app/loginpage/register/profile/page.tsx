@@ -136,18 +136,18 @@ const ProfileSetupPage = () => {
   };
 
   const resetToDefaultImage = () => {
-    setProfileImage(defaultProfileImage);
-    // input 파일 선택 초기화
+    setProfileImage(null);
+    setProfileImageBlob(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const isDefaultImage = profileImage === defaultProfileImage;
+  const hasCustomImage = profileImageBlob !== null;
 
   const isNicknameValid = nickname.length >= 2 && nickname.length <= 8;
   const isBioValid = bio.length > 0 && bio.length <= 12;
-  const isFormValid = isNicknameValid && isNicknameChecked && isBioValid && profileImage;
+  const isFormValid = isNicknameValid && isNicknameChecked && isBioValid;
 
   const handleNext = async () => {
     if (!isFormValid) return;
@@ -402,7 +402,7 @@ const ProfileSetupPage = () => {
                 className="w-5 h-5"
               />
 
-              {isDefaultImage ? (
+              {!hasCustomImage ? (
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="text-xs font-semibold text-[#A6A6A6] border-b border-[#A6A6A6] cursor-pointer"
