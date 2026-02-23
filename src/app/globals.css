@@ -24,3 +24,22 @@ input, textarea, select {
 .animate-shake {
   animation: shake 0.2s ease-in-out 3;
 }
+
+/* Scroll Chaining / Bleeding Prevention */
+.overscroll-contain {
+  overscroll-behavior: contain;
+}
+
+/* iOS smooth scrolling */
+.ios-smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

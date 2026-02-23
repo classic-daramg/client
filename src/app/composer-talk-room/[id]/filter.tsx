@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 type FilterProps = {
   isOpen: boolean;
@@ -22,37 +23,77 @@ export default function RoomFilter({
   onCategorySelect,
   composerName,
 }: FilterProps) {
+  useScrollLock(isOpen);
+
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchOffset, setTouchOffset] = useState(0);
+  const panelRef = useRef<HTMLDivElement>(null);
+
   const categories = [
     { id: 'rachmaninoff', label: `${composerName ? composerName + ' ' : ''}이야기` },
     { id: 'curation', label: '큐레이션글' },
   ];
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const currentTouch = e.targetTouches[0].clientY;
+    const offset = Math.max(0, currentTouch - touchStart);
+    setTouchOffset(offset);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchOffset > 100) {
+      onClose();
+    }
+    setTouchStart(null);
+    setTouchOffset(0);
+  };
 
   if (!isOpen) return null;
 
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/30 z-40"
+      <div
+        className="fixed inset-0 bg-black/30 z-40 backdrop-blur-[2px]"
         onClick={onClose}
       />
 
       {/* Filter Panel */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[22px] shadow-[0px_-4px_10px_0px_rgba(0,0,0,0.08)] z-50 max-w-[600px] mx-auto">
-        {/* Handle Bar */}
-        <div className="flex justify-center pt-[22px]">
+      <div
+        ref={panelRef}
+        style={{
+          transform: `translateY(${touchOffset}px)`,
+          transition: touchStart === null ? 'transform 0.3s ease-out' : 'none'
+        }}
+        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[22px] shadow-[0px_-4px_10px_0px_rgba(0,0,0,0.08)] z-50 max-w-[600px] mx-auto flex flex-col overscroll-behavior-contain"
+      >
+        {/* Handle Bar Area (Swipe Trigger) - touch-none to prevent scrolling when dragging handle */}
+        <div
+          className="flex justify-center pt-[22px] pb-4 cursor-grab active:cursor-grabbing touch-none"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="w-[80px] h-[5px] bg-[#bfbfbf] rounded-full" />
         </div>
 
         {/* Content */}
-        <div className="px-5 pt-[38px] pb-5 flex flex-col gap-5">
+        <div
+          className="px-5 pt-[10px] pb-10 flex flex-col gap-5 overflow-y-auto max-h-[70vh] -webkit-overflow-scrolling-touch"
+          style={{ overscrollBehavior: 'contain' }}
+        >
           {/* Active Filters */}
           {activeFilters.length > 0 && (
             <div className="flex flex-wrap gap-[5px]">
               {activeFilters.map((filterId) => {
                 const filter = categories.find(c => c.id === filterId);
                 if (!filter) return null;
-                
+
                 return (
                   <button
                     key={filterId}
@@ -62,10 +103,10 @@ export default function RoomFilter({
                     <span className="text-white text-[13px] font-semibold">
                       {filter.label}
                     </span>
-                    <Image 
-                      src="/icons/close-white.svg" 
-                      alt="제거" 
-                      width={12} 
+                    <Image
+                      src="/icons/close-white.svg"
+                      alt="제거"
+                      width={12}
                       height={12}
                     />
                   </button>
@@ -88,16 +129,15 @@ export default function RoomFilter({
           <div className="flex flex-wrap gap-[5px]">
             {categories.map((category) => {
               const isSelected = selectedCategory === category.id;
-              
+
               return (
                 <button
                   key={category.id}
                   onClick={() => onCategorySelect(isSelected ? null : category.id)}
-                  className={`px-3 py-[6px] rounded-full border text-[13px] font-semibold ${
-                    isSelected
-                      ? 'bg-[#4c4c4c] border-[#4c4c4c] text-white'
-                      : 'bg-white border-[#d9d9d9] text-[#4c4c4c]'
-                  }`}
+                  className={`px-3 py-[6px] rounded-full border text-[13px] font-semibold ${isSelected
+                    ? 'bg-[#4c4c4c] border-[#4c4c4c] text-white'
+                    : 'bg-white border-[#d9d9d9] text-[#4c4c4c]'
+                    }`}
                 >
                   {category.label}
                 </button>

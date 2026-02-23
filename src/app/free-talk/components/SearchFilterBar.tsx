@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 const COMMUNITY_RULES = {
   title: '커뮤니티 이용수칙',
@@ -34,6 +35,8 @@ export default function SearchFilterBar() {
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+
+  useScrollLock(isRulesModalOpen);
 
   useEffect(() => {
     setSearchTerm(searchParams.get('search') || '');
@@ -127,7 +130,7 @@ export default function SearchFilterBar() {
               <div className="px-5 py-4 border-b border-[#e5e7eb] flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-[#1a1a1a]">{COMMUNITY_RULES.title}</h2>
               </div>
-              <div className="max-h-[60vh] overflow-y-auto px-5 py-5 text-[#666666] whitespace-pre-wrap text-sm leading-relaxed">
+              <div className="max-h-[60vh] overflow-y-auto px-5 py-5 text-[#666666] whitespace-pre-wrap text-sm leading-relaxed -webkit-overflow-scrolling-touch" style={{ overscrollBehavior: 'contain' }}>
                 {COMMUNITY_RULES.content}
               </div>
               <div className="flex gap-3 px-5 py-4 border-t border-[#e5e7eb] bg-[#fafafa]">
