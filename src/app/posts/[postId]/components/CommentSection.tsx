@@ -191,7 +191,12 @@ export default function CommentSection({
                 type="text"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
                 placeholder={replyMode ? '답글을 입력하세요...' : '댓글을 입력하세요...'}
                 className="flex-1 px-4 py-2.5 bg-[#f4f5f7] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#293a92]"
                 disabled={isSubmitting}

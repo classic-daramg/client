@@ -10,6 +10,11 @@ body {
   justify-content: center;
 }
 
+/* iOS Safari auto-zoom prevention: 16px 미만 폰트의 input에 포커스 시 자동 확대 방지 */
+input, textarea, select {
+  font-size: 16px;
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }

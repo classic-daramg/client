@@ -1,8 +1,13 @@
 // src/app/layout.tsx
 import { GoogleAnalytics } from '@next/third-parties/google';
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
 import './globals.css';
 import ScrollButton from '@/components/scroll_button';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: '클래식 듣는 다람쥐 다람쥐 - 클래식 음악 커뮤니티',
