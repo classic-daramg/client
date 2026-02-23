@@ -38,14 +38,14 @@ export default function PostFooter({
   // 공유하기 핸들러
   const handleShare = async () => {
     const url = `${window.location.origin}/posts/${postId}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: '클래식 다람쥐 포스트',
           url: url,
         });
-      } catch (err) {
+      } catch {
         // Share cancelled or failed
       }
     } else {

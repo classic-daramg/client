@@ -72,7 +72,7 @@ export default function MyPosts() {
 		};
 
 		loadPosts();
-	}, [accessToken, storedUserId]);
+	}, [accessToken, storedUserId, getUserIdFromToken]);
 
 	const formatDate = (dateString: string): string => {
 		try {
@@ -147,9 +147,8 @@ export default function MyPosts() {
 						<Link
 							key={post.id}
 							href={`/posts/${post.id}`}
-							className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${
-								index > 0 ? "border-t border-[#f4f5f7]" : ""
-							}`}
+							className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${index > 0 ? "border-t border-[#f4f5f7]" : ""
+								}`}
 						>
 							<div className="flex items-center justify-center w-[335px]">
 								<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">

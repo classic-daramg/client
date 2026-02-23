@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import Image from 'next/image';
 import HeartButton from './heart-button';
-import { getApiUrl } from '@/lib/api';
 import Link from 'next/link';
 import { useComposerTalk } from './context';
 import { useComposerStore } from '@/store/composerStore';
@@ -81,7 +80,7 @@ export default function ComposerTalkPage() {
                 </div>
                 <div className="text-right">
                     <div className="self-stretch text-right justify-center text-neutral-600 text-sm font-semibold font-['Pretendard']">나만의 이야기와 취향을 담아 클래식을 추천하는 공간</div>
-                    <div className="self-stretch text-right justify-center text-zinc-300 text-xs font-medium font-['Pretendard'] mt-1">다람쥐 여러분, 누구나 이곳에서 큐레이터가 될 수 있습니다.<br/>자신의 이야기를 담아 곡과 음반, 영상을 추천해보세요.</div>
+                    <div className="self-stretch text-right justify-center text-zinc-300 text-xs font-medium font-['Pretendard'] mt-1">다람쥐 여러분, 누구나 이곳에서 큐레이터가 될 수 있습니다.<br />자신의 이야기를 담아 곡과 음반, 영상을 추천해보세요.</div>
                 </div>
             </div>
 

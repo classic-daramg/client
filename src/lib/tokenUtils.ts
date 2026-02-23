@@ -22,7 +22,7 @@ export const isTokenExpired = (token: string): boolean => {
         // Adding a buffer of 10 seconds to cover potential latency
         const currentTime = Date.now() / 1000;
         return decoded.exp < currentTime + 10;
-    } catch (error) {
+    } catch {
         return true; // Invalid token is considered expired
     }
 };
@@ -32,7 +32,7 @@ export const getUserIdFromToken = (token: string): string | null => {
     try {
         const decoded = jwtDecode<DecodedToken>(token);
         return (decoded.userId || decoded.sub || decoded.user_id)?.toString() || null;
-    } catch (error) {
+    } catch {
         return null;
     }
 };

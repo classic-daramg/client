@@ -576,7 +576,7 @@ export function WritePageInner() {
                 if (hashtags.length > 0) storyData.hashtags = hashtags;
                 if (link && link.trim()) storyData.videoUrl = link;
 
-                const response = await apiClient.post('/posts/story', storyData);
+                await apiClient.post('/posts/story', storyData);
 
                 alert('작곡가 이야기가 등록되었습니다.');
                 router.push(`/composer-talk-room/${primaryComposerId}`);
@@ -610,7 +610,7 @@ export function WritePageInner() {
                     if (hashtags.length > 0) curationData.hashtags = hashtags;
                     if (link && link.trim()) curationData.videoUrl = link;
 
-                    const curationRes = await apiClient.post('/posts/curation', curationData);
+                    await apiClient.post('/posts/curation', curationData);
 
                     alert('큐레이션이 등록되었습니다.');
                     router.push('/curation');
@@ -647,7 +647,7 @@ export function WritePageInner() {
                 if (hashtags.length > 0) curationData.hashtags = hashtags;
                 if (link && link.trim()) curationData.videoUrl = link;
 
-                const response = await apiClient.post('/posts/curation', curationData);
+                await apiClient.post('/posts/curation', curationData);
 
                 alert('큐레이션이 등록되었습니다.');
                 router.push('/curation');
@@ -667,7 +667,7 @@ export function WritePageInner() {
             if (hashtags.length > 0) freeData.hashtags = hashtags;
             if (link && link.trim()) freeData.videoUrl = link;
 
-            const response = await apiClient.post('/posts/free', freeData);
+            await apiClient.post('/posts/free', freeData);
 
             alert('자유글이 등록되었습니다.');
             router.push('/free-talk');

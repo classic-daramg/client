@@ -88,7 +88,7 @@ export default function Drafts() {
 		};
 
 		loadDrafts();
-	}, [accessToken, storedUserId]);
+	}, [accessToken, storedUserId, getUserIdFromToken]);
 
 	const formatDate = (dateString: string): string => {
 		try {
@@ -129,7 +129,7 @@ export default function Drafts() {
 	};
 
 	// Draft Item 렌더링 컴포넌트
-	const DraftItem = ({ draft, index, isFirstInSection }: { draft: Draft; index: number; isFirstInSection: boolean }) => {
+	const DraftItem = ({ draft, isFirstInSection }: { draft: Draft; isFirstInSection: boolean }) => {
 		const composerId = draft.type === 'STORY' && draft.primaryComposerId
 			? draft.primaryComposerId
 			: null;
@@ -144,9 +144,8 @@ export default function Drafts() {
 				key={draft.id}
 				href={href}
 				onClick={() => setDraft(draft)}
-				className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${
-					!isFirstInSection ? "border-t border-[#f4f5f7]" : ""
-				}`}
+				className={`flex flex-col items-center overflow-clip px-[12px] py-[18px] ${!isFirstInSection ? "border-t border-[#f4f5f7]" : ""
+					}`}
 			>
 				<div className="flex items-center justify-center w-[335px]">
 					<div className="flex flex-col gap-[8px] grow items-start w-0 min-w-0">
@@ -241,7 +240,7 @@ export default function Drafts() {
 					{drafts.length > 0 && (
 						<>
 							{drafts.map((draft, index) => (
-								<DraftItem key={draft.id} draft={draft} index={index} isFirstInSection={index === 0} />
+								<DraftItem key={draft.id} draft={draft} isFirstInSection={index === 0} />
 							))}
 						</>
 					)}

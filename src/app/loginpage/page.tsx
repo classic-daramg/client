@@ -42,7 +42,7 @@ const LoginPage = () => {
       } else {
         return { isExpired: false, payload };
       }
-    } catch (error) {
+    } catch {
       return { isExpired: true };
     }
   };
@@ -98,7 +98,7 @@ const LoginPage = () => {
 
         // 사용자 정보 처리
         const userInfo = data.user || {};
-        
+
         // localStorage에서 저장된 프로필 데이터 확인
         const savedProfile = localStorage.getItem('user-profile-storage');
         interface ProfileData {
@@ -115,7 +115,7 @@ const LoginPage = () => {
           try {
             const parsed = JSON.parse(savedProfile);
             profileData = parsed.state?.profile;
-          } catch (error) {
+          } catch {
             // localStorage 프로필 파싱 실패
           }
         }
@@ -179,7 +179,7 @@ const LoginPage = () => {
           <Link href="/">
             <button className="w-5 h-5 flex items-center justify-center">
               <svg width="7" height="15" viewBox="0 0 7 15" fill="none" className="rotate-180">
-                <path d="M1 1L6 7.5L1 14" stroke="#1A1A1A" strokeWidth="2"/>
+                <path d="M1 1L6 7.5L1 14" stroke="#1A1A1A" strokeWidth="2" />
               </svg>
             </button>
           </Link>
@@ -232,12 +232,12 @@ const LoginPage = () => {
             >
               {showPassword ? (
                 <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                  <path d="M8 0C4.5 0 1.73 2.11 1 5C1.73 7.89 4.5 10 8 10C11.5 10 14.27 7.89 15 5C14.27 2.11 11.5 0 8 0ZM8 8.33C6.06 8.33 4.5 6.77 4.5 4.83C4.5 2.89 6.06 1.33 8 1.33C9.94 1.33 11.5 2.89 11.5 4.83C11.5 6.77 9.94 8.33 8 8.33ZM8 2.5C6.62 2.5 5.5 3.62 5.5 5C5.5 6.38 6.62 7.5 8 7.5C9.38 7.5 10.5 6.38 10.5 5C10.5 3.62 9.38 2.5 8 2.5Z" fill="#4C4C4C"/>
+                  <path d="M8 0C4.5 0 1.73 2.11 1 5C1.73 7.89 4.5 10 8 10C11.5 10 14.27 7.89 15 5C14.27 2.11 11.5 0 8 0ZM8 8.33C6.06 8.33 4.5 6.77 4.5 4.83C4.5 2.89 6.06 1.33 8 1.33C9.94 1.33 11.5 2.89 11.5 4.83C11.5 6.77 9.94 8.33 8 8.33ZM8 2.5C6.62 2.5 5.5 3.62 5.5 5C5.5 6.38 6.62 7.5 8 7.5C9.38 7.5 10.5 6.38 10.5 5C10.5 3.62 9.38 2.5 8 2.5Z" fill="#4C4C4C" />
                 </svg>
               ) : (
                 <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                  <path d="M8 0C4.5 0 1.73 2.11 1 5C1.73 7.89 4.5 10 8 10C11.5 10 14.27 7.89 15 5C14.27 2.11 11.5 0 8 0ZM8 8.33C6.06 8.33 4.5 6.77 4.5 4.83C4.5 2.89 6.06 1.33 8 1.33C9.94 1.33 11.5 2.89 11.5 4.83C11.5 6.77 9.94 8.33 8 8.33ZM8 2.5C6.62 2.5 5.5 3.62 5.5 5C5.5 6.38 6.62 7.5 8 7.5C9.38 7.5 10.5 6.38 10.5 5C10.5 3.62 9.38 2.5 8 2.5Z" fill="#4C4C4C"/>
-                  <line x1="1" y1="1" x2="15" y2="11" stroke="#4C4C4C" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M8 0C4.5 0 1.73 2.11 1 5C1.73 7.89 4.5 10 8 10C11.5 10 14.27 7.89 15 5C14.27 2.11 11.5 0 8 0ZM8 8.33C6.06 8.33 4.5 6.77 4.5 4.83C4.5 2.89 6.06 1.33 8 1.33C9.94 1.33 11.5 2.89 11.5 4.83C11.5 6.77 9.94 8.33 8 8.33ZM8 2.5C6.62 2.5 5.5 3.62 5.5 5C5.5 6.38 6.62 7.5 8 7.5C9.38 7.5 10.5 6.38 10.5 5C10.5 3.62 9.38 2.5 8 2.5Z" fill="#4C4C4C" />
+                  <line x1="1" y1="1" x2="15" y2="11" stroke="#4C4C4C" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               )}
             </button>
@@ -250,11 +250,10 @@ const LoginPage = () => {
           <button
             onClick={handleLogin}
             disabled={isLoading}
-            className={`flex flex-row justify-center items-center py-[5px] px-5 gap-[2px] w-full h-12 rounded-full transition-colors ${
-              isLoading
+            className={`flex flex-row justify-center items-center py-[5px] px-5 gap-[2px] w-full h-12 rounded-full transition-colors ${isLoading
                 ? 'bg-[#A6A6A6] cursor-not-allowed'
                 : 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]'
-            }`}
+              }`}
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
