@@ -187,19 +187,19 @@ export default function CommentSection({
               </div>
             )}
             <div className="flex items-center gap-2">
-              <input
-                type="text"
+              <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
                 placeholder={replyMode ? '답글을 입력하세요...' : '댓글을 입력하세요...'}
-                className="flex-1 px-4 py-2.5 bg-[#f4f5f7] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#293a92]"
+                rows={1}
+                className="flex-1 px-4 py-2.5 bg-[#f4f5f7] rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#293a92] resize-none overflow-hidden leading-5"
+                style={{ maxHeight: '96px', overflowY: 'auto' }}
                 disabled={isSubmitting}
+                onInput={(e) => {
+                  const el = e.currentTarget;
+                  el.style.height = 'auto';
+                  el.style.height = Math.min(el.scrollHeight, 96) + 'px';
+                }}
               />
               <button
                 onClick={handleSubmit}
