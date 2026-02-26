@@ -14,18 +14,35 @@ export default function WriteHeader({ onSaveDraft, onRegister, isRegisterEnabled
     const handleSafeBack = useSafeBack('/');
 
     return (
-        <header className="bg-white py-2 px-4 flex justify-between items-center border-b sticky top-0 z-10 h-14">
-            <button onClick={handleSafeBack}>
-                <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
-            </button>
-            <h1 className="text-zinc-900 text-base font-semibold absolute left-1/2 -translate-x-1/2">글쓰기</h1>
-            <div className="flex items-center gap-1.5">
-                <button onClick={onSaveDraft} className="px-3 py-1.5 bg-white rounded-full border border-zinc-300 flex justify-center items-center gap-0.5">
-                    <span className="text-neutral-400 text-xs font-semibold">임시저장</span>
+        <header className="bg-white px-5 py-3 flex items-center sticky top-0 z-10 w-full border-b">
+            <div className="flex items-center gap-1 w-full text-left">
+                <button
+                    type="button"
+                    onClick={handleSafeBack}
+                    className="flex-shrink-0"
+                >
+                    <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
                 </button>
-                <button onClick={onRegister} disabled={!isRegisterEnabled} className={`pl-3.5 pr-3 py-1.5 rounded-full flex justify-center items-center gap-0.5 ${isRegisterEnabled ? 'bg-blue-900' : 'bg-gray-300'}`}>
-                    <span className="text-white text-xs font-semibold">등록</span>
-                </button>
+                <h1 className="flex-1 text-[#1a1a1a] text-base font-semibold font-['Pretendard'] ml-1">글쓰기</h1>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                        type="button"
+                        onClick={onSaveDraft}
+                        className="px-3 py-1.5 bg-white rounded-full border border-[#d9d9d9] flex items-center gap-0.5"
+                    >
+                        <span className="text-[#a6a6a6] text-[13px] font-semibold font-['Pretendard']">임시저장</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onRegister}
+                        disabled={!isRegisterEnabled}
+                        className={`px-3 py-1.5 rounded-full flex items-center gap-0.5 ${isRegisterEnabled ? 'bg-[#293a92]' : 'bg-[#bfbfbf]'}`}
+                    >
+                        <span className="text-white text-[13px] font-semibold font-['Pretendard']">
+                            등록
+                        </span>
+                    </button>
+                </div>
             </div>
         </header>
     );

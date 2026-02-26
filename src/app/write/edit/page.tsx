@@ -9,6 +9,9 @@ import { apiClient } from '@/lib/apiClient';
 import { patchPost, PostUpdateRequest, normalizePostUpdateData } from '@/lib/postApi';
 import ToastNotification from '@/components/ToastNotification';
 import { useDraftStore } from '@/store/draftStore';
+import HashtagInput from '../components/HashtagInput';
+import { SectionHeader } from '../components/SectionHeader';
+import ComposerSearch from '../composer-search';
 
 // ================== TypeScript Interfaces ==================
 
@@ -64,7 +67,7 @@ type FormDataState = {
 function EditPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // URL 파라미터
   const postId = searchParams.get('edit');
   const draftId = searchParams.get('draftId');
@@ -80,6 +83,8 @@ function EditPageInner() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showComposerSearch, setShowComposerSearch] = useState(false);
+  const [selectedComposers, setSelectedComposers] = useState<Array<{ id: number; name: string }>>([]);
 
   // 폼 상태
   const [formData, setFormData] = useState<FormDataState>({
@@ -95,10 +100,13 @@ function EditPageInner() {
 
   // ========== Data Fetching ==========
   useEffect(() => {
+    let isMounted = true;
+
     const fetchPost = async () => {
+      // 1. 임시저장 데이터 로드 (draftId가 있는 경우)
       if (draftId) {
         if (!draft || String(draft.id) !== draftId) {
-          setError('임시저장 데이터를 찾을 수 없습니다.');
+          if (isMounted) setError('임시저장 데이터를 찾을 수 없습니다.');
           setLoading(false);
           return;
         }
@@ -124,31 +132,51 @@ function EditPageInner() {
           comments: [],
         };
 
-        setPost(draftPost);
-        setFormData({
-          title: draft.title,
-          content: draft.content,
-          hashtags: draft.hashtags || [],
-          images: draft.thumbnailImageUrl ? [draft.thumbnailImageUrl] : [],
-          videoUrl: '',
-          postStatus: 'DRAFT',
-          primaryComposerId: 0,
-          additionalComposersId: [],
-        });
-        setError(null);
-        setLoading(false);
+        if (isMounted) {
+          setPost(draftPost);
+          setFormData({
+            title: draft.title,
+            content: draft.content,
+            hashtags: draft.hashtags || [],
+            images: draft.thumbnailImageUrl ? [draft.thumbnailImageUrl] : [],
+            videoUrl: '',
+            postStatus: 'DRAFT',
+            primaryComposerId: draft.primaryComposerId || 0,
+            additionalComposersId: draft.additionalComposers?.map(c => c.id ?? c.composerId).filter((id): id is number => !!id) || [],
+          });
+
+          if (draft.primaryComposerId && draft.primaryComposerName) {
+            const initialComposers = [{ id: draft.primaryComposerId, name: draft.primaryComposerName }];
+            if (draft.additionalComposers) {
+              draft.additionalComposers.forEach(c => {
+                const cid = c.id ?? c.composerId;
+                const cn = c.koreanName || c.englishName;
+                if (cid && cn) initialComposers.push({ id: cid, name: cn });
+              });
+            }
+            setSelectedComposers(initialComposers);
+          }
+
+          setError(null);
+          setLoading(false);
+        }
         return;
       }
 
+      // 2. 일반 포스트 로드 (postId가 있는 경우)
       if (!postId) {
-        setError('포스트 ID가 없습니다.');
-        setLoading(false);
+        if (isMounted) {
+          setError('포스트 ID가 없습니다.');
+          setLoading(false);
+        }
         return;
       }
 
       try {
-        setLoading(true);
+        if (isMounted) setLoading(true);
         const response = await apiClient.get(`/posts/${postId}`);
+        if (!isMounted) return;
+
         const fetchedPost: PostDetail = response.data;
         setPost(fetchedPost);
 
@@ -168,24 +196,46 @@ function EditPageInner() {
           primaryComposerId: primaryId,
           additionalComposersId: additionalIds,
         });
+
+        // 작곡가 목록 초기화
+        const composers: Array<{ id: number; name: string }> = [];
+        if (fetchedPost.primaryComposer) {
+          composers.push({
+            id: primaryId,
+            name: fetchedPost.primaryComposer.koreanName || fetchedPost.primaryComposer.englishName,
+          });
+        }
+        if (fetchedPost.additionalComposers) {
+          fetchedPost.additionalComposers.forEach(c => {
+            const id = c.id ?? c.composerId;
+            const name = c.koreanName || c.englishName;
+            if (id && name) composers.push({ id, name });
+          });
+        }
+        setSelectedComposers(composers);
+
         setError(null);
       } catch (err) {
+        if (!isMounted) return;
         console.error('Failed to fetch post:', err);
         const axiosError = err as AxiosError<{ message: string }>;
         if (axiosError.response?.status === 404) {
           setError('요청하신 포스트를 찾을 수 없습니다.');
-        } else if (axiosError.response?.status === 401) {
-          setError('로그인이 필요합니다.');
         } else {
           setError(axiosError.response?.data?.message || '포스트를 불러올 수 없습니다.');
         }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchPost();
-  }, [draft, draftId, postId]);
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId, draftId]); // draft 의존성 제거하여 타이핑 중 리셋 방지
 
   // ========== Event Handlers ==========
 
@@ -204,7 +254,7 @@ function EditPageInner() {
 
     // 깊은 비교 (배열, 객체)
     const isChanged = JSON.stringify(oldValue) !== JSON.stringify(newValue);
-    
+
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -234,6 +284,21 @@ function EditPageInner() {
 
   const handlePostStatusChange = (status: 'PUBLISHED' | 'DRAFT') => {
     handleFieldChange('postStatus', status);
+  };
+
+  const handleSelectComposer = (composers: Array<{ id: number; name: string }>) => {
+    setSelectedComposers(composers);
+    setShowComposerSearch(false);
+
+    // primary 및 additional ID 업데이트
+    if (composers.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        primaryComposerId: composers[0].id,
+        additionalComposersId: composers.slice(1).map(c => c.id)
+      }));
+      setHasChanges(true);
+    }
   };
 
   // 수정 완료 핸들러
@@ -272,17 +337,22 @@ function EditPageInner() {
 
       // 타입별 추가 필드
       if (post.type === 'STORY' || post.type === 'CURATION') {
-        if (!formData.primaryComposerId) {
+        const pId = selectedComposers[0]?.id || formData.primaryComposerId;
+        if (!pId) {
           showToast('작곡가 정보가 없습니다. 다시 시도해주세요.', 'error');
           setSubmitting(false);
           return;
         }
-        requestData.primaryComposerId = formData.primaryComposerId;
+        // Story Update schema doesn't strictly have primaryComposerId, but Curation might
+        if (post.type === 'CURATION') {
+          requestData.primaryComposerId = pId;
+        }
       }
 
       if (post.type === 'CURATION') {
-        requestData.additionalComposersId =
-          (formData.additionalComposersId || []).filter((id) => typeof id === 'number');
+        requestData.additionalComposersId = selectedComposers.length > 1
+          ? selectedComposers.slice(1).map(c => c.id)
+          : (formData.additionalComposersId || []).filter((id) => typeof id === 'number');
       }
 
       // 데이터 정규화
@@ -292,6 +362,9 @@ function EditPageInner() {
       await patchPost(postId, post.type, normalizedData as PostUpdateRequest);
 
       showToast('포스트가 수정되었습니다.');
+
+      // UI 강제 새로고침
+      router.refresh();
 
       // 1초 후 상세 페이지로 리다이렉트
       setTimeout(() => {
@@ -408,26 +481,37 @@ function EditPageInner() {
             <label className="block text-sm font-medium text-[#1a1a1a] mb-2">
               해시태그
             </label>
-            <input
-              type="text"
-              value={formData.hashtags.join(', ')}
-              onChange={handleHashtagChange}
-              placeholder="쉼표(,) 또는 공백으로 구분하여 입력"
-              className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg focus:outline-none focus:border-[#293a92] focus:ring-2 focus:ring-[#293a92] focus:ring-opacity-10"
+            <HashtagInput
+              value={formData.hashtags}
+              onChange={(tags) => handleFieldChange('hashtags', tags)}
+              placeholder="해시태그 작성 최대 5개"
+              maxTags={5}
             />
-            {formData.hashtags.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {formData.hashtags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-[#f4f5f7] text-[#293a92] text-xs rounded-full"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
+
+          {/* 작곡가 선택 (STORY, CURATION인 경우만 표시) */}
+          {(post.type === 'STORY' || post.type === 'CURATION') && (
+            <div>
+              <label className="block text-sm font-medium text-[#1a1a1a] mb-2">
+                작곡가 선택
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowComposerSearch(true)}
+                  className="flex-1 bg-[#f4f5f7] rounded-lg px-4 py-2.5 text-left text-sm"
+                >
+                  <span className={selectedComposers.length > 0 ? 'text-[#1a1a1a]' : 'text-[#d9d9d9]'}>
+                    {selectedComposers.length > 0
+                      ? selectedComposers.length === 1
+                        ? selectedComposers[0].name
+                        : `${selectedComposers[0].name} 외 ${selectedComposers.length - 1}명`
+                      : '작곡가 검색'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* 포스트 상태 */}
           <div>
@@ -438,22 +522,20 @@ function EditPageInner() {
               <button
                 type="button"
                 onClick={() => handlePostStatusChange('PUBLISHED')}
-                className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
-                  formData.postStatus === 'PUBLISHED'
-                    ? 'bg-[#293a92] text-white'
-                    : 'bg-[#f4f5f7] text-[#666666] hover:bg-[#efefef]'
-                }`}
+                className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${formData.postStatus === 'PUBLISHED'
+                  ? 'bg-[#293a92] text-white'
+                  : 'bg-[#f4f5f7] text-[#666666] hover:bg-[#efefef]'
+                  }`}
               >
                 공개
               </button>
               <button
                 type="button"
                 onClick={() => handlePostStatusChange('DRAFT')}
-                className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
-                  formData.postStatus === 'DRAFT'
-                    ? 'bg-[#293a92] text-white'
-                    : 'bg-[#f4f5f7] text-[#666666] hover:bg-[#efefef]'
-                }`}
+                className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${formData.postStatus === 'DRAFT'
+                  ? 'bg-[#293a92] text-white'
+                  : 'bg-[#f4f5f7] text-[#666666] hover:bg-[#efefef]'
+                  }`}
               >
                 임시저장
               </button>
@@ -498,6 +580,15 @@ function EditPageInner() {
           </div>
         </form>
       </div>
+
+      {/* ========== Modals ========== */}
+      {showComposerSearch && (
+        <ComposerSearch
+          onSelectComposer={handleSelectComposer}
+          onClose={() => setShowComposerSearch(false)}
+          initialSelected={selectedComposers.map(c => c.name)}
+        />
+      )}
 
       {/* ========== Toast Notification ========== */}
       {toast && (
