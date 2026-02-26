@@ -10,7 +10,7 @@ import { patchPost, PostUpdateRequest, normalizePostUpdateData } from '@/lib/pos
 import ToastNotification from '@/components/ToastNotification';
 import { useDraftStore } from '@/store/draftStore';
 import HashtagInput from '../components/HashtagInput';
-import { SectionHeader } from '../components/SectionHeader';
+
 import ComposerSearch from '../composer-search';
 
 // ================== TypeScript Interfaces ==================
