@@ -94,58 +94,69 @@ export function WritePageInner() {
     };
     const [selectedType, setSelectedType] = useState<string>(getSelectedType());
 
-    // ========== Initialization Effect (Mount ONLY) ==========
+    const [isLoadingData, setIsLoadingData] = useState(false);
     const isInitialMount = useRef(true);
 
     useEffect(() => {
         if (!isClient) return;
         if (!isInitialMount.current) return;
 
+        // Mark as initialized IMMEDIATELY to prevent double-runs from dependency changes
+        isInitialMount.current = false;
+
         const initialize = async () => {
             // 1. Edit Mode
             if (editIdParam) {
                 setIsEditMode(true);
                 setEditPostId(editIdParam);
+                setIsLoadingData(true);
                 try {
                     const res = await apiClient.get(`/posts/${editIdParam}`);
                     const post = res.data as EditPostData;
-                    setEditPostData(post);
-                    setTitle(post.title);
-                    setContent(post.content);
-                    setHashtags(post.hashtags || []);
-                    setLink(post.videoUrl || '');
-                    setImagePreviewUrls(post.images || []);
 
-                    if (post.type === 'CURATION') {
-                        setSelectedType('큐레이션 글');
-                        const list: Array<{ id: number; name: string }> = [];
-                        if (post.primaryComposer) {
-                            const id = post.primaryComposer.id ?? post.primaryComposer.composerId;
-                            if (id) list.push({ id, name: post.primaryComposer.koreanName || post.primaryComposer.englishName || '' });
+                    if (post) {
+                        setEditPostData(post);
+
+                        // Safety: Only set if current state is empty to avoid overwriting user who started typing fast
+                        setTitle(prev => prev || post.title || '');
+                        setContent(prev => prev || post.content || '');
+                        setHashtags(prev => prev.length > 0 ? prev : (post.hashtags || []));
+                        setLink(prev => prev || post.videoUrl || '');
+                        setImagePreviewUrls(prev => prev.length > 0 ? prev : (post.images || []));
+
+                        if (post.type === 'CURATION') {
+                            setSelectedType('큐레이션 글');
+                            const list: Array<{ id: number; name: string }> = [];
+                            if (post.primaryComposer) {
+                                const id = post.primaryComposer.id ?? post.primaryComposer.composerId;
+                                if (id) list.push({ id, name: post.primaryComposer.koreanName || post.primaryComposer.englishName || '' });
+                            }
+                            if (post.additionalComposers) {
+                                post.additionalComposers.forEach(c => {
+                                    const id = c.id ?? c.composerId;
+                                    if (id) list.push({ id, name: c.koreanName || c.englishName || '' });
+                                });
+                            }
+                            setSelectedComposers(list);
+                        } else if (post.type === 'STORY' && post.primaryComposer) {
+                            setSelectedType(`${post.primaryComposer.koreanName} 이야기`);
+                            setPrimaryComposerId(post.primaryComposer.id ?? post.primaryComposer.composerId ?? null);
+                        } else if (post.type === 'FREE') {
+                            setSelectedType('자유 글');
                         }
-                        if (post.additionalComposers) {
-                            post.additionalComposers.forEach(c => {
-                                const id = c.id ?? c.composerId;
-                                if (id) list.push({ id, name: c.koreanName || c.englishName || '' });
-                            });
-                        }
-                        setSelectedComposers(list);
-                    } else if (post.type === 'STORY' && post.primaryComposer) {
-                        setSelectedType(`${post.primaryComposer.koreanName} 이야기`);
-                        setPrimaryComposerId(post.primaryComposer.id ?? post.primaryComposer.composerId ?? null);
-                    } else if (post.type === 'FREE') {
-                        setSelectedType('자유 글');
                     }
                 } catch (e) {
                     console.error("Failed to load edit post", e);
+                } finally {
+                    setIsLoadingData(false);
                 }
             }
             // 2. Draft Mode
             else if (draftId && draft && String(draft.id) === draftId) {
-                setTitle(draft.title || '');
-                setContent(draft.content || '');
-                setHashtags(draft.hashtags || []);
-                setImagePreviewUrls(draft.thumbnailImageUrl ? [draft.thumbnailImageUrl] : []);
+                setTitle(prev => prev || draft.title || '');
+                setContent(prev => prev || draft.content || '');
+                setHashtags(prev => prev.length > 0 ? prev : (draft.hashtags || []));
+                setImagePreviewUrls(prev => prev.length > 0 ? prev : (draft.thumbnailImageUrl ? [draft.thumbnailImageUrl] : []));
 
                 const dCid = draft.primaryComposer?.id ?? draft.primaryComposer?.composerId ?? composerIdParam;
                 const dCname = draft.primaryComposer?.koreanName ?? draft.primaryComposer?.englishName ?? composerNameParam ?? '';
@@ -167,8 +178,6 @@ export function WritePageInner() {
                 setPrimaryComposerId(composerIdParam);
                 setSelectedType(`${composerNameParam} 이야기`);
             }
-
-            isInitialMount.current = false;
         };
 
         initialize();
@@ -345,29 +354,35 @@ export function WritePageInner() {
                 onRegister={handleRegister}
                 isRegisterEnabled={isButtonEnabled && !isSubmitting}
             />
-            <WriteForm
-                title={title} setTitle={setTitle}
-                content={content} setContent={setContent}
-                hashtags={hashtags} setHashtags={setHashtags}
-                link={link} setLink={setLink}
-                imageFiles={imageFiles}
-                imagePreviewUrls={imagePreviewUrls}
-                onImageChange={handleImageChange}
-                onRemoveImage={handleRemoveImage}
-                selectedType={selectedType}
-                isComposerTalkRoom={selectedType.includes('이야기')}
-                curationMode={curationMode} setCurationMode={setCurationMode}
-                selectedComposers={selectedComposers}
-                onSelectComposer={setSelectedComposers}
-                showComposerSearch={showComposerSearch}
-                setShowComposerSearch={setShowComposerSearch}
-                hasError={hasError}
-                isShaking={isShaking}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                setShowToast={setShowToast}
-                contentRef={contentRef}
-            />
+            {isLoadingData ? (
+                <div className="flex flex-col items-center justify-center h-[60vh]">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+                    <p className="text-gray-500 font-medium">데이터를 불러오는 중...</p>
+                </div>
+            ) : (
+                <WriteForm
+                    title={title} setTitle={setTitle}
+                    content={content} setContent={setContent}
+                    hashtags={hashtags} setHashtags={setHashtags}
+                    link={link} setLink={setLink}
+                    imagePreviewUrls={imagePreviewUrls}
+                    onImageChange={handleImageChange}
+                    onRemoveImage={handleRemoveImage}
+                    selectedType={selectedType}
+                    isComposerTalkRoom={selectedType.includes('이야기')}
+                    curationMode={curationMode} setCurationMode={setCurationMode}
+                    selectedComposers={selectedComposers}
+                    onSelectComposer={setSelectedComposers}
+                    showComposerSearch={showComposerSearch}
+                    setShowComposerSearch={setShowComposerSearch}
+                    hasError={hasError}
+                    isShaking={isShaking}
+                    toastMessage={toastMessage}
+                    showToast={showToast}
+                    setShowToast={setShowToast}
+                    contentRef={contentRef}
+                />
+            )}
         </div>
     );
 }

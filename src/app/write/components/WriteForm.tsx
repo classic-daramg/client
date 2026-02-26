@@ -20,7 +20,6 @@ interface WriteFormProps {
     setLink: (link: string) => void;
 
     // Media
-    imageFiles: File[];
     imagePreviewUrls: string[];
     onImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onRemoveImage: (index: number) => void;
@@ -50,7 +49,7 @@ interface WriteFormProps {
 
 export default function WriteForm({
     title, setTitle, content, setContent, hashtags, setHashtags, link, setLink,
-    imageFiles, imagePreviewUrls, onImageChange, onRemoveImage,
+    imagePreviewUrls, onImageChange, onRemoveImage,
     selectedType, isComposerTalkRoom, curationMode, setCurationMode,
     selectedComposers, onSelectComposer,
     showComposerSearch, setShowComposerSearch,
