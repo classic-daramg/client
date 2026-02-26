@@ -33,21 +33,7 @@ const getNotificationMessage = (notification: Notification): string => {
   return typeMessages[notification.type] || '새로운 알림입니다';
 };
 
-const formatTime = (dateString: string): string => {
-  const now = new Date();
-  const notificationTime = new Date(dateString);
-  const diffMs = now.getTime() - notificationTime.getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMins < 1) return '방금';
-  if (diffMins < 60) return `${diffMins}분 전`;
-  if (diffHours < 24) return `${diffHours}시간 전`;
-  if (diffDays < 7) return `${diffDays}일 전`;
-
-  return notificationTime.toLocaleDateString('ko-KR');
-};
+import { formatTimeAgo as formatTime } from '@/lib/dateUtils';
 
 export default function NotificationPage() {
   const router = useRouter();
@@ -205,9 +191,8 @@ export default function NotificationPage() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`flex flex-row items-center px-[20px] py-[16px] gap-[10px] border-b border-[#f4f5f7] hover:bg-[#f4f5f7] transition-colors cursor-pointer ${
-                  !notification.isRead ? 'bg-[#fafafa]' : ''
-                }`}
+                className={`flex flex-row items-center px-[20px] py-[16px] gap-[10px] border-b border-[#f4f5f7] hover:bg-[#f4f5f7] transition-colors cursor-pointer ${!notification.isRead ? 'bg-[#fafafa]' : ''
+                  }`}
                 onClick={() => handleNavigateToPost(notification)}
               >
                 {/* Profile Image */}
@@ -236,9 +221,8 @@ export default function NotificationPage() {
                 {/* Notification Content */}
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`text-[13px] leading-[16px] ${
-                      notification.isRead ? 'text-[#a6a6a6] font-normal' : 'text-[#4c4c4c] font-semibold'
-                    }`}
+                    className={`text-[13px] leading-[16px] ${notification.isRead ? 'text-[#a6a6a6] font-normal' : 'text-[#4c4c4c] font-semibold'
+                      }`}
                   >
                     {getNotificationMessage(notification)}
                   </p>

@@ -3,6 +3,7 @@
 import PostItem from './PostItem';
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/apiClient';
+import { formatTimeAgo } from '@/lib/dateUtils';
 
 // ============================================================
 // Post 인터페이스 및 API 응답 타입
@@ -58,20 +59,20 @@ export default function PostList({ searchValue, filters }: PostListProps) {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        
+
         // ========== 쿼리 파라미터 구성 ==========
         const queryParams = new URLSearchParams();
-        
+
         // eras 필터 추가
         if (filters.eras.length > 0) {
           queryParams.append('eras', filters.eras.join(','));
         }
-        
+
         // continents 필터 추가
         if (filters.continents.length > 0) {
           queryParams.append('continents', filters.continents.join(','));
         }
-        
+
         const url = `/posts/curation${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
         const response = await apiClient.get(url);
 
@@ -129,7 +130,7 @@ export default function PostList({ searchValue, filters }: PostListProps) {
     }
 
     // ========== 1단계: 검색어 필터링 (클라이언트 사이드) ==========
-    const searchFiltered = allPosts.filter((post) => {
+    const searchFiltered = allPosts.filter((post: Post) => {
       // 검색어가 없으면 모두 포함
       if (!searchValue.trim()) {
         return true;
@@ -138,8 +139,8 @@ export default function PostList({ searchValue, filters }: PostListProps) {
       const searchLower = searchValue.toLowerCase();
       const titleMatch = post.title.toLowerCase().includes(searchLower);
       const contentMatch = post.content.toLowerCase().includes(searchLower);
-      const tagsMatch = post.tags.some((tag) => tag.toLowerCase().includes(searchLower));
-      
+      const tagsMatch = post.tags.some((tag: string) => tag.toLowerCase().includes(searchLower));
+
       // 제목, 내용, 태그 중 하나라도 일치해야 함
       return titleMatch || contentMatch || tagsMatch;
     });
@@ -152,18 +153,18 @@ export default function PostList({ searchValue, filters }: PostListProps) {
       // 검색어가 있으면 일치도로 정렬
       if (searchValue.trim()) {
         const searchLower = searchValue.toLowerCase();
-        
+
         // 제목에 일치하면 최우선
         if (a.title.toLowerCase().includes(searchLower)) scoreA += 1000;
         if (b.title.toLowerCase().includes(searchLower)) scoreB += 1000;
-        
+
         // 내용에 일치하면 그 다음
         if (a.content.toLowerCase().includes(searchLower)) scoreA += 500;
         if (b.content.toLowerCase().includes(searchLower)) scoreB += 500;
-        
+
         // 태그에 일치하면 마지막
-        if (a.tags.some((tag) => tag.toLowerCase().includes(searchLower))) scoreA += 100;
-        if (b.tags.some((tag) => tag.toLowerCase().includes(searchLower))) scoreB += 100;
+        if (a.tags.some((tag: string) => tag.toLowerCase().includes(searchLower))) scoreA += 100;
+        if (b.tags.some((tag: string) => tag.toLowerCase().includes(searchLower))) scoreB += 100;
       }
 
       // 점수가 다르면 점수순
@@ -178,20 +179,7 @@ export default function PostList({ searchValue, filters }: PostListProps) {
     setPosts(sortedPosts);
   }, [searchValue, allPosts]);
 
-  // ========== 시간 포맷팅 함수 ==========
-  // 생성 시간을 상대적 시간으로 표시 (예: "2시간전")
-  const formatTimeAgo = (dateString: string): string => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) return `${seconds}초전`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}분전`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}시간전`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}일전`;
-
-    return date.toLocaleDateString('ko-KR');
-  };
+  // 시간 포맷팅 로직은 dateUtils의 formatTimeAgo를 사용합니다.
 
   // ========== 로딩 상태 ==========
   if (loading) {
@@ -223,7 +211,7 @@ export default function PostList({ searchValue, filters }: PostListProps) {
           </p>
         </div>
       ) : (
-        posts.map((post, index) => (
+        posts.map((post: Post, index: number) => (
           <PostItem key={post.id} post={post} isFirst={index === 0} />
         ))
       )}

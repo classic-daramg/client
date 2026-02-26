@@ -13,33 +13,7 @@ import apiClient from '@/lib/apiClient';
 import { AxiosError } from 'axios';
 import { useDraftStore } from '@/store/draftStore';
 
-// 한국 시간(KST, UTC+9) ISO 문자열 생성 함수
-const getKSTISOString = (): string => {
-    const now = new Date();
-
-    // 방법 1: 로컬 시간을 한국 시간대로 포맷한 후 ISO 문자열로 변환
-    const formatter = new Intl.DateTimeFormat('sv-SE', {
-        timeZone: 'Asia/Seoul',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        fractionalSecondDigits: 3,
-    });
-
-    const parts = formatter.formatToParts(now);
-    const partsObj = parts.reduce<Record<string, string>>((acc, part) => {
-        acc[part.type] = part.value;
-        return acc;
-    }, {});
-
-    // ISO 포맷으로 변환: YYYY-MM-DDTHH:mm:ss.sssZ
-    const isoString = `${partsObj.year}-${partsObj.month}-${partsObj.day}T${partsObj.hour}:${partsObj.minute}:${partsObj.second}.${partsObj.fractionalSecond}Z`;
-
-    return isoString;
-};
+// (Removed getKSTISOString as it incorrectly mixed KST with Z suffix)
 
 type PostType = 'FREE' | 'CURATION' | 'STORY';
 
@@ -563,12 +537,11 @@ export function WritePageInner() {
                     return;
                 }
 
-                const currentTime = getKSTISOString();
                 const storyData: PostData = {
                     title,
                     content,
                     postStatus: 'PUBLISHED',
-                    createdAt: currentTime,
+                    createdAt: new Date().toISOString(),
                     primaryComposerId,
                 };
 
@@ -597,6 +570,7 @@ export function WritePageInner() {
                         title,
                         content,
                         postStatus: 'PUBLISHED',
+                        createdAt: new Date().toISOString(),
                         primaryComposerId,
                     };
 
@@ -636,6 +610,7 @@ export function WritePageInner() {
                     title,
                     content,
                     postStatus: 'PUBLISHED',
+                    createdAt: new Date().toISOString(),
                     primaryComposerId: selectedComposers[0].id,
                 };
 
@@ -655,12 +630,11 @@ export function WritePageInner() {
             }
 
             // Case 4: Free Post (자유 글)
-            const currentTime = getKSTISOString();
             const freeData: PostData = {
                 title,
                 content,
                 postStatus: 'PUBLISHED',
-                createdAt: currentTime,
+                createdAt: new Date().toISOString(),
             };
 
             if (uploadedImages) freeData.images = uploadedImages;

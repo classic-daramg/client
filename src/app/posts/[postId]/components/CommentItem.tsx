@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { formatDateTime } from '@/lib/dateUtils';
 
 interface Comment {
   id: number;
@@ -46,35 +47,19 @@ export default function CommentItem({
 }: CommentItemProps) {
   const handleLike = onLike || onToggleLike;
   const isAuthor = currentUserNickname === comment.writerNickname;
-
-  // 시간 포맷팅 (YY/MM/DD HH:MM)
-  const formatDateTime = (isoString: string): string => {
-    const date = new Date(isoString);
-    return date
-      .toLocaleString('ko-KR', {
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      })
-      .replace(/\. /g, '/')
-      .replace('.', '');
-  };
+  // 시간 포맷팅은 dateUtils의 formatDateTime을 사용합니다.
 
   // 삭제된 댓글 렌더링
   if (comment.isDeleted) {
     return (
       <div
-        className={`py-[18px] ${
-          isNested
-            ? 'pl-[50px] pr-[20px] bg-[#fafafa] border border-[#eef0f3] border-l-2 border-l-[#e2e8f0] rounded-md'
-            : 'px-[20px] bg-white'
-        }`}
+        className={`py-[18px] ${isNested
+          ? 'pl-[50px] pr-[20px] bg-[#fafafa] border border-[#eef0f3] border-l-2 border-l-[#e2e8f0] rounded-md'
+          : 'px-[20px] bg-white'
+          }`}
       >
         <p className="text-sm font-medium text-[#a6a6a6] italic">삭제된 댓글입니다</p>
-        
+
         {comment.childComments && comment.childComments.length > 0 && (
           <div className="mt-[10px]">
             {comment.childComments.map((reply) => (
@@ -98,11 +83,10 @@ export default function CommentItem({
 
   return (
     <div
-      className={`flex flex-col gap-[10px] py-[18px] ${
-        isNested
-          ? 'pl-[50px] pr-[20px] bg-[#fafafa] border border-[#eef0f3] border-l-2 border-l-[#e2e8f0] rounded-md'
-          : 'px-[20px] bg-white'
-      }`}
+      className={`flex flex-col gap-[10px] py-[18px] ${isNested
+        ? 'pl-[50px] pr-[20px] bg-[#fafafa] border border-[#eef0f3] border-l-2 border-l-[#e2e8f0] rounded-md'
+        : 'px-[20px] bg-white'
+        }`}
     >
       {/* 댓글 헤더 & 본문 */}
       <div className="flex gap-2 items-start w-full">

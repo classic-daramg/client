@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { formatDateTime } from '@/lib/dateUtils';
+
 interface PostHeaderProps {
   author: string;
   profileImage: string;
@@ -29,20 +31,7 @@ export default function PostHeader({
   postType,
   userId,
 }: PostHeaderProps) {
-  // 날짜 포맷팅: ISO 8601 → YY/MM/DD HH:mm
-  const formatDateTime = (isoString: string): string => {
-    const date = new Date(isoString);
-    return date
-      .toLocaleDateString('ko-KR', {
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-      .replace(/\. /g, '/')
-      .replace('.', '');
-  };
+  // 날짜 포맷팅 로직은 dateUtils의 formatDateTime을 사용합니다.
 
   // 포스트 타입별 한글 레이블
   const getTypeLabel = () => {
