@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { useDraftStore } from '@/store/draftStore';
 import WriteHeader from './components/WriteHeader';
 import WriteForm from './components/WriteForm';
@@ -30,18 +30,20 @@ interface EditPostData {
     additionalComposers?: Composer[];
 }
 
-type UpdatePayload = {
+// Payload type for creating/updating posts
+interface PostPayload {
     title: string;
     content: string;
     hashtags: string[];
     images: string[];
     videoUrl: string;
     postStatus: 'PUBLISHED' | 'DRAFT';
-    primaryComposerId?: number;
-    primaryComposerName?: string;
+    createdAt?: string;
+    primaryComposerId?: number | null;
     additionalComposersId?: number[];
     additionalComposerIds?: number[];
-};
+}
+
 
 export function WritePageInner() {
     const router = useRouter();
@@ -236,7 +238,7 @@ export function WritePageInner() {
             ];
 
             const pId = selectedComposers[0]?.id || primaryComposerId;
-            const payload: any = {
+            const payload: PostPayload = {
                 title, content, hashtags, images: finalImages,
                 videoUrl: link.trim(), postStatus: 'PUBLISHED',
                 createdAt: new Date().toISOString()
@@ -267,9 +269,9 @@ export function WritePageInner() {
                 router.refresh();
                 router.push(pId ? `/composer-talk-room/${pId}` : '/free-talk');
             }
-        } catch (e: any) {
+        } catch (e) {
             console.error("Submission failed", e);
-            if (e.response?.data?.code === 'COMMON_400') {
+            if (isAxiosError(e) && e.response?.data?.code === 'COMMON_400') {
                 setHasError(true);
                 setToastMessage(e.response.data.message || '비속어가 포함되어 있습니다.');
                 setShowToast(true);
@@ -302,7 +304,7 @@ export function WritePageInner() {
             }
 
             const pId = selectedComposers[0]?.id || primaryComposerId;
-            const payload: any = {
+            const payload: PostPayload = {
                 title,
                 content,
                 hashtags: hashtags.filter(tag => tag.trim()),
