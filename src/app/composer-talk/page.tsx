@@ -64,10 +64,12 @@ export default function ComposerTalkPage() {
             return matchesSearch;
         })
         .sort((a, b) => {
-            // 좋아요한 작곡가를 상단에 배치
-            const aLiked = a.isLiked;
-            const bLiked = b.isLiked;
-            return aLiked ? -1 : bLiked ? 1 : 0;
+            // 1순위: 게시물 수 내림차순
+            if (b.postCount !== a.postCount) return b.postCount - a.postCount;
+            // 2순위: 좋아요한 작곡가를 상단에 배치
+            if (a.isLiked !== b.isLiked) return a.isLiked ? -1 : 1;
+            // 3순위: 태어난 년도 오름차순 (빠른 순)
+            return a.birthYear - b.birthYear;
         });
 
     return (

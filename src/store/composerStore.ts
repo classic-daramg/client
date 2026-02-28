@@ -12,6 +12,7 @@ export type Composer = {
   deathYear: number | null;
   bio: string;
   isLiked: boolean;
+  postCount: number;
 };
 
 interface ComposerStore {
