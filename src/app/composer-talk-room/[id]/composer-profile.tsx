@@ -4,7 +4,7 @@ type ComposerData = {
     englishName: string;
     nativeName: string;
     nationality: string;
-    gender: 'MALE' | 'FEMALE';
+    gender: 'MALE' | 'FEMALE' | 'UNKNOWN';
     birthYear: number;
     deathYear: number | null;
     bio: string;

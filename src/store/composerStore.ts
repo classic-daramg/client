@@ -7,12 +7,13 @@ export type Composer = {
   englishName: string;
   nativeName: string;
   nationality: string;
-  gender: 'MALE' | 'FEMALE';
+  gender: 'MALE' | 'FEMALE' | 'UNKNOWN';
   birthYear: number;
   deathYear: number | null;
   bio: string;
   isLiked: boolean;
-  postCount: number;
+  storyPostCount: number;
+  lastStoryPostAt: string | null;
 };
 
 interface ComposerStore {
