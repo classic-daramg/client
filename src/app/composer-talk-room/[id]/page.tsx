@@ -9,7 +9,10 @@ import FloatingButtons from './floating-buttons';
 import RoomFilter from './filter';
 import RoomHeader from './header';
 import { useComposerStore } from '@/store/composerStore';
+import { useAuthStore } from '@/store/authStore';
 import { trackSearch } from '@/lib/ga';
+
+const VISITED_KEY = 'composer_last_visited';
 
 // --- Type Definition for Post Data ---
 type Post = {
@@ -145,6 +148,30 @@ export default function ComposerTalkPage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // 토크룸 진입 시 방문 시각 저장 (N 뱃지 숨김)
+  // 로그인: localStorage (영속), 비로그인: sessionStorage (브라우저 종료 시 초기화)
+  useEffect(() => {
+    if (!isClient) return;
+
+    const rawId = params?.id;
+    const composerId = Array.isArray(rawId) ? rawId[0] : rawId;
+    if (!composerId || composerId === 'undefined') return;
+
+    const numericId = parseInt(composerId, 10);
+    if (isNaN(numericId)) return;
+
+    const authenticated = useAuthStore.getState().isAuthenticated();
+    const storage = authenticated ? localStorage : sessionStorage;
+    try {
+      const stored = storage.getItem(VISITED_KEY);
+      const visited = stored ? JSON.parse(stored) : {};
+      visited[numericId] = new Date().toISOString();
+      storage.setItem(VISITED_KEY, JSON.stringify(visited));
+    } catch (error) {
+      console.error('Failed to save composer visit:', error);
+    }
+  }, [isClient, params]);
 
   // params 처리 및 작곡가 데이터 + 포스트 가져오기
   useEffect(() => {

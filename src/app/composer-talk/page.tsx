@@ -1,22 +1,30 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import HeartButton from './heart-button';
 import Link from 'next/link';
 import { useComposerTalk } from './context';
 import { useComposerStore } from '@/store/composerStore';
+import { useAuthStore } from '@/store/authStore';
 import { apiClient } from '@/lib/apiClient';
+
+const VISITED_KEY = 'composer_last_visited';
 
 export default function ComposerTalkPage() {
     const { searchTerm, filters } = useComposerTalk();
     const { composers, setComposers, selectComposer } = useComposerStore();
+    const [isClient, setIsClient] = useState(false);
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     // API 호출하여 작곡가 목록 가져오기 (필터 적용)
     useEffect(() => {
         const fetchComposers = async () => {
             try {
-                // 쿼리 파라미터 생성
                 const params = new URLSearchParams();
                 if (filters.era.length > 0) {
                     params.append('eras', filters.era.join(','));
@@ -55,17 +63,29 @@ export default function ComposerTalkPage() {
         }
     };
 
+    // 마지막 방문 시각 조회 (로그인: localStorage, 비로그인: sessionStorage)
+    const getLastVisitedAt = useCallback((composerId: number): string | null => {
+        if (!isClient) return null;
+        const storage = isAuthenticated ? localStorage : sessionStorage;
+        try {
+            const stored = storage.getItem(VISITED_KEY);
+            const visited = stored ? JSON.parse(stored) : {};
+            return visited[composerId] ?? null;
+        } catch {
+            return null;
+        }
+    }, [isClient, isAuthenticated]);
+
     // API에서 필터링된 데이터 사용 (검색어만 클라이언트에서 필터링)
     const filteredCards = composers
         .filter((composer) => {
-            // 검색어 필터링
             const matchesSearch = searchTerm === '' ||
                 composer.koreanName.toLowerCase().includes(searchTerm.toLowerCase());
             return matchesSearch;
         })
         .sort((a, b) => {
             // 1순위: 게시물 수 내림차순
-            if (b.postCount !== a.postCount) return b.postCount - a.postCount;
+            if (b.storyPostCount !== a.storyPostCount) return b.storyPostCount - a.storyPostCount;
             // 2순위: 좋아요한 작곡가를 상단에 배치
             if (a.isLiked !== b.isLiked) return a.isLiked ? -1 : 1;
             // 3순위: 태어난 년도 오름차순 (빠른 순)
@@ -93,24 +113,38 @@ export default function ComposerTalkPage() {
                         <p className='text-gray-500 text-sm'>검색 결과가 없습니다.</p>
                     </div>
                 ) : (
-                    filteredCards.map((composer) => (
-                        <Link
-                            key={composer.composerId}
-                            href={`/composer-talk-room/${composer.composerId}`}
-                            onClick={() => selectComposer(composer.composerId)}
-                        >
-                            <div className="p-6 bg-white rounded-2xl shadow-sm flex justify-between items-center gap-5">
-                                <div className="flex flex-col gap-0.5 flex-grow">
-                                    <div className="text-stone-300 text-xs font-semibold">{composer.bio}</div>
-                                    <div className="text-zinc-900 text-xl font-semibold">{composer.koreanName}</div>
+                    filteredCards.map((composer) => {
+                        const lastVisitedAt = getLastVisitedAt(composer.composerId);
+                        const showNBadge = isClient && !!composer.lastStoryPostAt && (
+                            !lastVisitedAt ||
+                            new Date(composer.lastStoryPostAt) > new Date(lastVisitedAt)
+                        );
+                        return (
+                            <Link
+                                key={composer.composerId}
+                                href={`/composer-talk-room/${composer.composerId}`}
+                                onClick={() => selectComposer(composer.composerId)}
+                            >
+                                <div className="p-6 bg-white rounded-2xl shadow-sm flex items-center gap-[19px]">
+                                    <HeartButton
+                                        isSelected={composer.isLiked}
+                                        onToggle={() => handleLikeToggle(composer.composerId)}
+                                    />
+                                    <div className="flex flex-col gap-0.5 flex-grow">
+                                        <div className="text-[#BFBFBF] text-xs font-semibold">{composer.bio}</div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-zinc-900 text-xl font-semibold">{composer.koreanName}</span>
+                                            {showNBadge && (
+                                                <div className="w-4 h-4 rounded-full bg-[#FF5D70] flex items-center justify-center flex-shrink-0">
+                                                    <span className="text-white text-[8px] font-semibold leading-none">N</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                                <HeartButton
-                                    isSelected={composer.isLiked}
-                                    onToggle={() => handleLikeToggle(composer.composerId)}
-                                />
-                            </div>
-                        </Link>
-                    ))
+                            </Link>
+                        );
+                    })
                 )}
             </div>
         </div>
