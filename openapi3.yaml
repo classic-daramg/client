@@ -247,7 +247,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/composers-1953814747"
+                $ref: "#/components/schemas/composers-1523407709"
               examples:
                 composer-query-controller-test/작곡가_목록을_조회한다:
                   value: |-
@@ -260,8 +260,10 @@ paths:
                       "gender" : "MALE",
                       "birthYear" : 1653,
                       "deathYear" : 1713,
-                      "bio" : "“바이올린의 따스한 숨결이 서로를 감싸는 밤”",
-                      "isLiked" : true
+                      "bio" : "바이올린의 따스한 숨결이 서로를 감싸는 밤",
+                      "isLiked" : true,
+                      "storyPostCount" : 3,
+                      "lastStoryPostAt" : "2024-03-01T12:00:00Z"
                     }, {
                       "composerId" : 2,
                       "koreanName" : "비탈리",
@@ -271,8 +273,9 @@ paths:
                       "gender" : "MALE",
                       "birthYear" : 1663,
                       "deathYear" : 1745,
-                      "bio" : "“서정이 흐르는 현의 떨림, 조용히 마음을 울리는 음악”",
-                      "isLiked" : false
+                      "bio" : "서정이 흐르는 현의 떨림, 조용히 마음을 울리는 음악",
+                      "isLiked" : false,
+                      "storyPostCount" : 0
                     }, {
                       "composerId" : 3,
                       "koreanName" : "A. 스카를라티",
@@ -282,8 +285,10 @@ paths:
                       "gender" : "MALE",
                       "birthYear" : 1660,
                       "deathYear" : 1725,
-                      "bio" : "“수많은 이야기 속에 피어나는 이탈리아의 정열”",
-                      "isLiked" : true
+                      "bio" : "수많은 이야기 속에 피어나는 이탈리아의 정열",
+                      "isLiked" : true,
+                      "storyPostCount" : 1,
+                      "lastStoryPostAt" : "2024-02-15T09:00:00Z"
                     }, {
                       "composerId" : 4,
                       "koreanName" : "D. 스카를라티",
@@ -293,8 +298,9 @@ paths:
                       "gender" : "MALE",
                       "birthYear" : 1685,
                       "deathYear" : 1757,
-                      "bio" : "“하늘을 나는 건반 위 상상, 자유로운 영혼의 소나타”",
-                      "isLiked" : false
+                      "bio" : "하늘을 나는 건반 위 상상, 자유로운 영혼의 소나타",
+                      "isLiked" : false,
+                      "storyPostCount" : 0
                     }, {
                       "composerId" : 5,
                       "koreanName" : "비발디",
@@ -304,8 +310,10 @@ paths:
                       "gender" : "MALE",
                       "birthYear" : 1678,
                       "deathYear" : 1741,
-                      "bio" : "“빨간 머리의 계절처럼 쏟아지는 생명과 빛”",
-                      "isLiked" : true
+                      "bio" : "빨간 머리의 계절처럼 쏟아지는 생명과 빛",
+                      "isLiked" : true,
+                      "storyPostCount" : 5,
+                      "lastStoryPostAt" : "2024-03-10T18:30:00Z"
                     }, {
                       "composerId" : 6,
                       "koreanName" : "타르티니",
@@ -315,8 +323,10 @@ paths:
                       "gender" : "MALE",
                       "birthYear" : 1692,
                       "deathYear" : 1770,
-                      "bio" : "“악마도 울릴 만큼 깊은 꿈결, 신비로운 선율의 마법”",
-                      "isLiked" : false
+                      "bio" : "악마도 울릴 만큼 깊은 꿈결, 신비로운 선율의 마법",
+                      "isLiked" : false,
+                      "storyPostCount" : 2,
+                      "lastStoryPostAt" : "2024-01-20T14:00:00Z"
                     }, {
                       "composerId" : 7,
                       "koreanName" : "파헬벨",
@@ -326,8 +336,9 @@ paths:
                       "gender" : "MALE",
                       "birthYear" : 1653,
                       "deathYear" : 1706,
-                      "bio" : "“시간 너머의 따뜻한 안식, 평화로운 하루의 시작”",
-                      "isLiked" : true
+                      "bio" : "시간 너머의 따뜻한 안식, 평화로운 하루의 시작",
+                      "isLiked" : true,
+                      "storyPostCount" : 0
                     }, {
                       "composerId" : 8,
                       "koreanName" : "마테존",
@@ -337,8 +348,10 @@ paths:
                       "gender" : "MALE",
                       "birthYear" : 1681,
                       "deathYear" : 1764,
-                      "bio" : "“생각과 음악이 나란히 걷는 길, 새로움을 질문하는 순간”",
-                      "isLiked" : false
+                      "bio" : "생각과 음악이 나란히 걷는 길, 새로움을 질문하는 순간",
+                      "isLiked" : false,
+                      "storyPostCount" : 4,
+                      "lastStoryPostAt" : "2024-03-05T10:00:00Z"
                     } ]
   /composers/{composerId}/like:
     post:
@@ -390,7 +403,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/composers-composerId-posts-815860865"
+                $ref: "#/components/schemas/composers-composerId-posts1302025394"
               examples:
                 composer-query-controller-test/작곡가_정보와_포스트_목록을_조회한다:
                   value: |-
@@ -404,8 +417,10 @@ paths:
                         "gender" : "MALE",
                         "birthYear" : 1653,
                         "deathYear" : 1713,
-                        "bio" : "“바이올린의 따스한 숨결이 서로를 감싸는 밤”",
-                        "isLiked" : true
+                        "bio" : "바이올린의 따스한 숨결이 서로를 감싸는 밤",
+                        "isLiked" : true,
+                        "storyPostCount" : 3,
+                        "lastStoryPostAt" : "2024-01-15T10:30:00Z"
                       },
                       "posts" : {
                         "content" : [ {
@@ -413,13 +428,14 @@ paths:
                           "title" : "코렐리 스토리 포스트",
                           "content" : "코렐리에 대한 스토리 포스트 내용입니다",
                           "hashtags" : [ "#코렐리", "#바로크" ],
-                          "createdAt" : "2024-01-15T10:30:00",
+                          "createdAt" : "2024-01-15T10:30:00Z",
                           "writerNickname" : "작성자1",
                           "likeCount" : 10,
                           "commentCount" : 5,
                           "thumbnailImageUrl" : "https://example.com/image1.jpg",
                           "type" : "STORY",
                           "primaryComposer" : null,
+                          "additionalComposers" : null,
                           "isLiked" : true,
                           "isScrapped" : false
                         }, {
@@ -427,13 +443,14 @@ paths:
                           "title" : "코렐리 큐레이션 포스트",
                           "content" : "코렐리에 대한 큐레이션 포스트 내용입니다",
                           "hashtags" : [ "#코렐리", "#큐레이션" ],
-                          "createdAt" : "2024-01-14T15:20:00",
+                          "createdAt" : "2024-01-14T15:20:00Z",
                           "writerNickname" : "작성자2",
                           "likeCount" : 20,
                           "commentCount" : 10,
                           "thumbnailImageUrl" : null,
                           "type" : "CURATION",
                           "primaryComposer" : null,
+                          "additionalComposers" : null,
                           "isLiked" : false,
                           "isScrapped" : true
                         } ],
@@ -484,14 +501,14 @@ paths:
                         "id" : 1,
                         "title" : "첫 번째 공지",
                         "writerNickname" : "관리자",
-                        "createdAt" : "2026-02-16T08:59:26.118875089",
+                        "createdAt" : "2026-02-28T19:57:14.936831500Z",
                         "content" : "공지 내용입니다.",
                         "thumbnailImageUrl" : "https://example.com/thumb1.jpg"
                       }, {
                         "id" : 2,
                         "title" : "두 번째 공지",
                         "writerNickname" : "관리자",
-                        "createdAt" : "2026-02-16T08:59:26.118903522",
+                        "createdAt" : "2026-02-28T19:57:14.936844955Z",
                         "content" : "공지 내용입니다.",
                         "thumbnailImageUrl" : null
                       } ],
@@ -551,7 +568,7 @@ paths:
                       "title" : "공지사항 제목",
                       "content" : "공지사항 상세 내용입니다.",
                       "images" : [ "https://example.com/image1.jpg" ],
-                      "createdAt" : "2026-02-16T08:59:26.290573247"
+                      "createdAt" : "2026-02-28T19:57:14.980697018Z"
                     }
     delete:
       tags:
@@ -624,7 +641,7 @@ paths:
                         "postTitle" : "게시글 제목",
                         "type" : "COMMENT",
                         "isRead" : false,
-                        "createdAt" : "2025-01-01T12:00:00"
+                        "createdAt" : "2025-01-01T12:00:00Z"
                       }, {
                         "id" : 2,
                         "senderNickname" : "다른사람",
@@ -633,7 +650,7 @@ paths:
                         "postTitle" : "게시글 제목",
                         "type" : "POST_LIKE",
                         "isRead" : true,
-                        "createdAt" : "2025-01-01T11:00:00"
+                        "createdAt" : "2025-01-01T11:00:00Z"
                       } ],
                       "nextCursor" : null,
                       "hasNext" : false
@@ -740,21 +757,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/posts-userId-scraps1907539568"
+                $ref: "#/components/schemas/posts-userId-drafts-1658039875"
               examples:
                 큐레이션_포스트_목록_조회:
                   value: "{\"content\":[{\"id\":1,\"title\":\"큐레이션 포스트 제목 1\",\"content\"\
                     :\"큐레이션 포스트 내용입니다\",\"hashtags\":[\"#큐레이션1\",\"#음악\"],\"createdAt\"\
-                    :\"2024-01-15T12:00:00\",\"writerNickname\":\"작성자1\",\"likeCount\"\
+                    :\"2024-01-15T12:00:00Z\",\"writerNickname\":\"작성자1\",\"likeCount\"\
                     :30,\"commentCount\":15,\"thumbnailImageUrl\":\"https://example.com/curation1.jpg\"\
-                    ,\"type\":\"CURATION\",\"primaryComposer\":null,\"isLiked\":null,\"\
-                    isScrapped\":null},{\"id\":2,\"title\":\"큐레이션 포스트 제목 2\",\"content\"\
-                    :\"큐레이션 포스트 내용입니다\",\"hashtags\":[\"#큐레이션2\"],\"createdAt\":\"\
-                    2024-01-14T18:45:00\",\"writerNickname\":\"작성자2\",\"likeCount\"\
-                    :25,\"commentCount\":12,\"thumbnailImageUrl\":null,\"type\":\"\
-                    CURATION\",\"primaryComposer\":null,\"isLiked\":null,\"isScrapped\"\
-                    :null}],\"nextCursor\":\"MjAyNC0wMS0xNVEyMjowMDowMF8xMjM=\",\"\
-                    hasNext\":true}"
+                    ,\"type\":\"CURATION\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null},{\"id\":2,\"title\"\
+                    :\"큐레이션 포스트 제목 2\",\"content\":\"큐레이션 포스트 내용입니다\",\"hashtags\"\
+                    :[\"#큐레이션2\"],\"createdAt\":\"2024-01-14T18:45:00Z\",\"writerNickname\"\
+                    :\"작성자2\",\"likeCount\":25,\"commentCount\":12,\"thumbnailImageUrl\"\
+                    :null,\"type\":\"CURATION\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null}],\"nextCursor\":\"\
+                    MjAyNC0wMS0xNVEyMjowMDowMF8xMjM=\",\"hasNext\":true}"
     post:
       tags:
       - Post API
@@ -809,18 +826,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/posts-userId-scraps1907539568"
+                $ref: "#/components/schemas/posts-userId-drafts-1658039875"
               examples:
                 자유_포스트_목록_조회:
                   value: "{\"content\":[{\"id\":1,\"title\":\"자유 포스트 제목 1\",\"content\"\
                     :\"자유 포스트 내용입니다\",\"hashtags\":[\"#해시태그1\",\"#해시태그2\"],\"createdAt\"\
-                    :\"2024-01-15T10:30:00\",\"writerNickname\":\"작성자1\",\"likeCount\"\
+                    :\"2024-01-15T10:30:00Z\",\"writerNickname\":\"작성자1\",\"likeCount\"\
                     :10,\"commentCount\":5,\"thumbnailImageUrl\":\"https://example.com/image1.jpg\"\
-                    ,\"type\":\"FREE\",\"primaryComposer\":null,\"isLiked\":null,\"\
-                    isScrapped\":null},{\"id\":2,\"title\":\"자유 포스트 제목 2\",\"content\"\
-                    :\"자유 포스트 내용입니다\",\"hashtags\":[\"#해시태그3\"],\"createdAt\":\"2024-01-14T15:20:00\"\
-                    ,\"writerNickname\":\"작성자2\",\"likeCount\":20,\"commentCount\"\
-                    :10,\"thumbnailImageUrl\":null,\"type\":\"FREE\",\"primaryComposer\"\
+                    ,\"type\":\"FREE\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null},{\"id\":2,\"title\"\
+                    :\"자유 포스트 제목 2\",\"content\":\"자유 포스트 내용입니다\",\"hashtags\":[\"\
+                    #해시태그3\"],\"createdAt\":\"2024-01-14T15:20:00Z\",\"writerNickname\"\
+                    :\"작성자2\",\"likeCount\":20,\"commentCount\":10,\"thumbnailImageUrl\"\
+                    :null,\"type\":\"FREE\",\"primaryComposer\":null,\"additionalComposers\"\
                     :null,\"isLiked\":null,\"isScrapped\":null}],\"nextCursor\":\"\
                     MjAyNC0wMS0xNVEyMDozMDowMF8xMjM=\",\"hasNext\":true}"
     post:
@@ -875,18 +893,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/posts-userId-scraps1907539568"
+                $ref: "#/components/schemas/posts-userId-drafts-1658039875"
               examples:
                 스토리_포스트_목록_조회:
                   value: "{\"content\":[{\"id\":1,\"title\":\"스토리 포스트 제목 1\",\"content\"\
                     :\"스토리 포스트 내용입니다\",\"hashtags\":[\"#스토리1\",\"#음악이야기\"],\"createdAt\"\
-                    :\"2024-01-15T14:30:00\",\"writerNickname\":\"작성자1\",\"likeCount\"\
+                    :\"2024-01-15T14:30:00Z\",\"writerNickname\":\"작성자1\",\"likeCount\"\
                     :50,\"commentCount\":25,\"thumbnailImageUrl\":\"https://example.com/story1.jpg\"\
-                    ,\"type\":\"STORY\",\"primaryComposer\":null,\"isLiked\":null,\"\
-                    isScrapped\":null},{\"id\":2,\"title\":\"스토리 포스트 제목 2\",\"content\"\
-                    :\"스토리 포스트 내용입니다\",\"hashtags\":[\"#스토리2\"],\"createdAt\":\"2024-01-14T20:15:00\"\
-                    ,\"writerNickname\":\"작성자2\",\"likeCount\":40,\"commentCount\"\
-                    :20,\"thumbnailImageUrl\":null,\"type\":\"STORY\",\"primaryComposer\"\
+                    ,\"type\":\"STORY\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null},{\"id\":2,\"title\"\
+                    :\"스토리 포스트 제목 2\",\"content\":\"스토리 포스트 내용입니다\",\"hashtags\":[\"\
+                    #스토리2\"],\"createdAt\":\"2024-01-14T20:15:00Z\",\"writerNickname\"\
+                    :\"작성자2\",\"likeCount\":40,\"commentCount\":20,\"thumbnailImageUrl\"\
+                    :null,\"type\":\"STORY\",\"primaryComposer\":null,\"additionalComposers\"\
                     :null,\"isLiked\":null,\"isScrapped\":null}],\"nextCursor\":null,\"\
                     hasNext\":false}"
     post:
@@ -935,7 +954,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/posts-postId-859810173"
+                $ref: "#/components/schemas/posts-postId-1250361168"
               examples:
                 포스트_상세_조회:
                   value: "{\"id\":1,\"writerNickname\":\"작성자\",\"writerProfileImage\"\
@@ -943,16 +962,16 @@ paths:
                     \",\"content\":\"포스트 내용입니다\",\"images\":[\"https://example.com/image1.jpg\"\
                     ,\"https://example.com/image2.jpg\"],\"videoUrl\":\"https://example.com/video.mp4\"\
                     ,\"hashtags\":[\"#해시태그1\",\"#해시태그2\"],\"postStatus\":\"PUBLISHED\"\
-                    ,\"likeCount\":10,\"commentCount\":5,\"isBlocked\":false,\"createdAt\"\
-                    :\"2024-01-15T10:30:00\",\"updatedAt\":\"2024-01-15T11:00:00\"\
-                    ,\"type\":\"FREE\",\"primaryComposer\":null,\"additionalComposers\"\
-                    :null,\"isLiked\":null,\"isScrapped\":null,\"comments\":[{\"id\"\
-                    :1,\"content\":\"댓글 내용\",\"isDeleted\":false,\"likeCount\":3,\"\
-                    childCommentCount\":1,\"createdAt\":\"2024-01-15T10:31:00\",\"\
-                    writerNickname\":\"댓글작성자\",\"writerProfileImage\":\"https://example.com/comment-profile.jpg\"\
+                    ,\"likeCount\":10,\"commentCount\":5,\"viewCount\":0,\"isBlocked\"\
+                    :false,\"createdAt\":\"2024-01-15T10:30:00Z\",\"updatedAt\":\"\
+                    2024-01-15T11:00:00Z\",\"type\":\"FREE\",\"primaryComposer\":null,\"\
+                    additionalComposers\":null,\"isLiked\":null,\"isScrapped\":null,\"\
+                    comments\":[{\"id\":1,\"content\":\"댓글 내용\",\"isDeleted\":false,\"\
+                    likeCount\":3,\"childCommentCount\":1,\"createdAt\":\"2024-01-15T10:31:00Z\"\
+                    ,\"writerNickname\":\"댓글작성자\",\"writerProfileImage\":\"https://example.com/comment-profile.jpg\"\
                     ,\"isLiked\":false,\"childComments\":[{\"id\":2,\"content\":\"\
                     대댓글 내용\",\"isDeleted\":false,\"likeCount\":1,\"createdAt\":\"\
-                    2024-01-15T10:35:00\",\"writerNickname\":\"대댓글작성자\",\"writerProfileImage\"\
+                    2024-01-15T10:35:00Z\",\"writerNickname\":\"대댓글작성자\",\"writerProfileImage\"\
                     :\"https://example.com/child-profile.jpg\",\"isLiked\":true}]}]}"
     delete:
       tags:
@@ -1186,21 +1205,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/posts-userId-scraps1907539568"
+                $ref: "#/components/schemas/posts-userId-drafts-1658039875"
               examples:
                 유저_임시저장_포스트_목록_조회:
                   value: "{\"content\":[{\"id\":1,\"title\":\"임시저장 포스트 제목 1\",\"content\"\
                     :\"임시저장 포스트 내용입니다\",\"hashtags\":[\"#임시저장1\",\"#작업중\"],\"createdAt\"\
-                    :\"2024-01-15T10:30:00\",\"writerNickname\":\"작성자1\",\"likeCount\"\
+                    :\"2024-01-15T10:30:00Z\",\"writerNickname\":\"작성자1\",\"likeCount\"\
                     :0,\"commentCount\":0,\"thumbnailImageUrl\":\"https://example.com/draft1.jpg\"\
-                    ,\"type\":\"CURATION\",\"primaryComposer\":null,\"isLiked\":null,\"\
-                    isScrapped\":null},{\"id\":2,\"title\":\"임시저장 포스트 제목 2\",\"content\"\
-                    :\"임시저장 포스트 내용입니다\",\"hashtags\":[\"#임시저장2\"],\"createdAt\":\"\
-                    2024-01-14T15:20:00\",\"writerNickname\":\"작성자1\",\"likeCount\"\
-                    :0,\"commentCount\":0,\"thumbnailImageUrl\":null,\"type\":\"FREE\"\
-                    ,\"primaryComposer\":null,\"isLiked\":null,\"isScrapped\":null}],\"\
-                    nextCursor\":\"MjAyNC0wMS0xNVEyMDozMDowMF8xMjM=\",\"hasNext\"\
-                    :true}"
+                    ,\"type\":\"CURATION\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null},{\"id\":2,\"title\"\
+                    :\"임시저장 포스트 제목 2\",\"content\":\"임시저장 포스트 내용입니다\",\"hashtags\"\
+                    :[\"#임시저장2\"],\"createdAt\":\"2024-01-14T15:20:00Z\",\"writerNickname\"\
+                    :\"작성자1\",\"likeCount\":0,\"commentCount\":0,\"thumbnailImageUrl\"\
+                    :null,\"type\":\"FREE\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null}],\"nextCursor\":\"\
+                    MjAyNC0wMS0xNVEyMDozMDowMF8xMjM=\",\"hasNext\":true}"
   /posts/{userId}/published:
     get:
       tags:
@@ -1234,18 +1253,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/posts-userId-scraps1907539568"
+                $ref: "#/components/schemas/posts-userId-drafts-1658039875"
               examples:
                 유저_발행_포스트_목록_조회:
                   value: "{\"content\":[{\"id\":1,\"title\":\"발행된 포스트 제목 1\",\"content\"\
                     :\"발행된 포스트 내용입니다\",\"hashtags\":[\"#발행1\",\"#음악\"],\"createdAt\"\
-                    :\"2024-01-15T10:30:00\",\"writerNickname\":\"작성자1\",\"likeCount\"\
+                    :\"2024-01-15T10:30:00Z\",\"writerNickname\":\"작성자1\",\"likeCount\"\
                     :15,\"commentCount\":8,\"thumbnailImageUrl\":\"https://example.com/published1.jpg\"\
-                    ,\"type\":\"FREE\",\"primaryComposer\":null,\"isLiked\":null,\"\
-                    isScrapped\":null},{\"id\":2,\"title\":\"발행된 포스트 제목 2\",\"content\"\
-                    :\"발행된 포스트 내용입니다\",\"hashtags\":[\"#발행2\"],\"createdAt\":\"2024-01-14T15:20:00\"\
-                    ,\"writerNickname\":\"작성자1\",\"likeCount\":20,\"commentCount\"\
-                    :10,\"thumbnailImageUrl\":null,\"type\":\"STORY\",\"primaryComposer\"\
+                    ,\"type\":\"FREE\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null},{\"id\":2,\"title\"\
+                    :\"발행된 포스트 제목 2\",\"content\":\"발행된 포스트 내용입니다\",\"hashtags\":[\"\
+                    #발행2\"],\"createdAt\":\"2024-01-14T15:20:00Z\",\"writerNickname\"\
+                    :\"작성자1\",\"likeCount\":20,\"commentCount\":10,\"thumbnailImageUrl\"\
+                    :null,\"type\":\"STORY\",\"primaryComposer\":null,\"additionalComposers\"\
                     :null,\"isLiked\":null,\"isScrapped\":null}],\"nextCursor\":\"\
                     MjAyNC0wMS0xNVEyMDozMDowMF8xMjM=\",\"hasNext\":true}"
   /posts/{userId}/scraps:
@@ -1281,20 +1301,48 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/posts-userId-scraps1907539568"
+                $ref: "#/components/schemas/posts-userId-drafts-1658039875"
               examples:
                 유저_스크랩_포스트_목록_조회:
                   value: "{\"content\":[{\"id\":1,\"title\":\"스크랩한 포스트 제목 1\",\"content\"\
                     :\"스크랩한 포스트 내용입니다\",\"hashtags\":[\"#스크랩1\",\"#좋은음악\"],\"createdAt\"\
-                    :\"2024-01-15T10:30:00\",\"writerNickname\":\"다른작성자1\",\"likeCount\"\
+                    :\"2024-01-15T10:30:00Z\",\"writerNickname\":\"다른작성자1\",\"likeCount\"\
                     :50,\"commentCount\":25,\"thumbnailImageUrl\":\"https://example.com/scrap1.jpg\"\
-                    ,\"type\":\"STORY\",\"primaryComposer\":null,\"isLiked\":null,\"\
-                    isScrapped\":null},{\"id\":2,\"title\":\"스크랩한 포스트 제목 2\",\"content\"\
-                    :\"스크랩한 포스트 내용입니다\",\"hashtags\":[\"#스크랩2\"],\"createdAt\":\"\
-                    2024-01-14T15:20:00\",\"writerNickname\":\"다른작성자2\",\"likeCount\"\
-                    :30,\"commentCount\":15,\"thumbnailImageUrl\":null,\"type\":\"\
-                    CURATION\",\"primaryComposer\":null,\"isLiked\":null,\"isScrapped\"\
-                    :null}],\"nextCursor\":null,\"hasNext\":false}"
+                    ,\"type\":\"STORY\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null},{\"id\":2,\"title\"\
+                    :\"스크랩한 포스트 제목 2\",\"content\":\"스크랩한 포스트 내용입니다\",\"hashtags\"\
+                    :[\"#스크랩2\"],\"createdAt\":\"2024-01-14T15:20:00Z\",\"writerNickname\"\
+                    :\"다른작성자2\",\"likeCount\":30,\"commentCount\":15,\"thumbnailImageUrl\"\
+                    :null,\"type\":\"CURATION\",\"primaryComposer\":null,\"additionalComposers\"\
+                    :null,\"isLiked\":null,\"isScrapped\":null}],\"nextCursor\":null,\"\
+                    hasNext\":false}"
+  /search:
+    get:
+      tags:
+      - Search API
+      summary: 키워드 검색
+      description: "키워드로 작곡가와 게시글을 검색하고, 검색 기록을 저장합니다."
+      operationId: 검색
+      parameters:
+      - name: keyword
+        in: query
+        description: 검색 키워드
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/search87435916"
+              examples:
+                검색:
+                  value: "{\"composers\":[{\"id\":1,\"koreanName\":\"볼프강 아마데우스 모차르\
+                    트\",\"englishName\":\"Wolfgang Amadeus Mozart\"}],\"posts\":[{\"\
+                    id\":10,\"title\":\"모차르트의 피아노 협주곡\",\"type\":\"STORY\",\"writerNickname\"\
+                    :\"작성자닉네임\",\"createdAt\":\"2024-03-01T12:00:00Z\"}]}"
   /users:
     get:
       tags:
@@ -1511,80 +1559,64 @@ components:
       in: cookie
       name: access_token
   schemas:
-    posts-userId-scraps1907539568:
+    notice608458562:
       type: object
       properties:
         nextCursor:
           type: string
-          description: 다음 페이지 조회를 위한 커서 (Base64 인코딩된 문자열). 마지막 페이지인 경우 null
+          description: 다음 페이지 커서
         hasNext:
           type: boolean
           description: 다음 페이지 존재 여부
         content:
           type: array
-          description: 포스트 목록
+          description: 공지사항 목록
           items:
             type: object
             properties:
-              hashtags:
-                type: array
-                description: 해시태그 목록
-                items:
-                  oneOf:
-                  - type: object
-                  - type: boolean
-                  - type: string
-                  - type: number
-              isLiked:
-                type: boolean
-                description: 로그인한 유저의 좋아요 여부 (비로그인 시 null)
-              likeCount:
-                type: number
-                description: 좋아요 개수
-              type:
-                type: string
-                description: "포스트 타입 (FREE, CURATION, STORY)"
-              title:
-                type: string
-                description: 포스트 제목
-              content:
-                type: string
-                description: 포스트 내용
-              commentCount:
-                type: number
-                description: 댓글 개수
               createdAt:
                 type: string
-                description: 생성일시 (ISO 8601 형식)
+                description: 작성일시
               thumbnailImageUrl:
                 type: string
                 description: 썸네일 이미지 URL
               writerNickname:
                 type: string
                 description: 작성자 닉네임
-              isScrapped:
-                type: boolean
-                description: 로그인한 유저의 스크랩 여부 (비로그인 시 null)
-              primaryComposer:
-                type: object
-                properties:
-                  continent:
-                    type: string
-                    description: 작곡가 대륙 (Continent)
-                  era:
-                    type: string
-                    description: 작곡가 시대 (Era)
-                  id:
-                    type: number
-                    description: 작곡가 ID
-                  koreanName:
-                    type: string
-                    description: 작곡가 한글 이름
-                description: 큐레이션 포스트의 대표 작곡가 정보 (CURATION 타입일 때만 존재)
               id:
                 type: number
-                description: 포스트 ID
-    posts-postId-859810173:
+                description: 공지사항 ID
+              title:
+                type: string
+                description: 공지사항 제목
+              content:
+                type: string
+                description: 공지사항 내용
+    auth-login466290637:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: 액세스 토큰 (JWT)
+        userId:
+          type: number
+          description: 유저 ID
+        refreshToken:
+          type: string
+          description: 리프레시 토큰 (JWT)
+    users-profile-633746575:
+      type: object
+      properties:
+        nickname:
+          type: string
+          description: "닉네임 (2~8자의 한글, 영문, 숫자와 일부 특수문자(_, .)만 사용 가능)"
+        bio:
+          type: string
+          description: 자기소개 (12자 이하)
+        profileImageUrl:
+          type: string
+          description: 프로필 이미지 URL
+    posts-postId-1250361168:
       type: object
       properties:
         images:
@@ -1735,69 +1767,15 @@ components:
               type: string
               description: 주 작곡가 한국어 이름
           description: "주 작곡가 정보 (STORY, CURATION 타입인 경우)"
+        viewCount:
+          type: number
+          description: 조회수
         id:
           type: number
           description: 포스트 ID
         updatedAt:
           type: string
           description: 수정일시 (ISO 8601 형식)
-    notice608458562:
-      type: object
-      properties:
-        nextCursor:
-          type: string
-          description: 다음 페이지 커서
-        hasNext:
-          type: boolean
-          description: 다음 페이지 존재 여부
-        content:
-          type: array
-          description: 공지사항 목록
-          items:
-            type: object
-            properties:
-              createdAt:
-                type: string
-                description: 작성일시
-              thumbnailImageUrl:
-                type: string
-                description: 썸네일 이미지 URL
-              writerNickname:
-                type: string
-                description: 작성자 닉네임
-              id:
-                type: number
-                description: 공지사항 ID
-              title:
-                type: string
-                description: 공지사항 제목
-              content:
-                type: string
-                description: 공지사항 내용
-    auth-login466290637:
-      type: object
-      properties:
-        accessToken:
-          type: string
-          description: 액세스 토큰 (JWT)
-        userId:
-          type: number
-          description: 유저 ID
-        refreshToken:
-          type: string
-          description: 리프레시 토큰 (JWT)
-    users-profile-633746575:
-      type: object
-      properties:
-        nickname:
-          type: string
-          description: "닉네임 (2~8자의 한글, 영문, 숫자와 일부 특수문자(_, .)만 사용 가능)"
-        bio:
-          type: string
-          description: 자기소개 (12자 이하)
-        profileImageUrl:
-          type: string
-          description: 프로필 이미지 URL
     users-change-password1647540412:
       type: object
       properties:
@@ -1813,6 +1791,138 @@ components:
         email:
           type: string
           description: 변경하고자 하는 유저의 이메일
+    posts-userId-drafts-1658039875:
+      type: object
+      properties:
+        nextCursor:
+          type: string
+          description: 다음 페이지 조회를 위한 커서 (Base64 인코딩된 문자열). 마지막 페이지인 경우 null
+        hasNext:
+          type: boolean
+          description: 다음 페이지 존재 여부
+        content:
+          type: array
+          description: 포스트 목록
+          items:
+            type: object
+            properties:
+              hashtags:
+                type: array
+                description: 해시태그 목록
+                items:
+                  oneOf:
+                  - type: object
+                  - type: boolean
+                  - type: string
+                  - type: number
+              additionalComposers:
+                type: array
+                description: 추가 작곡가 목록 (CURATION 타입일 때만 존재)
+                items:
+                  type: object
+                  properties:
+                    continent:
+                      type: string
+                      description: 추가 작곡가 대륙 (Continent)
+                    era:
+                      type: string
+                      description: 추가 작곡가 시대 (Era)
+                    id:
+                      type: number
+                      description: 추가 작곡가 ID
+                    koreanName:
+                      type: string
+                      description: 추가 작곡가 한글 이름
+              isLiked:
+                type: boolean
+                description: 로그인한 유저의 좋아요 여부 (비로그인 시 null)
+              likeCount:
+                type: number
+                description: 좋아요 개수
+              type:
+                type: string
+                description: "포스트 타입 (FREE, CURATION, STORY)"
+              title:
+                type: string
+                description: 포스트 제목
+              content:
+                type: string
+                description: 포스트 내용
+              commentCount:
+                type: number
+                description: 댓글 개수
+              createdAt:
+                type: string
+                description: 생성일시 (ISO 8601 형식)
+              thumbnailImageUrl:
+                type: string
+                description: 썸네일 이미지 URL
+              writerNickname:
+                type: string
+                description: 작성자 닉네임
+              isScrapped:
+                type: boolean
+                description: 로그인한 유저의 스크랩 여부 (비로그인 시 null)
+              primaryComposer:
+                type: object
+                properties:
+                  continent:
+                    type: string
+                    description: 작곡가 대륙 (Continent)
+                  era:
+                    type: string
+                    description: 작곡가 시대 (Era)
+                  id:
+                    type: number
+                    description: 작곡가 ID
+                  koreanName:
+                    type: string
+                    description: 작곡가 한글 이름
+                description: 큐레이션 포스트의 대표 작곡가 정보 (CURATION 타입일 때만 존재)
+              id:
+                type: number
+                description: 포스트 ID
+    composers-1523407709:
+      type: array
+      items:
+        type: object
+        properties:
+          composerId:
+            type: number
+            description: 작곡가 ID
+          nativeName:
+            type: string
+            description: 작곡가 원어 이름
+          englishName:
+            type: string
+            description: 작곡가 영어 이름
+          gender:
+            type: string
+            description: "작곡가 성별 (MALE, FEMALE, UNKNOWN)"
+          nationality:
+            type: string
+            description: 작곡가 국적
+          deathYear:
+            type: number
+            description: 작곡가 사망년도
+          birthYear:
+            type: number
+            description: 작곡가 출생년도
+          storyPostCount:
+            type: number
+            description: 스토리 게시글 수
+          isLiked:
+            type: boolean
+            description: 현재 유저의 좋아요 여부 (비로그인 시 false)
+          bio:
+            type: string
+            description: 작곡가 소개
+          koreanName:
+            type: string
+            description: 작곡가 한글 이름
+          lastStoryPostAt:
+            type: string
+            description: 가장 최근 스토리 게시글 작성 시각 (게시글 없으면 null)
     users-check-nickname1255944973:
       type: object
       properties:
@@ -1943,117 +2053,6 @@ components:
           description: 이메일
     auth-signout486549215:
       type: object
-    composers-composerId-posts-815860865:
-      type: object
-      properties:
-        composer:
-          type: object
-          properties:
-            composerId:
-              type: number
-              description: 작곡가 ID
-            nativeName:
-              type: string
-              description: 작곡가 원어 이름
-            englishName:
-              type: string
-              description: 작곡가 영어 이름
-            gender:
-              type: string
-              description: "작곡가 성별 (MALE, FEMALE, UNKNOWN)"
-            nationality:
-              type: string
-              description: 작곡가 국적
-            deathYear:
-              type: number
-              description: 작곡가 사망년도
-            birthYear:
-              type: number
-              description: 작곡가 출생년도
-            isLiked:
-              type: boolean
-              description: 현재 유저의 좋아요 여부 (비로그인 시 false)
-            bio:
-              type: string
-              description: 작곡가 소개
-            koreanName:
-              type: string
-              description: 작곡가 한글 이름
-          description: 작곡가 정보
-        posts:
-          type: object
-          properties:
-            nextCursor:
-              type: string
-              description: 다음 페이지 조회를 위한 커서 (Base64 인코딩된 문자열). 마지막 페이지인 경우 null
-            hasNext:
-              type: boolean
-              description: 다음 페이지 존재 여부
-            content:
-              type: array
-              description: 포스트 목록
-              items:
-                type: object
-                properties:
-                  hashtags:
-                    type: array
-                    description: 해시태그 목록
-                    items:
-                      oneOf:
-                      - type: object
-                      - type: boolean
-                      - type: string
-                      - type: number
-                  isLiked:
-                    type: boolean
-                    description: 로그인한 유저의 좋아요 여부 (비로그인 시 null)
-                  likeCount:
-                    type: number
-                    description: 좋아요 개수
-                  type:
-                    type: string
-                    description: "포스트 타입 (FREE, CURATION, STORY)"
-                  title:
-                    type: string
-                    description: 포스트 제목
-                  content:
-                    type: string
-                    description: 포스트 내용
-                  commentCount:
-                    type: number
-                    description: 댓글 개수
-                  createdAt:
-                    type: string
-                    description: 생성일시 (ISO 8601 형식)
-                  thumbnailImageUrl:
-                    type: string
-                    description: 썸네일 이미지 URL
-                  writerNickname:
-                    type: string
-                    description: 작성자 닉네임
-                  isScrapped:
-                    type: boolean
-                    description: 로그인한 유저의 스크랩 여부 (비로그인 시 null)
-                  primaryComposer:
-                    type: object
-                    properties:
-                      continent:
-                        type: string
-                        description: 작곡가 대륙 (Continent)
-                      era:
-                        type: string
-                        description: 작곡가 시대 (Era)
-                      id:
-                        type: number
-                        description: 작곡가 ID
-                      koreanName:
-                        type: string
-                        description: 작곡가 한글 이름
-                    description: 큐레이션 포스트의 대표 작곡가 정보 (CURATION 타입일 때만 존재)
-                  id:
-                    type: number
-                    description: 포스트 ID
-          description: 포스트 목록 페이징 정보
     posts-curation-745665617:
       type: object
       properties:
@@ -2191,41 +2190,141 @@ components:
         isEmailMatch:
           type: boolean
           description: "이메일 일치 여부 (true: 일치, false: 불일치)"
-    composers-1953814747:
-      type: array
-      items:
-        type: object
-        properties:
-          composerId:
-            type: number
-            description: 작곡가 ID
-          nativeName:
-            type: string
-            description: 작곡가 원어 이름
-          englishName:
-            type: string
-            description: 작곡가 영어 이름
-          gender:
-            type: string
-            description: "작곡가 성별 (MALE, FEMALE, UNKNOWN)"
-          nationality:
-            type: string
-            description: 작곡가 국적
-          deathYear:
-            type: number
-            description: 작곡가 사망년도
-          birthYear:
-            type: number
-            description: 작곡가 출생년도
-          isLiked:
-            type: boolean
-            description: 현재 유저의 좋아요 여부 (비로그인 시 false)
-          bio:
-            type: string
-            description: 작곡가 소개
-          koreanName:
-            type: string
-            description: 작곡가 한글 이름
+    composers-composerId-posts1302025394:
+      type: object
+      properties:
+        composer:
+          type: object
+          properties:
+            composerId:
+              type: number
+              description: 작곡가 ID
+            nativeName:
+              type: string
+              description: 작곡가 원어 이름
+            englishName:
+              type: string
+              description: 작곡가 영어 이름
+            gender:
+              type: string
+              description: "작곡가 성별 (MALE, FEMALE, UNKNOWN)"
+            nationality:
+              type: string
+              description: 작곡가 국적
+            deathYear:
+              type: number
+              description: 작곡가 사망년도
+            birthYear:
+              type: number
+              description: 작곡가 출생년도
+            storyPostCount:
+              type: number
+              description: 스토리 게시글 수
+            isLiked:
+              type: boolean
+              description: 현재 유저의 좋아요 여부 (비로그인 시 false)
+            bio:
+              type: string
+              description: 작곡가 소개
+            koreanName:
+              type: string
+              description: 작곡가 한글 이름
+            lastStoryPostAt:
+              type: string
+              description: 가장 최근 스토리 게시글 작성 시각 (게시글 없으면 null)
+          description: 작곡가 정보
+        posts:
+          type: object
+          properties:
+            nextCursor:
+              type: string
+              description: 다음 페이지 조회를 위한 커서 (Base64 인코딩된 문자열). 마지막 페이지인 경우 null
+            hasNext:
+              type: boolean
+              description: 다음 페이지 존재 여부
+            content:
+              type: array
+              description: 포스트 목록
+              items:
+                type: object
+                properties:
+                  hashtags:
+                    type: array
+                    description: 해시태그 목록
+                    items:
+                      oneOf:
+                      - type: object
+                      - type: boolean
+                      - type: string
+                      - type: number
+                  additionalComposers:
+                    type: array
+                    description: 추가 작곡가 목록 (CURATION 타입일 때만 존재)
+                    items:
+                      type: object
+                      properties:
+                        continent:
+                          type: string
+                          description: 추가 작곡가 대륙 (Continent)
+                        era:
+                          type: string
+                          description: 추가 작곡가 시대 (Era)
+                        id:
+                          type: number
+                          description: 추가 작곡가 ID
+                        koreanName:
+                          type: string
+                          description: 추가 작곡가 한글 이름
+                  isLiked:
+                    type: boolean
+                    description: 로그인한 유저의 좋아요 여부 (비로그인 시 null)
+                  likeCount:
+                    type: number
+                    description: 좋아요 개수
+                  type:
+                    type: string
+                    description: "포스트 타입 (FREE, CURATION, STORY)"
+                  title:
+                    type: string
+                    description: 포스트 제목
+                  content:
+                    type: string
+                    description: 포스트 내용
+                  commentCount:
+                    type: number
+                    description: 댓글 개수
+                  createdAt:
+                    type: string
+                    description: 생성일시 (ISO 8601 형식)
+                  thumbnailImageUrl:
+                    type: string
+                    description: 썸네일 이미지 URL
+                  writerNickname:
+                    type: string
+                    description: 작성자 닉네임
+                  isScrapped:
+                    type: boolean
+                    description: 로그인한 유저의 스크랩 여부 (비로그인 시 null)
+                  primaryComposer:
+                    type: object
+                    properties:
+                      continent:
+                        type: string
+                        description: 작곡가 대륙 (Continent)
+                      era:
+                        type: string
+                        description: 작곡가 시대 (Era)
+                      id:
+                        type: number
+                        description: 작곡가 ID
+                      koreanName:
+                        type: string
+                        description: 작곡가 한글 이름
+                    description: 큐레이션 포스트의 대표 작곡가 정보 (CURATION 타입일 때만 존재)
+                  id:
+                    type: number
+                    description: 포스트 ID
+          description: 포스트 목록 페이징 정보
     posts-postId-like-462227428:
       type: object
       properties:
@@ -2319,6 +2418,45 @@ components:
         content:
           type: string
           description: 대댓글 내용(최대 500자)
+    search87435916:
+      type: object
+      properties:
+        composers:
+          type: array
+          description: 검색된 작곡가 목록
+          items:
+            type: object
+            properties:
+              englishName:
+                type: string
+                description: 작곡가 영어 이름
+              id:
+                type: number
+                description: 작곡가 ID
+              koreanName:
+                type: string
+                description: 작곡가 한국어 이름
+        posts:
+          type: array
+          description: 검색된 게시글 목록
+          items:
+            type: object
+            properties:
+              createdAt:
+                type: string
+                description: 게시글 작성 시각
+              writerNickname:
+                type: string
+                description: 작성자 닉네임
+              id:
+                type: number
+                description: 게시글 ID
+              type:
+                type: string
+                description: "게시글 타입 (FREE, CURATION, STORY)"
+              title:
+                type: string
+                description: 게시글 제목
     posts-story-postId-1095836013:
       type: object
       properties:

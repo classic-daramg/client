@@ -15,175 +15,166 @@ export const apiClient = axios.create({
   withCredentials: true, // 쿠키 기반 인증도 지원
 });
 
-// 토큰 갱신 중 여부
+// 토큰 갱신 중임을 나타내는 플래그 (Lock)
 let isRefreshing = false;
 
-// 토큰 갱신 대기 중인 요청 큐
+// 토큰 갱신 대기 중인 요청들의 큐
 interface FailedRequest {
   resolve: (token: string) => void;
-  reject: (error: AxiosError) => void;
+  reject: (error: any) => void;
 }
 
-let failedQueue: FailedRequest[] = [];
+let refreshSubscribers: FailedRequest[] = [];
 
-// 큐에 있는 요청들 처리
-const processQueue = (error: AxiosError | null, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token!);
-    }
-  });
-
-  failedQueue = [];
+/**
+ * 대기열에 있는 모든 요청을 처리하는 함수
+ * @param error 에러 발생 시 에러 객체 (갱신 실패 등)
+ * @param token 갱신 성공 시 새로운 액세스 토큰
+ */
+const onRefreshed = (token: string) => {
+  refreshSubscribers.map((callback) => callback.resolve(token));
+  refreshSubscribers = [];
 };
 
-// Request Interceptor: 모든 요청에 Access Token 추가
+const onRefreshFailed = (error: any) => {
+  refreshSubscribers.map((callback) => callback.reject(error));
+  refreshSubscribers = [];
+};
+
+/**
+ * Request Interceptor: 모든 요청에 Access Token 주입
+ */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Zustand 스토어에서 최신 액세스 토큰을 가져옴
     const token = useAuthStore.getState().accessToken;
     const url = config.url || '';
 
-    // 인증 관련 요청에는 Authorization 헤더를 붙이지 않음 (refresh 제외, refresh는 아래 로직에서 처리 가능성 있음)
-    // 단, refresh 요청은 별도로 처리하므로 여기서는 일반적인 제외 리스트로 관리
-    const isAuthRequest =
-      url.includes('/auth/login') ||
-      url.includes('/auth/signup') ||
-      url.includes('/auth/verify-email') ||
-      url.includes('/auth/email-verifications') ||
-      url.includes('/auth/password-reset') ||
-      url.includes('/auth/logout') ||
-      url.includes('/auth/signout');
+    // 인증이 필요 없는 API 리스트 (로그인, 회원가입 등)
+    const isAuthRequest = [
+      '/auth/login',
+      '/auth/signup',
+      '/auth/verify-email',
+      '/auth/email-verifications',
+      '/auth/logout',
+      '/auth/signout'
+    ].some(path => url.includes(path));
 
-    // /auth/refresh는 이 인터셉터에서 Authorization 헤더를 붙이지 않도록 함 (쿠키 or 별도 헤더 사용)
+    // 토큰 갱신 요청 자체는 제외
     const isRefreshRequest = url.includes('/auth/refresh');
 
+    // 인증 요청이나 갱신 요청이 아니고 토큰이 존재할 때만 헤더 주입
     if (!isAuthRequest && !isRefreshRequest && token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response Interceptor: 401 에러 처리 및 토큰 갱신
+/**
+ * Response Interceptor: 401 Unauthorized 에러 발생 시 토큰 갱신 및 재요청 처리
+ */
 apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
+    const { config, response } = error;
+    const originalRequest = config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // 요청 설정이 없으면 에러 반환
-    if (!originalRequest) {
-      return Promise.reject(error);
-    }
+    // 401 에러가 발생했고, 아직 재시도하지 않은 요청인 경우
+    if (response?.status === 401 && originalRequest && !originalRequest._retry) {
 
-    // 401 에러가 아니거나 이미 재시도한 요청이면 에러 반환
-    if (!error.response || error.response.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
-    }
-
-    // 토큰 갱신 요청 자체가 실패한 경우 (400, 401 등) -> 로그아웃
-    if (originalRequest.url?.includes('/auth/refresh')) {
-      processQueue(error, null); // 대기 중인 요청들도 모두 실패 처리
-      useAuthStore.getState().clearTokens();
-
-      if (typeof window !== 'undefined') {
-        window.location.href = '/loginpage';
-      }
-      return Promise.reject(error);
-    }
-
-    // 토큰 갱신이 진행 중이면 큐에 추가 (Concurrent Requests Handling)
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        failedQueue.push({
-          resolve: (token: string) => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
-            resolve(apiClient(originalRequest));
-          },
-          reject: (err: AxiosError) => {
-            reject(err);
-          },
+      // Case B: 이미 토큰 갱신이 진행 중인 경우 (isRefreshing === true)
+      if (isRefreshing) {
+        // 새로운 Promise를 반환하여 갱신이 완료될 때까지 요청을 홀딩(Pending)시킴
+        return new Promise((resolve, reject) => {
+          refreshSubscribers.push({
+            resolve: (newToken: string) => {
+              // 갱신 성공 시: 새 토큰으로 헤더 교체 후 재요청
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              }
+              resolve(apiClient(originalRequest));
+            },
+            reject: (err: any) => {
+              // 갱신 실패 시: 요청 거부
+              reject(err);
+            },
+          });
         });
-      });
-    }
+      }
 
-    const storedRefreshToken = useAuthStore.getState().refreshToken || getRefreshTokenFromCookie();
-    if (!storedRefreshToken) {
-      // 로그인 상태(access token 존재)인데 refresh token이 없는 비정상 상태 → 클리어 후 로그인 페이지로
-      if (useAuthStore.getState().accessToken) {
+      // Case A: 최초로 401 에러가 감지되어 갱신을 시작해야 하는 경우 (isRefreshing === false)
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        // Zustand에서 리프레시 토큰 가져오기 (혹은 쿠키)
+        const storedRefreshToken = useAuthStore.getState().refreshToken || getRefreshTokenFromCookie();
+
+        if (!storedRefreshToken) {
+          throw new Error('No refresh token available');
+        }
+
+        /**
+         * 토큰 재발급 API 호출
+         * withCredentials: true 로 설정하여 HttpOnly 쿠키(있을 경우)를 함께 전송
+         * 별도의 axios 인스턴스 혹은 axios.post를 직접 사용하여 무한 루프 방지
+         */
+        const { data } = await axios.post(
+          `${BASE_URL}/auth/refresh`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${storedRefreshToken}` },
+            withCredentials: true,
+          }
+        );
+
+        // 백엔드 응답 구조에 맞게 새 액세스 토큰 추출
+        const newAccessToken = data.accessToken || data.token;
+        const newRefreshToken = data.refreshToken;
+
+        if (!newAccessToken) {
+          throw new Error('Refresh failed: New access token not received');
+        }
+
+        // 새 토큰들을 Zustand 스토어 및 쿠키에 저장
+        if (newRefreshToken) {
+          useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
+        } else {
+          useAuthStore.getState().setAccessToken(newAccessToken);
+        }
+
+        // 1. 대기열(Queue)에 쌓여있던 모든 요청을 일괄 처리
+        onRefreshed(newAccessToken);
+
+        // 2. 최초로 401이 났던 원본 요청도 새 토큰으로 재시도
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+
+        return apiClient(originalRequest);
+
+      } catch (refreshError) {
+        // 갱신 API 자체가 실패한 경우 (Refresh Token 만료 등)
+        onRefreshFailed(refreshError);
+
+        // 인증 정보 클리어 및 로그인 페이지 리다이렉트
         useAuthStore.getState().clearTokens();
         if (typeof window !== 'undefined') {
           window.location.href = '/loginpage';
         }
+
+        return Promise.reject(refreshError);
+      } finally {
+        // 갱신 작업 완료 후 플래그 해제
+        isRefreshing = false;
       }
-      // 비로그인 상태 → 리다이렉트 없이 에러 반환
-      return Promise.reject(error);
     }
 
-    originalRequest._retry = true;
-    isRefreshing = true;
-
-    try {
-      // 토큰 갱신 API 호출
-      // 별도의 axios 인스턴스나 axios.post를 사용하여 인터셉터 무한 루프 방지
-      const refreshResponse = await axios.post(
-        `${BASE_URL}/auth/refresh`,
-        {},
-        {
-          headers: storedRefreshToken ? { Authorization: `Bearer ${storedRefreshToken}` } : {},
-          withCredentials: true,
-        }
-      );
-
-      const { accessToken, refreshToken: newRefreshToken, token } = refreshResponse.data;
-      const newAccessToken = accessToken || token; // 백엔드 응답 필드명 확인 필요
-
-      if (!newAccessToken) {
-        throw new Error('No access token in refresh response');
-      }
-
-      // 새로운 토큰 저장 (Zustand)
-      if (newRefreshToken) {
-        useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
-      } else {
-        useAuthStore.getState().setAccessToken(newAccessToken);
-      }
-
-      // 큐에 있는 요청들 처리 (재시도)
-      processQueue(null, newAccessToken);
-
-      // 현재 실패했던 요청 재시도
-      if (originalRequest.headers) {
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-      }
-
-      return apiClient(originalRequest);
-
-    } catch (refreshError) {
-      // 갱신 실패 시 큐의 모든 요청 거부
-      processQueue(refreshError as AxiosError, null);
-
-      // 로그아웃 처리
-      useAuthStore.getState().clearTokens();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/loginpage';
-      }
-
-      return Promise.reject(refreshError);
-    } finally {
-      isRefreshing = false;
-    }
+    // 그 외의 모든 에러는 그대로 reject
+    return Promise.reject(error);
   }
 );
 

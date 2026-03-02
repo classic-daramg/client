@@ -6,8 +6,10 @@ import React, { useState } from 'react';
 import PasswordChangePopup from '../../../components/PasswordChangePopup';
 import apiClient from '@/lib/apiClient';
 import { AxiosError } from 'axios';
+import { useAuthStore } from '@/store/authStore';
 
 const ResetPasswordPage = () => {
+  const { setTokens } = useAuthStore();
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
@@ -80,6 +82,15 @@ const ResetPasswordPage = () => {
       });
 
       if (response.status === 200) {
+        const { accessToken, refreshToken } = response.data;
+        if (accessToken) {
+          setTokens(accessToken, refreshToken || null);
+
+          // 쿠키에 access token 저장 (백엔드가 cookieAuth로 인증하므로 필수)
+          if (typeof document !== 'undefined') {
+            document.cookie = `access_token=${accessToken}; path=/; SameSite=Lax`;
+          }
+        }
         setStep('reset');
       }
     } catch (error) {
