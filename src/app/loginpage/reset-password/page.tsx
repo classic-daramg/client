@@ -276,8 +276,8 @@ const ResetPasswordPage = () => {
                 <label className="w-[335px] h-[17px] font-pretendard font-semibold text-sm leading-[17px] flex items-center text-[#4C4C4C]">
                   새 비밀번호 입력
                 </label>
-                <p className="w-[335px] h-[14px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#BFBFBF]">
-                  새로 사용할 비밀번호를 입력해주세요.
+                <p className="w-[335px] h-[14px] font-pretendard font-medium text-[13px] leading-[14px] flex items-center text-[#BFBFBF]">
+                  대문자, 소문자, 숫자, 특수문자 포함 10자 이상
                 </p>
               </div>
 
