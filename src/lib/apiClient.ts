@@ -21,7 +21,7 @@ let isRefreshing = false;
 // 토큰 갱신 대기 중인 요청들의 큐
 interface FailedRequest {
   resolve: (token: string) => void;
-  reject: (error: any) => void;
+  reject: (error: unknown) => void;
 }
 
 let refreshSubscribers: FailedRequest[] = [];
@@ -36,7 +36,7 @@ const onRefreshed = (token: string) => {
   refreshSubscribers = [];
 };
 
-const onRefreshFailed = (error: any) => {
+const onRefreshFailed = (error: unknown) => {
   refreshSubscribers.map((callback) => callback.reject(error));
   refreshSubscribers = [];
 };
@@ -98,7 +98,7 @@ apiClient.interceptors.response.use(
               }
               resolve(apiClient(originalRequest));
             },
-            reject: (err: any) => {
+            reject: (err: unknown) => {
               // 갱신 실패 시: 요청 거부
               reject(err);
             },

@@ -273,14 +273,6 @@ function EditPageInner() {
     handleFieldChange('content', e.target.value);
   };
 
-  const handleHashtagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const hashtags = value
-      .split(/[,\s]+/)
-      .map((tag) => tag.replace(/^#/, '').trim())
-      .filter((tag) => tag.length > 0);
-    handleFieldChange('hashtags', hashtags);
-  };
 
   const handlePostStatusChange = (status: 'PUBLISHED' | 'DRAFT') => {
     handleFieldChange('postStatus', status);
