@@ -6,10 +6,8 @@ import React, { useState } from 'react';
 import PasswordChangePopup from '../../../components/PasswordChangePopup';
 import apiClient from '@/lib/apiClient';
 import { AxiosError } from 'axios';
-import { useAuthStore } from '@/store/authStore';
 
 const ResetPasswordPage = () => {
-  const { setTokens } = useAuthStore();
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
@@ -62,7 +60,12 @@ const ResetPasswordPage = () => {
     } catch (error) {
       console.error('Reset password email error:', error);
       if (error instanceof AxiosError) {
-        alert(error.response?.data?.message || '이메일을 찾을 수 없습니다.');
+        const errorData = error.response?.data;
+        if (errorData?.fieldErrors && errorData.fieldErrors.length > 0) {
+          alert(errorData.fieldErrors[0].reason);
+        } else {
+          alert(errorData?.message || '이메일을 찾을 수 없습니다.');
+        }
       } else {
         alert('네트워크 오류가 발생했습니다.');
       }
@@ -82,21 +85,17 @@ const ResetPasswordPage = () => {
       });
 
       if (response.status === 200) {
-        const { accessToken, refreshToken } = response.data;
-        if (accessToken) {
-          setTokens(accessToken, refreshToken || null);
-
-          // 쿠키에 access token 저장 (백엔드가 cookieAuth로 인증하므로 필수)
-          if (typeof document !== 'undefined') {
-            document.cookie = `access_token=${accessToken}; path=/; SameSite=Lax`;
-          }
-        }
         setStep('reset');
       }
     } catch (error) {
       console.error('Reset password verify error:', error);
       if (error instanceof AxiosError) {
-        alert(error.response?.data?.message || '인증코드가 올바르지 않습니다.');
+        const errorData = error.response?.data;
+        if (errorData?.fieldErrors && errorData.fieldErrors.length > 0) {
+          alert(errorData.fieldErrors[0].reason);
+        } else {
+          alert(errorData?.message || '인증코드가 올바르지 않습니다.');
+        }
       } else {
         alert('네트워크 오류가 발생했습니다.');
       }
@@ -123,7 +122,13 @@ const ResetPasswordPage = () => {
     } catch (error) {
       console.error('Reset password error:', error);
       if (error instanceof AxiosError) {
-        alert(error.response?.data?.message || '비밀번호 변경에 실패했습니다.');
+        const errorData = error.response?.data;
+        // fieldErrors가 있는 경우 (비밀번호 규약 등) 우선적으로 표시
+        if (errorData?.fieldErrors && errorData.fieldErrors.length > 0) {
+          alert(errorData.fieldErrors[0].reason);
+        } else {
+          alert(errorData?.message || '비밀번호 변경에 실패했습니다.');
+        }
       } else {
         alert('네트워크 오류가 발생했습니다.');
       }

@@ -56,6 +56,7 @@ apiClient.interceptors.request.use(
       '/auth/signup',
       '/auth/verify-email',
       '/auth/email-verifications',
+      '/auth/password-reset',
       '/auth/logout',
       '/auth/signout'
     ].some(path => url.includes(path));
