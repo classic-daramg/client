@@ -153,7 +153,7 @@ export default function CommentSection({
           <div className="flex items-center gap-3 px-4 py-3 bg-[#f4f5f7] rounded-lg">
             <div className="w-5 h-5 flex items-center justify-center">
               <Image
-                src="/icons/Icons_comment.svg"
+                src="/icons/icons_comment.svg"
                 alt="댓글"
                 width={20}
                 height={20}
