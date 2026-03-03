@@ -17,17 +17,28 @@ export default function FortuneReceiptPage() {
 
   useEffect(() => {
     setMounted(true);
-    // JSON 파일 로드 및 오늘 날짜에 해당하는 운세 선택
     fetch('/fortune_data.json')
       .then((res) => res.json())
       .then((fortuneData: Fortune[]) => {
-        const today = new Date();
-        const dayOfYear = Math.floor(
-          (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
-        );
-        const fortuneIndex = (dayOfYear - 1) % fortuneData.length;
-        setFortune(fortuneData[fortuneIndex]);
         setTotalFortunes(fortuneData.length);
+
+        const todayKey = new Date().toISOString().split('T')[0];
+        const stored = localStorage.getItem('dotori_fortune');
+
+        if (stored) {
+          const { date, id } = JSON.parse(stored);
+          if (date === todayKey) {
+            // 오늘 이미 뽑은 운세 재사용
+            const saved = fortuneData.find((f) => f.id === id);
+            if (saved) { setFortune(saved); return; }
+          }
+        }
+
+        // 오늘 처음 접속 → 랜덤 뽑기 후 저장
+        const randomIndex = Math.floor(Math.random() * fortuneData.length);
+        const picked = fortuneData[randomIndex];
+        setFortune(picked);
+        localStorage.setItem('dotori_fortune', JSON.stringify({ date: todayKey, id: picked.id }));
       })
       .catch((err) => console.error('Failed to load fortune data:', err));
   }, []);

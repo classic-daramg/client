@@ -29,9 +29,9 @@ const menuItems = [
 const bannerSlides = [
   {
     id: 3,
-    image: '/icons/banner3.png',
-    href: '/posts/231',
-    alt: 'Banner 3',
+    image: '/icons/banner4.png',
+    href: '/posts/308',
+    alt: 'Banner 4',
   },
   {
     id: 2,
