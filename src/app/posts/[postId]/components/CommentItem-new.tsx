@@ -68,7 +68,7 @@ export default function CommentItem({
     return (
       <div className={`bg-white py-[18px] ${isNested ? 'pl-[50px] pr-[20px]' : 'px-[20px]'}`}>
         <p className="text-sm font-medium text-[#a6a6a6] italic">삭제된 댓글입니다</p>
-        
+
         {comment.childComments && comment.childComments.length > 0 && (
           <div className="mt-[10px]">
             {comment.childComments.map((reply) => (
@@ -168,7 +168,7 @@ export default function CommentItem({
 
       {/* 댓글 내용 */}
       <div className="w-full">
-        <p className="text-[14px] font-medium leading-normal text-[#a6a6a6] whitespace-pre-wrap">
+        <p className="text-[14px] font-medium leading-normal text-[#1a1a1a] whitespace-pre-wrap">
           {comment.content}
         </p>
       </div>

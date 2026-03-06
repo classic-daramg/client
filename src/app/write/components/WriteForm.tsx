@@ -136,7 +136,7 @@ export default function WriteForm({
             <div className="w-full px-5 py-[18px] bg-white">
                 <input
                     type="text"
-                    placeholder="제목을 입력하세요"
+                    placeholder="제목을 입력하세요 (최대 40자)"
                     value={title}
                     onKeyDown={handleKeyDown}
                     onChange={(e) => setTitle(e.target.value)}

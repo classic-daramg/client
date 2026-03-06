@@ -164,7 +164,7 @@ export default function CommentItem({
 
       {/* 댓글 내용 */}
       <div className="w-full">
-        <p className="text-[14px] font-medium leading-normal text-[#a6a6a6] whitespace-pre-wrap">
+        <p className="text-[14px] font-medium leading-normal text-[#1a1a1a] whitespace-pre-wrap">
           {comment.content}
         </p>
       </div>
