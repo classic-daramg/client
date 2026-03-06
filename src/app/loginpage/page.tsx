@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AxiosError } from 'axios';
+import Cookies from 'js-cookie';
 import ToastNotification from '../../components/ToastNotification';
 import { useUserProfileStore } from '../../store/userProfileStore';
 import { useAuthStore } from '../../store/authStore';
@@ -17,7 +18,7 @@ const LoginPage = () => {
   const [toast, setToast] = useState({ show: false, message: '' });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const setProfile = useUserProfileStore((state) => state.setProfile);
+  const { setProfile, setAuthenticated } = useUserProfileStore();
   const { setTokens, setUserId } = useAuthStore();
 
   // JWT 토큰 디코딩 및 만료 확인 함수
@@ -88,10 +89,21 @@ const LoginPage = () => {
           setUserId(String(userId));
         }
 
-        // 쿠키에 access token 저장 (백엔드가 cookieAuth로 인증하므로 필수)
-        if (typeof document !== 'undefined') {
-          document.cookie = `access_token=${accessToken}; path=/; SameSite=Lax`;
+        Cookies.set('accessToken', accessToken, {
+          expires: 7, // 7일 유지
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+        });
+
+        if (refreshToken) {
+          Cookies.set('refreshToken', refreshToken, {
+            expires: 14,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+          });
         }
+
+        setAuthenticated(true);
 
         // 토큰 만료 정보 확인
         checkTokenExpiration(accessToken);
@@ -251,8 +263,8 @@ const LoginPage = () => {
             onClick={handleLogin}
             disabled={isLoading}
             className={`flex flex-row justify-center items-center py-[5px] px-5 gap-[2px] w-full h-12 rounded-full transition-colors ${isLoading
-                ? 'bg-[#A6A6A6] cursor-not-allowed'
-                : 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]'
+              ? 'bg-[#A6A6A6] cursor-not-allowed'
+              : 'bg-[#293A92] cursor-pointer hover:bg-[#1e2c73]'
               }`}
           >
             {isLoading ? (

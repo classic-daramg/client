@@ -26,9 +26,11 @@ interface RegistrationData {
 interface UserProfileStore {
   profile: UserProfile | null;
   defaultProfileImage: string;
+  isAuthenticated: boolean;
 
   // Actions
   setProfile: (profile: UserProfile) => void;
+  setAuthenticated: (status: boolean) => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
   setProfileImage: (image: string) => void;
   resetToDefaultImage: () => void;
@@ -44,8 +46,10 @@ export const useUserProfileStore = create<UserProfileStore>()(
     (set, get) => ({
       profile: null,
       defaultProfileImage: '/icons/DefaultImage.svg',
+      isAuthenticated: false,
 
       setProfile: (profile) => set({ profile }),
+      setAuthenticated: (status) => set({ isAuthenticated: status }),
 
       updateProfile: (updates) =>
         set((state) => ({
@@ -69,7 +73,7 @@ export const useUserProfileStore = create<UserProfileStore>()(
         return state.profile?.profileImage || state.defaultProfileImage;
       },
 
-      clearProfile: () => set({ profile: null }),
+      clearProfile: () => set({ profile: null, isAuthenticated: false }),
 
       loadFromRegistration: (registrationData) => {
         if (registrationData && registrationData.name && registrationData.profile) {
@@ -87,6 +91,10 @@ export const useUserProfileStore = create<UserProfileStore>()(
     }),
     {
       name: 'user-profile-storage', // localStorage key
+      partialize: (state) => ({
+        profile: state.profile,
+        defaultProfileImage: state.defaultProfileImage
+      }),
     }
   )
 );

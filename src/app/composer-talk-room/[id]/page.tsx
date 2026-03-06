@@ -87,7 +87,9 @@ function PostItem({ post, composerName }: { post: Post; composerName?: string })
             <span>{postTypeLabel}</span>
           </div>
           <div className="flex flex-col gap-1">
-            <h2 className="text-zinc-900 text-sm font-semibold">{post.title}</h2>
+            <h2 className="text-zinc-900 text-sm font-semibold">
+              {post.title.length >= 15 ? `${post.title.slice(0, 15)}...` : post.title}
+            </h2>
             <p className="text-neutral-500 text-xs font-medium line-clamp-2">{post.content}</p>
           </div>
           <div className="flex flex-col gap-1.5">

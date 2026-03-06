@@ -140,6 +140,7 @@ export default function WriteForm({
                     value={title}
                     onKeyDown={handleKeyDown}
                     onChange={(e) => setTitle(e.target.value)}
+                    maxLength={40}
                     className="w-full text-sm font-medium focus:outline-none placeholder-[#d9d9d9]"
                 />
             </div>

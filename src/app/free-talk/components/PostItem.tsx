@@ -61,7 +61,7 @@ export default function PostItem({
 
             <div className="self-stretch flex flex-col justify-start items-start gap-1">
               <div className="self-stretch text-zinc-900 text-sm font-semibold font-['Pretendard'] line-clamp-1">
-                {title}
+                {title.length >= 15 ? `${title.slice(0, 15)}...` : title}
               </div>
               <div className="self-stretch text-neutral-400 text-xs font-['Pretendard'] line-clamp-2">
                 {content}

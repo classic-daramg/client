@@ -36,9 +36,8 @@ export default function PostItem({ post, isFirst = false }: PostItemProps) {
     }
   };
 
-  const containerClasses = `flex items-start justify-between px-4 py-4 bg-white w-full ${
-    !isFirst ? 'border-t border-zinc-200' : ''
-  }`;
+  const containerClasses = `flex items-start justify-between px-4 py-4 bg-white w-full ${!isFirst ? 'border-t border-zinc-200' : ''
+    }`;
 
   // ========== 해시태그 렌더링 최적화 ==========
   // 백엔드에서 받은 tags 배열을 # 기호와 함께 깔끔하게 표시
@@ -74,7 +73,7 @@ export default function PostItem({ post, isFirst = false }: PostItemProps) {
           {/* 제목 및 본문 */}
           <div className="self-stretch flex flex-col justify-start items-start gap-1">
             <h3 className="self-stretch text-[#1a1a1a] text-[14px] font-semibold leading-[1.1] line-clamp-1">
-              {post.title}
+              {post.title.length >= 15 ? `${post.title.slice(0, 15)}...` : post.title}
             </h3>
             <p className="self-stretch text-[#a6a6a6] text-[12px] font-medium leading-snug line-clamp-2">
               {post.content}
