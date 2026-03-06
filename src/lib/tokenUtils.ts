@@ -39,17 +39,17 @@ export const getUserIdFromToken = (token: string): string | null => {
 
 // Cookie Management
 export const setAuthCookies = (accessToken: string, refreshToken: string) => {
-    // Set Access Token (typically short-lived)
+    // Set Access Token (typically short-lived, but requirement specified 7 days)
     Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
-        secure: window.location.protocol === 'https:',
-        sameSite: 'strict',
-        expires: 1 / 24, // 1 hour (example) - backend expiry should govern, but this keeps client clean
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        expires: 7, // 7 days
     });
 
     // Set Refresh Token (long-lived)
     Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
-        secure: window.location.protocol === 'https:',
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
         expires: 14, // 14 days
     });
 };

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
     // 사용자의 브라우저 쿠키에서 토큰 조회
-    const token = request.cookies.get('accessToken')?.value;
+    const token = request.cookies.get('access_token')?.value;
 
     // 인증이 필수적인 Private 라우트 목록
     const protectedRoutes = ['/my-page', '/write'];

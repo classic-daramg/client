@@ -12,7 +12,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     useEffect(() => {
         const syncAuthWithCookie = async () => {
-            const token = Cookies.get('accessToken');
+            const token = Cookies.get('access_token');
 
             // 쿠키가 없다면 비로그인 유저로 단정짓고 상태 초기화
             if (!token) {
@@ -23,7 +23,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
             try {
                 // 이미 렌더링 시점에 토큰이 있다면 전역 헤더에 저장
-                setTokens(token, Cookies.get('refreshToken') || null);
+                setTokens(token, Cookies.get('refresh_token') || null);
 
                 // 유효성 검사 및 프로필 최신화 (Hydration)
                 // 💡 백엔드의 내 정보 조회 API인 /users 로 변경
@@ -48,8 +48,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             } catch (error) {
                 console.error('인증 토큰이 만료되었거나 올바르지 않습니다:', error);
                 // 토큰이 탈취/만료되었다면 보안상 즉각 삭제
-                Cookies.remove('accessToken');
-                Cookies.remove('refreshToken');
+                Cookies.remove('access_token');
+                Cookies.remove('refresh_token');
                 clearProfile();
                 clearTokens();
             }

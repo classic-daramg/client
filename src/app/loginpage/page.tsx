@@ -83,24 +83,10 @@ const LoginPage = () => {
           return;
         }
 
-        // Zustand store에 토큰과 userId 저장 (메모리에 보관)
+        // Zustand store에 토큰과 userId 저장 (내부적으로 setAuthCookies 호출됨)
         setTokens(accessToken, refreshToken || null);
         if (userId) {
           setUserId(String(userId));
-        }
-
-        Cookies.set('accessToken', accessToken, {
-          expires: 7, // 7일 유지
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-        });
-
-        if (refreshToken) {
-          Cookies.set('refreshToken', refreshToken, {
-            expires: 14,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-          });
         }
 
         setAuthenticated(true);
