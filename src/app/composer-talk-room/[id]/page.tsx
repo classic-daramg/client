@@ -125,6 +125,7 @@ function PostItem({ post, composerName }: { post: Post; composerName?: string })
               alt="Post image"
               width={96}
               height={96}
+              unoptimized
               className="rounded-lg object-cover w-full h-full bg-zinc-200"
             />
           </div>

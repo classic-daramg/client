@@ -104,6 +104,7 @@ export default function PostItem({
                   alt="게시글 이미지"
                   fill
                   sizes="96px"
+                  unoptimized
                   className="object-cover"
                 />
               ) : videoUrl ? (

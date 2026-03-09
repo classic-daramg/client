@@ -7,6 +7,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import apiClient from '@/lib/apiClient';
 
+type RecentPost = {
+  id: number;
+  title: string;
+  type: 'FREE' | 'STORY' | 'CURATION';
+};
+
+const POST_TYPE_LABEL: Record<RecentPost['type'], string> = {
+  FREE: '자유글',
+  STORY: '작곡가 이야기',
+  CURATION: '큐레이션글',
+};
+
 const menuItems = [
   {
     icon: '/icons/message.svg',
@@ -56,6 +68,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [recentPosts, setRecentPosts] = useState<RecentPost[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -79,6 +92,14 @@ export default function HomePage() {
       console.error('Failed to fetch unread count:', error);
     }
   }, []);
+
+  // 최근 게시물 조회
+  useEffect(() => {
+    if (!mounted) return;
+    apiClient.get<{ content: RecentPost[] }>('/posts/recent?size=5')
+      .then((res) => setRecentPosts(res.data.content))
+      .catch((err) => console.error('Failed to fetch recent posts:', err));
+  }, [mounted]);
 
   // 마운트 후 안읽은 알림 수 조회 및 주기적 갱신
   useEffect(() => {
@@ -202,6 +223,43 @@ export default function HomePage() {
               ))}
             </div>
           </div>
+
+          {/* 최근 게시물 */}
+          {recentPosts.length > 0 && (
+            <div className="bg-white rounded-[20px] shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)] px-[22px] py-[22px]">
+              <Link href="/posts/recent">
+                <div className="flex items-center gap-[6px] mb-[14px]">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="8" stroke="#BFC4DE" strokeWidth="1.8"/>
+                    <path d="M10 6v4l2.5 2.5" stroke="#BFC4DE" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                  <span className="text-[#1A1A1A] text-xl font-semibold flex-1">최근 게시물</span>
+                  <svg width="7" height="15" viewBox="0 0 7 15" fill="none">
+                    <path d="M1 1L6 7.5L1 14" stroke="#BFBFBF" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </div>
+              </Link>
+              <div className="flex flex-col gap-1">
+                {recentPosts.map((post) => (
+                  <Link key={post.id} href={`/posts/${post.id}`}>
+                    <div className="flex items-center gap-3 h-4">
+                      <span className="text-[#1A1A1A] text-xs font-semibold flex-1 truncate">{post.title}</span>
+                      <div className="flex items-center gap-[3px] flex-shrink-0">
+                        <Image
+                          src={post.type === 'CURATION' ? '/icons/white_check.svg' : '/icons/write-white.svg'}
+                          alt="글 종류"
+                          width={12}
+                          height={12}
+                          className="brightness-0 opacity-30"
+                        />
+                        <span className="text-[11px] font-semibold text-[#D9D9D9]">{POST_TYPE_LABEL[post.type]}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Menu Cards */}
           <Link href="/composer-talk">

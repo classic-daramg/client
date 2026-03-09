@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSafeBack } from '@/hooks/useSafeBack';
 import Image from 'next/image';
+import Link from 'next/link';
 import { AxiosError } from 'axios';
 import { apiClient } from '@/lib/apiClient';
 import { usePostAuth } from '@/hooks/usePostAuth';
@@ -300,43 +301,64 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     );
   }
 
-  // ========== Get Header Title Based on Type ==========
+  // ========== Get Header Title & Route Based on Type ==========
   const getHeaderTitle = () => {
-    if (post.type === 'CURATION') return '큐레이션 글';
-    if (post.type === 'FREE') return '자유 글';
+    if (post.type === 'CURATION') return '다람쥐의 큐레이션';
+    if (post.type === 'FREE') return '자유 토크룸';
     if (post.type === 'STORY' && post.primaryComposer) {
       return `${post.primaryComposer.koreanName} 이야기`;
     }
     return '포스트';
   };
 
+  const getHeaderRoute = () => {
+    if (post.type === 'CURATION') return '/curation';
+    if (post.type === 'FREE') return '/free-talk';
+    if (post.type === 'STORY' && post.primaryComposer) {
+      return `/composer-talk-room/${post.primaryComposer.composerId}`;
+    }
+    return '/';
+  };
+
   // ========== Main Render ==========
-  
+
   return (
     <div className="bg-[#f4f5f7] min-h-screen">
       <div className="bg-white w-full max-w-md mx-auto">
         {/* ========== Header ========== */}
-        <div className="px-5 py-3 flex items-center gap-1 border-b border-[#f4f5f7] sticky top-0 bg-white z-10">
+        <div className="px-5 py-0 flex items-center gap-1 border-b border-[#f4f5f7] sticky top-0 bg-white z-10 h-[56px]">
           <button
             type="button"
             onClick={handleBackClick}
-            className="flex-shrink-0"
+            className="flex-shrink-0 w-6 h-6 flex items-center justify-center"
             aria-label="뒤로가기"
           >
             <Image src="/icons/back.svg" alt="뒤로가기" width={24} height={24} />
           </button>
-          <h1 className="flex-1 text-center text-[#1a1a1a] text-base font-semibold">
-            {getHeaderTitle()}
-          </h1>
-          
+
+          {/* 토크룸/이야기 제목 + > 화살표 (클릭 시 해당 룸으로 이동) */}
+          <Link
+            href={getHeaderRoute()}
+            className="flex-1 flex flex-row justify-center items-center gap-[6px] min-w-0"
+          >
+            <span className="text-[#1A1A1A] text-[16px] font-semibold leading-[19px] truncate">
+              {getHeaderTitle()}
+            </span>
+            <svg width="5" height="10" viewBox="0 0 5 10" fill="none" className="flex-shrink-0">
+              <path d="M1 1L4 5L1 9" stroke="#BFBFBF" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </Link>
+
           {/* 작성자 본인에게만 수정/삭제 버튼 표시 */}
-          {isAuthor && (
+          {isAuthor ? (
             <EditDeleteButtons
               postId={postId}
               postType={post.type}
               postTitle={post.title}
               onDelete={handleDeletePost}
             />
+          ) : (
+            <div className="w-6" />
           )}
         </div>
 
