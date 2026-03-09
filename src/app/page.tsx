@@ -11,12 +11,15 @@ type RecentPost = {
   id: number;
   title: string;
   type: 'FREE' | 'STORY' | 'CURATION';
+  primaryComposer: { koreanName: string } | null;
 };
 
-const POST_TYPE_LABEL: Record<RecentPost['type'], string> = {
-  FREE: '자유글',
-  STORY: '작곡가 이야기',
-  CURATION: '큐레이션글',
+const getPostTypeLabel = (post: RecentPost): string => {
+  if (post.type === 'STORY' && post.primaryComposer?.koreanName) {
+    return `${post.primaryComposer.koreanName} 이야기`;
+  }
+  if (post.type === 'FREE') return '자유글';
+  return '큐레이션글';
 };
 
 const menuItems = [
@@ -158,7 +161,7 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <div className="px-5 pt-0">
+      <div className="px-5 pt-0 pb-3">
         <div className="flex flex-col gap-3">
           {/* Banner Slider */}
           <div className="w-full aspect-[335/148] relative rounded-[20px] overflow-hidden bg-white shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)]">
@@ -243,7 +246,9 @@ export default function HomePage() {
                 {recentPosts.map((post) => (
                   <Link key={post.id} href={`/posts/${post.id}`}>
                     <div className="flex items-center gap-3 h-4">
-                      <span className="text-[#1A1A1A] text-xs font-semibold flex-1 truncate">{post.title}</span>
+                      <span className="text-[#1A1A1A] text-xs font-semibold flex-1 truncate">
+                        {post.title.length > 10 ? `${post.title.slice(0, 10)}...` : post.title}
+                      </span>
                       <div className="flex items-center gap-[3px] flex-shrink-0">
                         <Image
                           src={post.type === 'CURATION' ? '/icons/white_check.svg' : '/icons/write-white.svg'}
@@ -252,7 +257,7 @@ export default function HomePage() {
                           height={12}
                           className="brightness-0 opacity-30"
                         />
-                        <span className="text-[11px] font-semibold text-[#D9D9D9]">{POST_TYPE_LABEL[post.type]}</span>
+                        <span className="text-[11px] font-semibold text-[#D9D9D9]">{getPostTypeLabel(post)}</span>
                       </div>
                     </div>
                   </Link>

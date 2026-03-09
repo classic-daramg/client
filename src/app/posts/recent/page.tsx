@@ -79,12 +79,12 @@ function PostItem({ post, isFirst }: { post: Post; isFirst?: boolean }) {
           )}
           <div className="flex flex-row items-center gap-[6px]">
             <div className="flex items-center gap-0.5">
-              <Image src="/icons/icons_comment.svg" alt="댓글" width={12} height={12} />
-              <span className="text-[12px] font-medium text-[#293A92] leading-[14px]">{post.commentCount}</span>
-            </div>
-            <div className="flex items-center gap-0.5">
               <Image src="/icons/heart.svg" alt="좋아요" width={12} height={12} />
               <span className="text-[12px] font-medium text-[#293A92] leading-[14px]">{post.likeCount}</span>
+            </div>
+            <div className="flex items-center gap-0.5">
+              <Image src="/icons/icons_comment.svg" alt="댓글" width={12} height={12} />
+              <span className="text-[12px] font-medium text-[#293A92] leading-[14px]">{post.commentCount}</span>
             </div>
             <span className="text-[12px] font-medium text-[#D9D9D9] leading-[14px]">{getRelativeTime(post.createdAt)}</span>
           </div>

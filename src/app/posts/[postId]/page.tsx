@@ -315,7 +315,8 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     if (post.type === 'CURATION') return '/curation';
     if (post.type === 'FREE') return '/free-talk';
     if (post.type === 'STORY' && post.primaryComposer) {
-      return `/composer-talk-room/${post.primaryComposer.composerId}`;
+      const id = post.primaryComposer.composerId ?? (post.primaryComposer as unknown as { id: number }).id;
+      return `/composer-talk-room/${id}`;
     }
     return '/';
   };
