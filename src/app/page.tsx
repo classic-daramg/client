@@ -44,13 +44,13 @@ const menuItems = [
 const bannerSlides = [
   {
     id: 3,
-    image: '/icons/banner4.png',
-    href: '/posts/308',
+    image: '/icons/banner5.png',
+    href: '/posts/333',
     alt: 'Banner 4',
   },
   {
     id: 2,
-    image: '/icons/banner2.png',
+    image: '/icons/fortune_banner.png',
     href: '/fortune-receipt',
     alt: 'Banner 2',
   },
