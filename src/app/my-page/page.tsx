@@ -8,6 +8,7 @@ import { AxiosError } from 'axios';
 import { useUserProfileStore } from '@/store/userProfileStore';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
+import { getAccessTokenFromCookie, getRefreshTokenFromCookie } from '@/lib/tokenUtils';
 
 // --- Reusable Components for the New Design ---
 
@@ -141,8 +142,12 @@ export default function MyPage() {
     if (!mounted) return;
 
     const fetchUserProfile = async () => {
-      // 토큰이 없으면 로그인 페이지로
-      if (!accessToken) {
+      // Zustand 스토어(accessToken)가 아직 쿠키와 동기화되기 전일 수 있으므로 쿠키도 확인
+      const currentToken = accessToken || getAccessTokenFromCookie();
+      const currentRefreshToken = useAuthStore.getState().refreshToken || getRefreshTokenFromCookie();
+
+      // 액세스 토큰과 리프레시 토큰이 모두 없을 때만 원천 차단
+      if (!currentToken && !currentRefreshToken) {
         console.warn('토큰이 없습니다. 로그인 페이지로 이동합니다.');
         router.push('/loginpage');
         return;

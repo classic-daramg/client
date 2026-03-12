@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/authStore';
-import { getRefreshTokenFromCookie } from '@/lib/tokenUtils';
+import { getRefreshTokenFromCookie, getAccessTokenFromCookie } from '@/lib/tokenUtils';
 
 // 클라이언트에서는 /api로 요청 → next.config.ts의 rewrites가 백엔드로 프록시
 // 서버 사이드에서만 API_BASE_URL 사용
@@ -46,8 +46,8 @@ const onRefreshFailed = (error: unknown) => {
  */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Zustand 스토어에서 최신 액세스 토큰을 가져옴
-    const token = useAuthStore.getState().accessToken;
+    // Zustand 스토어에서 혹은 쿠키에서 최신 액세스 토큰을 가져옴
+    const token = useAuthStore.getState().accessToken || getAccessTokenFromCookie();
     const url = config.url || '';
 
     // 인증이 필요 없는 API 리스트 (로그인, 회원가입 등)
@@ -128,7 +128,7 @@ apiClient.interceptors.response.use(
           `${BASE_URL}/auth/refresh`,
           {},
           {
-            headers: { 
+            headers: {
               Authorization: `Bearer ${storedRefreshToken}`,
               'Content-Type': 'application/json'
             },
@@ -167,10 +167,10 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         console.error('❌ 토큰 갱신 실패! 백엔드에서 갱신 요청을 거절했습니다:', refreshError);
         if (axios.isAxiosError(refreshError) && refreshError.response) {
-            console.error('❌ 실패 응답 본문:', refreshError.response.data);
-            console.error('❌ 실패 응답 상태 코드:', refreshError.response.status);
+          console.error('❌ 실패 응답 본문:', refreshError.response.data);
+          console.error('❌ 실패 응답 상태 코드:', refreshError.response.status);
         }
-        
+
         // 갱신 API 자체가 실패한 경우 (Refresh Token 만료 등)
         onRefreshFailed(refreshError);
 
