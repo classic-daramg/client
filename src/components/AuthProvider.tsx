@@ -13,17 +13,19 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     useEffect(() => {
         const syncAuthWithCookie = async () => {
             const token = Cookies.get('access_token');
+            const refreshToken = Cookies.get('refresh_token');
 
             // 쿠키가 없다면 비로그인 유저로 단정짓고 상태 초기화
-            if (!token) {
+            // (액세스 토큰이 만료되어 없더라도 리프레시 토큰이 있으면 API 요청을 통해 갱신 가능)
+            if (!token && !refreshToken) {
                 clearProfile();
                 clearTokens();
                 return;
             }
 
             try {
-                // 이미 렌더링 시점에 토큰이 있다면 전역 헤더에 저장
-                setTokens(token, Cookies.get('refresh_token') || null);
+                // 이미 렌더링 시점에 액세스/리프레시 토큰 중 있는 것은 전역 상태에 저장
+                setTokens(token || null, refreshToken || null);
 
                 // 유효성 검사 및 프로필 최신화 (Hydration)
                 // 💡 백엔드의 내 정보 조회 API인 /users 로 변경

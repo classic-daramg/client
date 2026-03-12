@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
     // 사용자의 브라우저 쿠키에서 토큰 조회
     const token = request.cookies.get('access_token')?.value;
+    const refreshToken = request.cookies.get('refresh_token')?.value;
 
     // 인증이 필수적인 Private 라우트 목록
     const protectedRoutes = ['/my-page', '/write'];
@@ -13,8 +14,9 @@ export function middleware(request: NextRequest) {
         request.nextUrl.pathname.startsWith(route)
     );
 
-    // 보호된 라우트에 토큰 없이 접근 시도 -> 로그인 페이지로 즉각 추방
-    if (isProtectedRoute && !token) {
+    // 보호된 라우트에 액세스/리프레시 토큰이 모두 없이 접근 시도 -> 로그인 페이지로 즉각 추방
+    // 리프레시 토큰이 있다면 일단 통과시키고 클라이언트 사이드(AuthProvider/apiClient)에서 토큰 갱신을 시도하도록 함
+    if (isProtectedRoute && !token && !refreshToken) {
         const loginUrl = new URL('/loginpage', request.url);
         // [보너스 UX] 로그인 완료 후 원래 가려던 페이지로 돌려보내기 위한 파라미터 삽입
         loginUrl.searchParams.set('redirect', request.nextUrl.pathname);

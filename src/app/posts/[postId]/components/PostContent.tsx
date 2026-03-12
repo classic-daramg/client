@@ -114,7 +114,7 @@ export default function PostContent({
 
       {/* 본문 */}
       <div
-        className="font-medium text-sm text-[#1a1a1a] leading-relaxed whitespace-pre-wrap"
+        className="font-medium text-sm text-[#a6a6a6] leading-relaxed whitespace-pre-wrap"
       >
         {content}
       </div>
@@ -179,16 +179,17 @@ export default function PostContent({
               >
                 ›
               </button>
-
+              
               {/* 이미지 인디케이터 */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                 {validImages.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-1.5 h-1.5 rounded-full transition ${index === currentImageIndex
+                    className={`w-1.5 h-1.5 rounded-full transition ${
+                      index === currentImageIndex
                         ? 'bg-white'
                         : 'bg-white bg-opacity-50'
-                      }`}
+                    }`}
                   />
                 ))}
               </div>

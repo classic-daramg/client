@@ -118,16 +118,20 @@ apiClient.interceptors.response.use(
           throw new Error('No refresh token available');
         }
 
+        console.log('🔄 리프레시 토큰으로 액세스 토큰 갱신 시도 중...');
+
         /**
          * 토큰 재발급 API 호출
-         * withCredentials: true 로 설정하여 HttpOnly 쿠키(있을 경우)를 함께 전송
-         * 별도의 axios 인스턴스 혹은 axios.post를 직접 사용하여 무한 루프 방지
+         * 백엔드의 요구사항에 맞게 Authorization 헤더에 리프레시 토큰을 담아 보냅니다.
          */
         const { data } = await axios.post(
           `${BASE_URL}/auth/refresh`,
           {},
           {
-            headers: { Authorization: `Bearer ${storedRefreshToken}` },
+            headers: { 
+              Authorization: `Bearer ${storedRefreshToken}`,
+              'Content-Type': 'application/json'
+            },
             withCredentials: true,
           }
         );
@@ -140,11 +144,14 @@ apiClient.interceptors.response.use(
           throw new Error('Refresh failed: New access token not received');
         }
 
+        console.log('✅ 토큰 갱신 성공!');
+
         // 새 토큰들을 Zustand 스토어 및 쿠키에 저장
         if (newRefreshToken) {
           useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
         } else {
-          useAuthStore.getState().setAccessToken(newAccessToken);
+          // 기존 리프레시 토큰 유지 (백엔드에서 새 리프레시를 안 내려준 경우)
+          useAuthStore.getState().setTokens(newAccessToken, storedRefreshToken);
         }
 
         // 1. 대기열(Queue)에 쌓여있던 모든 요청을 일괄 처리
@@ -158,6 +165,12 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
 
       } catch (refreshError) {
+        console.error('❌ 토큰 갱신 실패! 백엔드에서 갱신 요청을 거절했습니다:', refreshError);
+        if (axios.isAxiosError(refreshError) && refreshError.response) {
+            console.error('❌ 실패 응답 본문:', refreshError.response.data);
+            console.error('❌ 실패 응답 상태 코드:', refreshError.response.status);
+        }
+        
         // 갱신 API 자체가 실패한 경우 (Refresh Token 만료 등)
         onRefreshFailed(refreshError);
 
