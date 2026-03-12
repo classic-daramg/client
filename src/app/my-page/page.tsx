@@ -131,7 +131,7 @@ export default function MyPage() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { clearProfile } = useUserProfileStore();
-  const { accessToken } = useAuthStore();
+  const { accessToken, clearTokens } = useAuthStore();
 
   useEffect(() => {
     setMounted(true);
@@ -183,17 +183,13 @@ export default function MyPage() {
     try {
       // 서버에 로그아웃 요청
       await apiClient.delete('/auth/logout');
-
-      // 로컬 상태 초기화
-      localStorage.removeItem('authToken');
-      clearProfile();
-      setShowLogoutPopup(false);
-      router.push('/loginpage');
     } catch (error) {
       console.error('로그아웃 에러:', error);
-      // 에러가 발생해도 로컬 상태는 초기화
-      localStorage.removeItem('authToken');
+    } finally {
+      // 에러 발생 여부와 상관없이 로컬 상태 및 쿠키 명시적 초기화
+      clearTokens();
       clearProfile();
+      localStorage.removeItem('authToken');
       setShowLogoutPopup(false);
       router.push('/loginpage');
     }
