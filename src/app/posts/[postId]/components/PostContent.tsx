@@ -114,7 +114,7 @@ export default function PostContent({
 
       {/* 본문 */}
       <div
-        className="font-medium text-sm text-[#a6a6a6] leading-relaxed whitespace-pre-wrap"
+        className="font-medium text-sm text-[#1A1A1A] leading-relaxed whitespace-pre-wrap"
       >
         {content}
       </div>
