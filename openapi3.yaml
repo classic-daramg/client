@@ -353,86 +353,6 @@ paths:
                       "storyPostCount" : 4,
                       "lastStoryPostAt" : "2024-03-05T10:00:00Z"
                     } ]
-    post:
-      tags:
-      - Composer API
-      summary: 작곡가 생성
-      description: 관리자가 작곡가를 생성합니다.
-      operationId: composer-controller-test/작곡가를_생성한다
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/composers1117158077"
-            examples:
-              composer-controller-test/작곡가를_생성한다:
-                value: |-
-                  {
-                    "era" : "CLASSICAL",
-                    "englishName" : "Ludwig van Beethoven",
-                    "gender" : "MALE",
-                    "nationality" : "독일",
-                    "bio" : "독일의 작곡가",
-                    "continent" : "EUROPE",
-                    "koreanName" : "베토벤",
-                    "birthYear" : 1770,
-                    "deathYear" : 1827
-                  }
-      responses:
-        "201":
-          description: "201"
-  /composers/{composerId}:
-    put:
-      tags:
-      - Composer API
-      summary: 작곡가 수정
-      description: 관리자가 작곡가 정보를 수정합니다.
-      operationId: composer-controller-test/작곡가를_수정한다
-      parameters:
-      - name: composerId
-        in: path
-        description: 수정할 작곡가 ID
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/composers-composerId-1399753062"
-            examples:
-              composer-controller-test/작곡가를_수정한다:
-                value: |-
-                  {
-                    "era" : "CLASSICAL",
-                    "englishName" : "Ludwig van Beethoven",
-                    "gender" : "MALE",
-                    "nationality" : "독일",
-                    "bio" : "독일의 작곡가",
-                    "continent" : "EUROPE",
-                    "koreanName" : "베토벤",
-                    "birthYear" : 1770,
-                    "deathYear" : 1827
-                  }
-      responses:
-        "204":
-          description: "204"
-    delete:
-      tags:
-      - Composer API
-      summary: 작곡가 삭제
-      description: 관리자가 작곡가를 삭제합니다.
-      operationId: composer-controller-test/작곡가를_삭제한다
-      parameters:
-      - name: composerId
-        in: path
-        description: 삭제할 작곡가 ID
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: "204"
   /composers/{composerId}/like:
     post:
       tags:
@@ -581,14 +501,14 @@ paths:
                         "id" : 1,
                         "title" : "첫 번째 공지",
                         "writerNickname" : "관리자",
-                        "createdAt" : "2026-03-08T13:24:46.665391968Z",
+                        "createdAt" : "2026-02-28T19:57:14.936831500Z",
                         "content" : "공지 내용입니다.",
                         "thumbnailImageUrl" : "https://example.com/thumb1.jpg"
                       }, {
                         "id" : 2,
                         "title" : "두 번째 공지",
                         "writerNickname" : "관리자",
-                        "createdAt" : "2026-03-08T13:24:46.665408599Z",
+                        "createdAt" : "2026-02-28T19:57:14.936844955Z",
                         "content" : "공지 내용입니다.",
                         "thumbnailImageUrl" : null
                       } ],
@@ -648,7 +568,7 @@ paths:
                       "title" : "공지사항 제목",
                       "content" : "공지사항 상세 내용입니다.",
                       "images" : [ "https://example.com/image1.jpg" ],
-                      "createdAt" : "2026-03-08T13:24:46.718713540Z"
+                      "createdAt" : "2026-02-28T19:57:14.980697018Z"
                     }
     delete:
       tags:
@@ -946,42 +866,6 @@ paths:
       responses:
         "201":
           description: "201"
-  /posts/recent:
-    get:
-      tags:
-      - Post Query API
-      summary: 최근 포스트 목록 조회
-      description: "7일 이내 발행된 모든 타입(FREE, STORY, CURATION)의 포스트를 최신순으로 조회합니다."
-      operationId: 최근_포스트_목록_조회
-      parameters:
-      - name: cursor
-        in: query
-        description: 다음 페이지 조회를 위한 커서 (Base64 인코딩된 문자열). 첫 페이지 조회 시 생략 가능
-        required: false
-        schema:
-          type: string
-      - name: size
-        in: query
-        description: "한 페이지에 조회할 포스트 개수. 생략 시 기본값: 10"
-        required: false
-        schema:
-          type: string
-      responses:
-        "200":
-          description: "200"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/posts-recent-1533824228"
-              examples:
-                최근_포스트_목록_조회:
-                  value: "{\"content\":[{\"id\":1,\"title\":\"최근 포스트 제목\",\"content\"\
-                    :\"최근 포스트 내용입니다\",\"hashtags\":[\"#해시태그1\"],\"createdAt\":\"2024-01-15T10:30:00Z\"\
-                    ,\"writerNickname\":\"작성자1\",\"likeCount\":10,\"commentCount\"\
-                    :5,\"thumbnailImageUrl\":\"https://example.com/image1.jpg\",\"\
-                    type\":\"FREE\",\"primaryComposer\":null,\"additionalComposers\"\
-                    :null,\"isLiked\":null,\"isScrapped\":null}],\"nextCursor\":null,\"\
-                    hasNext\":false}"
   /posts/story:
     get:
       tags:
@@ -1892,40 +1776,6 @@ components:
         updatedAt:
           type: string
           description: 수정일시 (ISO 8601 형식)
-    composers-composerId-1399753062:
-      type: object
-      properties:
-        continent:
-          type: string
-          description: 대륙 (ASIA / NORTH_AMERICA / EUROPE / SOUTH_AMERICA / AFRICA_OCEANIA)
-        nativeName:
-          type: string
-          description: 원어 이름
-        englishName:
-          type: string
-          description: 영어 이름
-        nationality:
-          type: string
-          description: 국적
-        gender:
-          type: string
-          description: 성별 (MALE / FEMALE / UNKNOWN)
-        era:
-          type: string
-          description: 시대 (MEDIEVAL_RENAISSANCE / BAROQUE / CLASSICAL / ROMANTIC /
-            MODERN_CONTEMPORARY)
-        deathYear:
-          type: number
-          description: 사망 연도
-        birthYear:
-          type: number
-          description: 출생 연도
-        bio:
-          type: string
-          description: 소개
-        koreanName:
-          type: string
-          description: 한국어 이름
     users-change-password1647540412:
       type: object
       properties:
@@ -1941,97 +1791,6 @@ components:
         email:
           type: string
           description: 변경하고자 하는 유저의 이메일
-    posts-recent-1533824228:
-      type: object
-      properties:
-        nextCursor:
-          type: string
-          description: 다음 페이지 커서 (마지막 페이지인 경우 null)
-        hasNext:
-          type: boolean
-          description: 다음 페이지 존재 여부
-        content:
-          type: array
-          description: 포스트 목록
-          items:
-            type: object
-            properties:
-              hashtags:
-                type: array
-                description: 해시태그 목록
-                items:
-                  oneOf:
-                  - type: object
-                  - type: boolean
-                  - type: string
-                  - type: number
-              additionalComposers:
-                type: array
-                description: 추가 작곡가 목록 (CURATION 타입일 때만 존재)
-                items:
-                  type: object
-                  properties:
-                    continent:
-                      type: string
-                      description: 추가 작곡가 대륙 (Continent)
-                    era:
-                      type: string
-                      description: 추가 작곡가 시대 (Era)
-                    id:
-                      type: number
-                      description: 추가 작곡가 ID
-                    koreanName:
-                      type: string
-                      description: 추가 작곡가 한글 이름
-              isLiked:
-                type: boolean
-                description: 로그인한 유저의 좋아요 여부 (비로그인 시 null)
-              likeCount:
-                type: number
-                description: 좋아요 개수
-              type:
-                type: string
-                description: "포스트 타입 (FREE, CURATION, STORY)"
-              title:
-                type: string
-                description: 포스트 제목
-              content:
-                type: string
-                description: 포스트 내용
-              commentCount:
-                type: number
-                description: 댓글 개수
-              createdAt:
-                type: string
-                description: 생성일시 (ISO 8601 형식)
-              thumbnailImageUrl:
-                type: string
-                description: 썸네일 이미지 URL
-              writerNickname:
-                type: string
-                description: 작성자 닉네임
-              isScrapped:
-                type: boolean
-                description: 로그인한 유저의 스크랩 여부 (비로그인 시 null)
-              primaryComposer:
-                type: object
-                properties:
-                  continent:
-                    type: string
-                    description: 작곡가 대륙 (Continent)
-                  era:
-                    type: string
-                    description: 작곡가 시대 (Era)
-                  id:
-                    type: number
-                    description: 작곡가 ID
-                  koreanName:
-                    type: string
-                    description: 작곡가 한글 이름
-                description: "대표 작곡가 정보 (STORY, CURATION 타입일 때만 존재)"
-              id:
-                type: number
-                description: 포스트 ID
     posts-userId-drafts-1658039875:
       type: object
       properties:
@@ -2566,37 +2325,15 @@ components:
                     type: number
                     description: 포스트 ID
           description: 포스트 목록 페이징 정보
-    composers1117158077:
+    posts-postId-like-462227428:
       type: object
       properties:
-        continent:
-          type: string
-          description: 대륙 (ASIA / NORTH_AMERICA / EUROPE / SOUTH_AMERICA / AFRICA_OCEANIA)
-        englishName:
-          type: string
-          description: 영어 이름
-        nationality:
-          type: string
-          description: 국적
-        gender:
-          type: string
-          description: 성별 (MALE / FEMALE / UNKNOWN)
-        era:
-          type: string
-          description: 시대 (MEDIEVAL_RENAISSANCE / BAROQUE / CLASSICAL / ROMANTIC /
-            MODERN_CONTEMPORARY)
-        deathYear:
+        isLiked:
+          type: boolean
+          description: 현재 좋아요 여부
+        likeCount:
           type: number
-          description: 사망 연도
-        birthYear:
-          type: number
-          description: 출생 연도
-        bio:
-          type: string
-          description: 소개
-        koreanName:
-          type: string
-          description: 한국어 이름
+          description: 총 좋아요 수
     notice-noticeId859743504:
       type: object
       properties:
@@ -2627,15 +2364,6 @@ components:
         content:
           type: string
           description: 공지사항 내용
-    posts-postId-like-462227428:
-      type: object
-      properties:
-        isLiked:
-          type: boolean
-          description: 현재 좋아요 여부
-        likeCount:
-          type: number
-          description: 총 좋아요 수
     users-verify-user-password-1086812032:
       type: object
       properties:
