@@ -42,22 +42,12 @@ export const setAuthCookies = (accessToken: string, refreshToken: string) => {
     const isProduction = process.env.NODE_ENV === 'production';
     const cookieOptions: Cookies.CookieAttributes = {
         secure: isProduction,
-        // 배포 환경에서는 백엔드에서 내려주는 설정과 맞춰서 중복 생성을 막음
-        sameSite: isProduction ? 'strict' : 'lax',
-        ...(isProduction ? { domain: '.classicaldaramz.com' } : {}),
+        sameSite: 'lax',
+        expires: 7,
     };
 
-    // Set Access Token (typically short-lived, but requirement specified 7 days)
-    Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
-        ...cookieOptions,
-        expires: 7, // 7 days
-    });
-
-    // Set Refresh Token (long-lived)
-    Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
-        ...cookieOptions,
-        expires: 14, // 14 days
-    });
+    Cookies.set(ACCESS_TOKEN_KEY, accessToken, cookieOptions);
+    Cookies.set(REFRESH_TOKEN_KEY, refreshToken, { ...cookieOptions, expires: 14 });
 };
 
 export const clearAuthCookies = () => {
