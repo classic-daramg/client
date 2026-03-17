@@ -165,6 +165,7 @@ export default function MyPage() {
             bio: data.bio ?? '',
             profileImage: data.profileImage ?? '/icons/DefaultImage.svg',
             birthDate: data.birthDate ?? '',
+            role: data.role ?? 'USER',
           },
         });
       } catch (error: unknown) {

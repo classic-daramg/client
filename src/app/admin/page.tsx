@@ -86,8 +86,9 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    if (!authInitialized || !profile || profile.role !== 'ADMIN') return;
     fetchBanners();
-  }, []);
+  }, [authInitialized, profile]);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
