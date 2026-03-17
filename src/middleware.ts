@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
     const refreshToken = request.cookies.get('refresh_token')?.value;
 
     // 인증이 필수적인 Private 라우트 목록
-    const protectedRoutes = ['/my-page', '/write'];
+    const protectedRoutes = ['/my-page', '/write', '/admin'];
 
     // 현재 접근하려는 URL이 보호된 라우트인지 확인
     const isProtectedRoute = protectedRoutes.some((route) =>
@@ -33,5 +33,5 @@ export function middleware(request: NextRequest) {
 
 // 미들웨어가 실행될 경로를 최소화하여 퍼포먼스 최적화
 export const config = {
-    matcher: ['/my-page/:path*', '/write/:path*', '/loginpage'],
+    matcher: ['/my-page/:path*', '/write/:path*', '/admin/:path*', '/loginpage'],
 };

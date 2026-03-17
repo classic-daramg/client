@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { AxiosError } from 'axios';
 import { apiClient } from '@/lib/apiClient';
 import { usePostAuth } from '@/hooks/usePostAuth';
+import { useUserProfileStore } from '@/store/userProfileStore';
 import PostHeader from './components/PostHeader';
 import PostContent from './components/PostContent';
 import PostFooter from './components/PostFooter';
@@ -89,6 +90,8 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     post?.isLiked,
     post?.isScrapped
   );
+  const { profile } = useUserProfileStore();
+  const isAdmin = profile?.role === 'ADMIN';
 
   // ========== Data Fetching ==========
   useEffect(() => {
@@ -409,6 +412,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           onToggleCommentLike={handleToggleCommentLike}
           isAuthenticated={isAuthenticated}
           currentUserNickname={currentUserNickname ?? undefined}
+          isAdmin={isAdmin}
         />
       </div>
 

@@ -24,6 +24,7 @@ interface CommentSectionProps {
   onToggleCommentLike: (commentId: number) => Promise<void>;
   isAuthenticated?: boolean;
   currentUserNickname?: string;
+  isAdmin?: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ export default function CommentSection({
   onToggleCommentLike,
   isAuthenticated = false,
   currentUserNickname,
+  isAdmin = false,
 }: CommentSectionProps) {
   const [newComment, setNewComment] = useState('');
   const [replyMode, setReplyMode] = useState<{
@@ -138,6 +140,7 @@ export default function CommentSection({
               isNested={false}
               currentUserNickname={currentUserNickname}
               isAuthenticated={isAuthenticated}
+              isAdmin={isAdmin}
               onReply={handleReply}
               onDelete={handleDelete}
               onLike={handleLike}

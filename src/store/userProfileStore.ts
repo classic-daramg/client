@@ -10,6 +10,7 @@ interface UserProfile {
   bio: string;
   profileImage: string;
   birthDate?: string;
+  role?: 'ADMIN' | 'USER';
 }
 
 interface RegistrationData {
@@ -27,10 +28,12 @@ interface UserProfileStore {
   profile: UserProfile | null;
   defaultProfileImage: string;
   isAuthenticated: boolean;
+  authInitialized: boolean;
 
   // Actions
   setProfile: (profile: UserProfile) => void;
   setAuthenticated: (status: boolean) => void;
+  setAuthInitialized: (status: boolean) => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
   setProfileImage: (image: string) => void;
   resetToDefaultImage: () => void;
@@ -47,9 +50,11 @@ export const useUserProfileStore = create<UserProfileStore>()(
       profile: null,
       defaultProfileImage: '/icons/DefaultImage.svg',
       isAuthenticated: false,
+      authInitialized: false,
 
       setProfile: (profile) => set({ profile }),
       setAuthenticated: (status) => set({ isAuthenticated: status }),
+      setAuthInitialized: (status) => set({ authInitialized: status }),
 
       updateProfile: (updates) =>
         set((state) => ({

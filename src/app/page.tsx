@@ -14,6 +14,14 @@ type RecentPost = {
   primaryComposer: { koreanName: string } | null;
 };
 
+type Banner = {
+  id: number;
+  imageUrl: string;
+  linkUrl: string | null;
+  isActive: boolean;
+  orderIndex: number;
+};
+
 const getPostTypeLabel = (post: RecentPost): string => {
   if (post.type === 'STORY' && post.primaryComposer?.koreanName) {
     return `${post.primaryComposer.koreanName} 이야기`;
@@ -40,26 +48,11 @@ const menuItems = [
   },
 ];
 
-// 배너 슬라이더 데이터
-const bannerSlides = [
-  {
-    id: 3,
-    image: '/icons/banner4.png',
-    href: '/posts/308',
-    alt: 'Banner 4',
-  },
-  {
-    id: 2,
-    image: '/icons/banner2.png',
-    href: '/fortune-receipt',
-    alt: 'Banner 2',
-  },
-  {
-    id: 1,
-    image: '/icons/onboarding_baner.png',
-    href: '/onboarding',
-    alt: 'Banner 1',
-  },
+// 배너 슬라이더 폴백 데이터 (API 실패 시)
+const fallbackBanners: Banner[] = [
+  { id: 3, imageUrl: '/icons/banner5.png', linkUrl: '/posts/333', isActive: true, orderIndex: 0 },
+  { id: 2, imageUrl: '/icons/fortune_banner.png', linkUrl: '/fortune-receipt', isActive: true, orderIndex: 1 },
+  { id: 1, imageUrl: '/icons/onboarding_baner.png', linkUrl: '/onboarding', isActive: true, orderIndex: 2 },
 ];
 
 // Onboarding Modal Component
@@ -72,19 +65,30 @@ export default function HomePage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [recentPosts, setRecentPosts] = useState<RecentPost[]>([]);
+  const [banners, setBanners] = useState<Banner[]>(fallbackBanners);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // 배너 목록 조회 (공개 API - 백엔드에서 인증 없이 접근 가능해야 함)
+  useEffect(() => {
+    apiClient.get<Banner[]>('/banners')
+      .then((res) => {
+        const active = res.data.filter((b) => b.isActive).slice(0, 3);
+        if (active.length > 0) setBanners(active);
+      })
+      .catch(() => {/* 실패 시 fallbackBanners 유지 */});
+  }, []);
+
   // 배너 자동 슬라이드
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+      setCurrentSlide((prev) => (prev + 1) % banners.length);
     }, 4000); // 4초 간격
 
     return () => clearInterval(timer);
-  }, []);
+  }, [banners.length]);
 
   // 안읽은 알림 수 조회
   const fetchUnreadCount = useCallback(async () => {
@@ -166,17 +170,17 @@ export default function HomePage() {
           {/* Banner Slider */}
           <div className="w-full aspect-[335/148] relative rounded-[20px] overflow-hidden bg-white shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)]">
             <div className="relative w-full h-full">
-              {bannerSlides.map((slide, index) => (
+              {banners.map((banner, index) => (
                 <Link
-                  key={index}
-                  href={slide.href}
+                  key={banner.id}
+                  href={banner.linkUrl || '/'}
                   className={`absolute inset-0 transition-opacity duration-500 ${
                     index === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'
                   }`}
                 >
                   <Image
-                    src={slide.image}
-                    alt={slide.alt}
+                    src={banner.imageUrl}
+                    alt={`Banner ${banner.id}`}
                     fill
                     className="object-cover"
                     priority={index === currentSlide}
@@ -189,7 +193,7 @@ export default function HomePage() {
               className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length);
+                setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
               }}
             >
               <svg width="7" height="13" viewBox="0 0 7 13" fill="none">
@@ -202,7 +206,7 @@ export default function HomePage() {
               className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+                setCurrentSlide((prev) => (prev + 1) % banners.length);
               }}
             >
               <svg width="7" height="13" viewBox="0 0 7 13" fill="none">
@@ -212,7 +216,7 @@ export default function HomePage() {
 
             {/* 슬라이드 인디케이터 */}
             <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-10">
-              {bannerSlides.map((_, index) => (
+              {banners.map((_, index) => (
                 <button
                   key={index}
                   className={`w-2 h-2 rounded-full transition-all ${

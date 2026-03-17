@@ -20,6 +20,7 @@ interface CommentItemProps {
   isNested?: boolean;
   currentUserNickname?: string;
   isAuthenticated?: boolean;
+  isAdmin?: boolean;
   onReply?: (commentId: number, author: string) => void;
   onDelete?: (commentId: number) => void;
   onLike?: (commentId: number) => void;
@@ -40,6 +41,7 @@ export default function CommentItem({
   isNested = false,
   currentUserNickname,
   isAuthenticated = false,
+  isAdmin = false,
   onReply,
   onDelete,
   onLike,
@@ -69,6 +71,7 @@ export default function CommentItem({
                 isNested={true}
                 currentUserNickname={currentUserNickname}
                 isAuthenticated={isAuthenticated}
+                isAdmin={isAdmin}
                 onReply={onReply}
                 onDelete={onDelete}
                 onLike={onLike}
@@ -150,8 +153,8 @@ export default function CommentItem({
             </button>
           )}
 
-          {/* More 버튼 (작성자 본인) */}
-          {isAuthor && isAuthenticated && onDelete && (
+          {/* 삭제 버튼 (작성자 본인 또는 관리자) */}
+          {(isAuthor || isAdmin) && isAuthenticated && onDelete && (
             <button
               onClick={() => onDelete(comment.id)}
               className="text-xs text-red-400"
@@ -179,6 +182,7 @@ export default function CommentItem({
               isNested={true}
               currentUserNickname={currentUserNickname}
               isAuthenticated={isAuthenticated}
+              isAdmin={isAdmin}
               onReply={onReply}
               onDelete={onDelete}
               onLike={onLike}

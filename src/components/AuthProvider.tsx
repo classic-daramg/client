@@ -7,7 +7,7 @@ import { useAuthStore } from '../store/authStore';
 import apiClient from '../lib/apiClient';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { setProfile, clearProfile, setAuthenticated } = useUserProfileStore();
+    const { setProfile, clearProfile, setAuthenticated, setAuthInitialized } = useUserProfileStore();
     const { setTokens, clearTokens } = useAuthStore();
 
     useEffect(() => {
@@ -20,6 +20,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             if (!token && !refreshToken) {
                 clearProfile();
                 clearTokens();
+                setAuthInitialized(true);
                 return;
             }
 
@@ -43,6 +44,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                         bio: userInfo.bio || '',
                         profileImage: userInfo.profileImage || '/icons/DefaultImage.svg',
                         birthDate: userInfo.birthDate || '',
+                        role: userInfo.role || 'USER',
                     });
 
                     setAuthenticated(true);
@@ -54,11 +56,13 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                 Cookies.remove('refresh_token');
                 clearProfile();
                 clearTokens();
+            } finally {
+                setAuthInitialized(true);
             }
         };
 
         syncAuthWithCookie();
-    }, [setProfile, clearProfile, setAuthenticated, setTokens, clearTokens]);
+    }, [setProfile, clearProfile, setAuthenticated, setAuthInitialized, setTokens, clearTokens]);
 
     return <>{children}</>;
 }
