@@ -46,6 +46,9 @@ export default function AdminPage() {
   // 배너 수정
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [bannerLinkUrl, setBannerLinkUrl] = useState('');
+  const [editBannerImageFile, setEditBannerImageFile] = useState<File | null>(null);
+  const [editBannerImagePreview, setEditBannerImagePreview] = useState('');
+  const editBannerFileInputRef = useRef<HTMLInputElement>(null);
   const [bannerLoading, setBannerLoading] = useState(false);
 
   const [composerForm, setComposerForm] = useState<ComposerForm>({
@@ -76,7 +79,7 @@ export default function AdminPage() {
   const fetchBanners = () => {
     setBannerFetchError(null);
     apiClient.get<Banner[]>('/banners')
-      .then((res) => setBanners(res.data))
+      .then((res) => setBanners(res.data.filter((b) => b.isActive)))
       .catch((err) => {
         const status = err?.response?.status;
         const msg = status ? `배너 조회 실패 (${status})` : '배너 조회 실패 (네트워크 오류)';
@@ -135,17 +138,47 @@ export default function AdminPage() {
   const handleEditBanner = (banner: Banner) => {
     setEditingBanner(banner);
     setBannerLinkUrl(banner.linkUrl ?? '');
+    setEditBannerImageFile(null);
+    setEditBannerImagePreview('');
+  };
+
+  const handleEditBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditBannerImageFile(file);
+    setEditBannerImagePreview(URL.createObjectURL(file));
   };
 
   const handleSaveBanner = async () => {
     if (!editingBanner) return;
     setBannerLoading(true);
     try {
+      let imageUrl: string | null = null;
+      let tempBannerId: number | null = null;
+
+      if (editBannerImageFile) {
+        const formData = new FormData();
+        formData.append('image', editBannerImageFile);
+        const res = await apiClient.post<Banner>('/banners/images', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        imageUrl = res.data.imageUrl;
+        tempBannerId = res.data.id;
+      }
+
       await apiClient.patch(`/banners/${editingBanner.id}`, {
         linkUrl: bannerLinkUrl || null,
+        imageUrl: imageUrl,
       });
+
+      if (tempBannerId) {
+        await apiClient.patch(`/banners/${tempBannerId}`, { isActive: false });
+      }
+
       showToast('배너가 수정되었습니다.');
       setEditingBanner(null);
+      setEditBannerImageFile(null);
+      setEditBannerImagePreview('');
       fetchBanners();
     } catch (err) {
       console.error('배너 수정 실패:', err);
@@ -298,6 +331,34 @@ export default function AdminPage() {
                     {/* 인라인 수정 폼 */}
                     {editingBanner?.id === banner.id && (
                       <div className="px-3 pb-3 flex flex-col gap-2 border-t border-[#f4f5f7] pt-2">
+                        {/* 이미지 변경 */}
+                        <input
+                          ref={editBannerFileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleEditBannerImageChange}
+                        />
+                        <button
+                          onClick={() => editBannerFileInputRef.current?.click()}
+                          className="w-full py-2 border border-dashed border-[#d0d0d0] rounded-xl text-xs text-[#a6a6a6] flex items-center justify-center gap-1"
+                        >
+                          {editBannerImagePreview ? (
+                            <span className="text-[#293a92] font-semibold">이미지 변경됨 (다시 선택)</span>
+                          ) : (
+                            <>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 5v14M5 12h14" stroke="#a6a6a6" strokeWidth="2" strokeLinecap="round" />
+                              </svg>
+                              이미지 변경 (선택 안 하면 유지)
+                            </>
+                          )}
+                        </button>
+                        {editBannerImagePreview && (
+                          <div className="relative w-full aspect-[335/148] rounded-xl overflow-hidden">
+                            <Image src={editBannerImagePreview} alt="새 이미지 미리보기" fill className="object-cover" />
+                          </div>
+                        )}
                         <input
                           type="text"
                           value={bannerLinkUrl}
@@ -307,7 +368,11 @@ export default function AdminPage() {
                         />
                         <div className="flex gap-2">
                           <button
-                            onClick={() => setEditingBanner(null)}
+                            onClick={() => {
+                              setEditingBanner(null);
+                              setEditBannerImageFile(null);
+                              setEditBannerImagePreview('');
+                            }}
                             className="flex-1 py-2 bg-[#f4f5f7] rounded-xl text-xs font-semibold text-[#4c4c4c]"
                           >
                             취소
