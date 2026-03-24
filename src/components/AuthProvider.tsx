@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useUserProfileStore } from '../store/userProfileStore';
 import { useAuthStore } from '../store/authStore';
@@ -17,6 +16,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             const refreshToken = Cookies.get('refresh_token');
 
             // 쿠키가 없다면 비로그인 유저로 단정짓고 상태 초기화
+            // (액세스 토큰이 만료되어 없더라도 리프레시 토큰이 있으면 API 요청을 통해 갱신 가능)
             if (!token && !refreshToken) {
                 clearProfile();
                 clearTokens();
@@ -25,36 +25,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             }
 
             try {
-                let activeAccessToken = token || null;
-
-                // accessToken이 없고 refreshToken만 있는 경우: 먼저 토큰 갱신 시도
-                if (!token && refreshToken) {
-                    console.log('🔄 액세스 토큰 없음, 리프레시 토큰으로 갱신 시도...');
-                    const { data } = await axios.post(
-                        '/api/auth/refresh',
-                        {},
-                        {
-                            headers: {
-                                Authorization: `Bearer ${refreshToken}`,
-                                'Content-Type': 'application/json',
-                            },
-                            withCredentials: true,
-                        }
-                    );
-
-                    const newAccessToken = data.accessToken || data.token;
-                    if (!newAccessToken) {
-                        throw new Error('Refresh failed: No access token received');
-                    }
-
-                    activeAccessToken = newAccessToken;
-                    setTokens(newAccessToken, data.refreshToken || refreshToken);
-                    console.log('✅ 리프레시 토큰으로 액세스 토큰 갱신 성공!');
-                } else {
-                    setTokens(activeAccessToken, refreshToken || null);
-                }
+                // 이미 렌더링 시점에 액세스/리프레시 토큰 중 있는 것은 전역 상태에 저장
+                setTokens(token || null, refreshToken || null);
 
                 // 유효성 검사 및 프로필 최신화 (Hydration)
+                // 💡 백엔드의 내 정보 조회 API인 /users 로 변경
                 const response = await apiClient.get('/users');
 
                 // 💡 응답 데이터가 바로 객체(profileImage, nickname 등)로 올 경우
