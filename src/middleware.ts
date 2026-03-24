@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const IS_MAINTENANCE = true; // 서버 점검 모드 플래그
+const IS_MAINTENANCE = false; // 서버 점검 모드 플래그
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
     // 1. 서버 점검 모드 처리
     if (IS_MAINTENANCE) {
         // 이미 점검 페이지에 있거나, 내부 정적 리소스인 경우 통과
-        if (pathname.startsWith('/inspection') || 
+        if (pathname.startsWith('/inspection') ||
             pathname.startsWith('/_next') ||
             pathname.includes('.')) {
             return NextResponse.next();

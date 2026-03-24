@@ -97,7 +97,7 @@ export default function InspectionPage() {
                         <div>
                             <h3 className="text-sm font-bold text-gray-800 tracking-tight">점검 시간</h3>
                             <div className="mt-1.5 inline-block px-2.5 py-1 bg-amber-100/60 rounded text-amber-800 text-sm font-medium font-mono border border-amber-200/50">
-                                미정..
+                                미정
                             </div>
                         </div>
                     </div>
