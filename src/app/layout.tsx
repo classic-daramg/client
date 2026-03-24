@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* 페이지 콘텐츠 (children): 
                             main 태그에 flex-1을 주어 콘텐츠가 적어도 전체 높이를 차지하게 합니다. 
                         */}
-            <main className="w-full flex-1 animate-page-enter">
+            <main className="w-full flex-1">
               {children}
             </main>
 
