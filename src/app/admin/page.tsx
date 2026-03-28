@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import apiClient from '@/lib/apiClient';
@@ -28,6 +28,9 @@ type ComposerForm = {
   continent: 'ASIA' | 'NORTH_AMERICA' | 'EUROPE' | 'SOUTH_AMERICA' | 'AFRICA_OCEANIA' | '';
 };
 
+// 메인 페이지에 표시되는 배너 수
+const DISPLAY_COUNT = 5;
+
 // ================== Component ==================
 
 export default function AdminPage() {
@@ -36,17 +39,16 @@ export default function AdminPage() {
 
   const [banners, setBanners] = useState<Banner[]>([]);
 
-  // 배너 추가
-  const [newBannerFile, setNewBannerFile] = useState<File | null>(null);
-  const [newBannerPreview, setNewBannerPreview] = useState<string>('');
-  const [newBannerLinkUrl, setNewBannerLinkUrl] = useState('');
-  const [newBannerLoading, setNewBannerLoading] = useState(false);
-  const newBannerFileInputRef = useRef<HTMLInputElement>(null);
-
-  // 배너 수정
+  // 배너 링크 수정
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [bannerLinkUrl, setBannerLinkUrl] = useState('');
   const [bannerLoading, setBannerLoading] = useState(false);
+
+  // 배너 순서 변경
+  const [reorderLoading, setReorderLoading] = useState(false);
+
+  // 배너 숨기기/보이기
+  const [togglingBannerId, setTogglingBannerId] = useState<number | null>(null);
 
   const [composerForm, setComposerForm] = useState<ComposerForm>({
     koreanName: '',
@@ -72,11 +74,14 @@ export default function AdminPage() {
     }
   }, [authInitialized, profile, router]);
 
-  // 배너 목록 조회
+  // 배너 목록 조회 (orderIndex 순으로 정렬)
   const fetchBanners = () => {
     setBannerFetchError(null);
     apiClient.get<Banner[]>('/banners')
-      .then((res) => setBanners(res.data))
+      .then((res) => {
+        const sorted = [...res.data].sort((a, b) => a.orderIndex - b.orderIndex);
+        setBanners(sorted);
+      })
       .catch((err) => {
         const status = err?.response?.status;
         const msg = status ? `배너 조회 실패 (${status})` : '배너 조회 실패 (네트워크 오류)';
@@ -95,42 +100,7 @@ export default function AdminPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // ================== 배너 추가 ==================
-
-  const handleNewBannerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setNewBannerFile(file);
-    setNewBannerPreview(URL.createObjectURL(file));
-  };
-
-  const handleCreateBanner = async () => {
-    if (!newBannerFile) {
-      showToast('이미지를 선택해주세요.', 'error');
-      return;
-    }
-    setNewBannerLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('image', newBannerFile);
-      if (newBannerLinkUrl) formData.append('linkUrl', newBannerLinkUrl);
-      await apiClient.post('/banners/images', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      showToast('배너가 추가되었습니다.');
-      setNewBannerFile(null);
-      setNewBannerPreview('');
-      setNewBannerLinkUrl('');
-      fetchBanners();
-    } catch (err) {
-      console.error('배너 추가 실패:', err);
-      showToast('배너 추가에 실패했습니다.', 'error');
-    } finally {
-      setNewBannerLoading(false);
-    }
-  };
-
-  // ================== 배너 수정 ==================
+  // ================== 배너 링크 수정 ==================
 
   const handleEditBanner = (banner: Banner) => {
     setEditingBanner(banner);
@@ -152,6 +122,52 @@ export default function AdminPage() {
       showToast('배너 수정에 실패했습니다.', 'error');
     } finally {
       setBannerLoading(false);
+    }
+  };
+
+  // ================== 배너 순서 변경 ==================
+
+  const handleMoveOrder = async (index: number, direction: 'up' | 'down') => {
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= banners.length) return;
+
+    const a = banners[index];
+    const b = banners[swapIndex];
+
+    // 낙관적 UI 업데이트
+    const newBanners = [...banners];
+    newBanners[index] = b;
+    newBanners[swapIndex] = a;
+    setBanners(newBanners);
+
+    setReorderLoading(true);
+    try {
+      await Promise.all([
+        apiClient.patch(`/banners/${a.id}`, { orderIndex: b.orderIndex }),
+        apiClient.patch(`/banners/${b.id}`, { orderIndex: a.orderIndex }),
+      ]);
+    } catch (err) {
+      console.error('배너 순서 변경 실패:', err);
+      showToast('순서 변경에 실패했습니다.', 'error');
+      fetchBanners();
+    } finally {
+      setReorderLoading(false);
+    }
+  };
+
+  // ================== 배너 숨기기/보이기 ==================
+
+  const handleToggleActive = async (banner: Banner) => {
+    setTogglingBannerId(banner.id);
+    try {
+      await apiClient.patch(`/banners/${banner.id}`, { isActive: !banner.isActive });
+      showToast(banner.isActive ? '배너를 숨겼습니다.' : '배너를 표시합니다.');
+      fetchBanners();
+    } catch (err) {
+      console.error('배너 상태 변경 실패:', err);
+      showToast('상태 변경에 실패했습니다.', 'error');
+    } finally {
+      setTogglingBannerId(null);
     }
   };
 
@@ -220,82 +236,89 @@ export default function AdminPage() {
 
         {/* ===== 배너 관리 ===== */}
         <section className="bg-white rounded-[20px] p-5 shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)]">
-          <h2 className="text-[#1A1A1A] text-base font-semibold mb-4">배너 관리</h2>
+          <h2 className="text-[#1A1A1A] text-base font-semibold mb-1">배너 관리</h2>
+          <p className="text-xs text-[#a6a6a6] mb-4">
+            ↑↓로 순서 조정 · 상위 {DISPLAY_COUNT}개가 메인에 표시됩니다 · 숨김 처리된 배너는 메인에 노출되지 않습니다
+          </p>
 
-          {/* 배너 추가 */}
-          <div className="mb-5 flex flex-col gap-3">
-            <p className="text-sm font-semibold text-[#1A1A1A]">새 배너 추가</p>
+          {bannerFetchError && (
+            <p className="text-sm text-red-500 text-center py-2">{bannerFetchError}</p>
+          )}
+          {!bannerFetchError && banners.length === 0 && (
+            <p className="text-sm text-[#a6a6a6] text-center py-2">등록된 배너가 없습니다.</p>
+          )}
 
-            <input
-              ref={newBannerFileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleNewBannerFileChange}
-            />
-
-            {newBannerPreview ? (
-              <div
-                className="relative w-full aspect-[335/148] rounded-xl overflow-hidden bg-[#f4f5f7] cursor-pointer"
-                onClick={() => newBannerFileInputRef.current?.click()}
-              >
-                <Image src={newBannerPreview} alt="미리보기" fill className="object-cover" />
-              </div>
-            ) : (
-              <button
-                onClick={() => newBannerFileInputRef.current?.click()}
-                className="w-full aspect-[335/148] border-2 border-dashed border-[#d0d0d0] rounded-xl flex flex-col items-center justify-center gap-1 text-[#a6a6a6]"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 5v14M5 12h14" stroke="#a6a6a6" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                <span className="text-xs">이미지 선택</span>
-              </button>
-            )}
-
-            <div>
-              <label className="text-xs text-[#a6a6a6] mb-1 block">링크 경로</label>
-              <input
-                type="text"
-                value={newBannerLinkUrl}
-                onChange={(e) => setNewBannerLinkUrl(e.target.value)}
-                placeholder="/posts/123 또는 /fortune-receipt"
-                className="w-full px-3 py-2.5 bg-[#f4f5f7] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#293a92]"
-              />
-            </div>
-
-            <button
-              onClick={handleCreateBanner}
-              disabled={newBannerLoading || !newBannerFile}
-              className="w-full py-2.5 bg-[#293a92] rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-            >
-              {newBannerLoading ? '추가 중...' : '배너 추가'}
-            </button>
-          </div>
-
-          {/* 기존 배너 목록 */}
           {banners.length > 0 && (
-            <>
-              <div className="border-t border-[#f4f5f7] pt-4 mb-3">
-                <p className="text-sm font-semibold text-[#1A1A1A]">배너 목록</p>
-              </div>
-              <div className="flex flex-col gap-3">
-                {banners.map((banner) => (
-                  <div key={banner.id} className="border border-[#eee] rounded-xl overflow-hidden">
+            <div className="flex flex-col gap-3">
+              {banners.map((banner, index) => {
+                const isDisplayed = index < DISPLAY_COUNT && banner.isActive;
+                return (
+                  <div
+                    key={banner.id}
+                    className={`border rounded-xl overflow-hidden transition-opacity ${
+                      !banner.isActive ? 'opacity-40' : isDisplayed ? 'border-[#293a92]/30' : 'border-[#eee]'
+                    }`}
+                  >
+                    {/* 배너 이미지 + 순서 버튼 */}
                     <div className="relative w-full aspect-[335/148]">
                       <Image src={banner.imageUrl} alt={`Banner ${banner.id}`} fill className="object-cover" />
-                    </div>
-                    <div className="px-3 py-2 flex items-center justify-between">
-                      <span className="text-xs text-[#4c4c4c] truncate max-w-[200px]">{banner.linkUrl}</span>
-                      <button
-                        onClick={() => handleEditBanner(banner)}
-                        className="text-xs font-semibold text-[#293a92]"
-                      >
-                        링크 수정
-                      </button>
+
+                      {/* 상태 뱃지 (좌측 상단) */}
+                      <div className={`absolute top-2 left-2 text-white text-xs font-semibold px-2 py-0.5 rounded-md ${
+                        !banner.isActive ? 'bg-black/50' : isDisplayed ? 'bg-[#293a92]/80' : 'bg-black/40'
+                      }`}>
+                        {!banner.isActive ? '숨김' : isDisplayed ? `${index + 1}번 · 표시됨` : `${index + 1}번 · 미표시`}
+                      </div>
+
+                      {/* 순서 변경 버튼 (우측 상단) */}
+                      <div className="absolute top-2 right-2 flex flex-col gap-1">
+                        <button
+                          onClick={() => handleMoveOrder(index, 'up')}
+                          disabled={index === 0 || reorderLoading}
+                          className="w-7 h-7 bg-white/80 rounded-lg flex items-center justify-center disabled:opacity-30 active:bg-white"
+                          aria-label="위로"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 15l-6-6-6 6" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleMoveOrder(index, 'down')}
+                          disabled={index === banners.length - 1 || reorderLoading}
+                          className="w-7 h-7 bg-white/80 rounded-lg flex items-center justify-center disabled:opacity-30 active:bg-white"
+                          aria-label="아래로"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M6 9l6 6 6-6" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
 
-                    {/* 인라인 수정 폼 */}
+                    {/* 링크 + 버튼 행 */}
+                    <div className="px-3 py-2 flex items-center justify-between gap-2">
+                      <span className="text-xs text-[#4c4c4c] truncate flex-1">
+                        {banner.linkUrl ?? <span className="text-[#c0c0c0]">링크 없음</span>}
+                      </span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleToggleActive(banner)}
+                          disabled={togglingBannerId === banner.id}
+                          className={`text-xs font-semibold disabled:opacity-50 ${banner.isActive ? 'text-[#a6a6a6]' : 'text-[#293a92]'}`}
+                        >
+                          {togglingBannerId === banner.id ? '...' : banner.isActive ? '숨기기' : '보이기'}
+                        </button>
+                        <span className="text-[#d0d0d0] text-xs">|</span>
+                        <button
+                          onClick={() => handleEditBanner(banner)}
+                          className="text-xs font-semibold text-[#293a92]"
+                        >
+                          링크 수정
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 인라인 링크 수정 폼 */}
                     {editingBanner?.id === banner.id && (
                       <div className="px-3 pb-3 flex flex-col gap-2 border-t border-[#f4f5f7] pt-2">
                         <input
@@ -323,16 +346,9 @@ export default function AdminPage() {
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {bannerFetchError && (
-            <p className="text-sm text-red-500 text-center py-2">{bannerFetchError}</p>
-          )}
-          {!bannerFetchError && banners.length === 0 && (
-            <p className="text-sm text-[#a6a6a6] text-center py-2">등록된 배너가 없습니다.</p>
+                );
+              })}
+            </div>
           )}
         </section>
 

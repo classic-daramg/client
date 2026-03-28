@@ -17,6 +17,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+    // 정적 이미지 캐시 헤더
+  headers: async () => [
+    {
+      source: "/icons/:path*",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=2592000, stale-while-revalidate=86400",
+        },
+      ],
+    },
+  ],
   // 로컬 개발 환경에서 API 프록시
   rewrites: async () => {
     return {

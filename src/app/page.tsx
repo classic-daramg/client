@@ -75,8 +75,11 @@ export default function HomePage() {
   useEffect(() => {
     apiClient.get<Banner[]>('/banners')
       .then((res) => {
-        const active = res.data.filter((b) => b.isActive).slice(0, 3);
-        if (active.length > 0) setBanners(active);
+        const sorted = [...res.data]
+          .filter((b) => b.isActive)
+          .sort((a, b) => a.orderIndex - b.orderIndex)
+          .slice(0, 5);
+        if (sorted.length > 0) setBanners(sorted);
       })
       .catch(() => {/* 실패 시 fallbackBanners 유지 */});
   }, []);
