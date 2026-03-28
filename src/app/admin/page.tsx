@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import apiClient from '@/lib/apiClient';
@@ -38,6 +38,13 @@ export default function AdminPage() {
   const { profile, authInitialized } = useUserProfileStore();
 
   const [banners, setBanners] = useState<Banner[]>([]);
+
+  // 배너 추가
+  const [newBannerFile, setNewBannerFile] = useState<File | null>(null);
+  const [newBannerPreview, setNewBannerPreview] = useState<string>('');
+  const [newBannerLinkUrl, setNewBannerLinkUrl] = useState('');
+  const [newBannerLoading, setNewBannerLoading] = useState(false);
+  const newBannerFileInputRef = useRef<HTMLInputElement>(null);
 
   // 배너 링크 수정
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
@@ -98,6 +105,42 @@ export default function AdminPage() {
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
+  };
+
+  // ================== 배너 추가 ==================
+
+  const handleNewBannerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setNewBannerFile(file);
+    setNewBannerPreview(URL.createObjectURL(file));
+  };
+
+  const handleCreateBanner = async () => {
+    if (!newBannerFile) {
+      showToast('이미지를 선택해주세요.', 'error');
+      return;
+    }
+    setNewBannerLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', newBannerFile);
+      if (newBannerLinkUrl) formData.append('linkUrl', newBannerLinkUrl);
+      await apiClient.post('/banners/images', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      showToast('배너가 추가되었습니다.');
+      setNewBannerFile(null);
+      setNewBannerPreview('');
+      setNewBannerLinkUrl('');
+      if (newBannerFileInputRef.current) newBannerFileInputRef.current.value = '';
+      fetchBanners();
+    } catch (err) {
+      console.error('배너 추가 실패:', err);
+      showToast('배너 추가에 실패했습니다.', 'error');
+    } finally {
+      setNewBannerLoading(false);
+    }
   };
 
   // ================== 배너 링크 수정 ==================
@@ -240,6 +283,59 @@ export default function AdminPage() {
           <p className="text-xs text-[#a6a6a6] mb-4">
             ↑↓로 순서 조정 · 상위 {DISPLAY_COUNT}개가 메인에 표시됩니다 · 숨김 처리된 배너는 메인에 노출되지 않습니다
           </p>
+
+          {/* 배너 추가 */}
+          <div className="mb-5 flex flex-col gap-3">
+            <p className="text-sm font-semibold text-[#1A1A1A]">새 배너 추가</p>
+
+            <input
+              ref={newBannerFileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleNewBannerFileChange}
+            />
+
+            {newBannerPreview ? (
+              <div
+                className="relative w-full aspect-[335/148] rounded-xl overflow-hidden bg-[#f4f5f7] cursor-pointer"
+                onClick={() => newBannerFileInputRef.current?.click()}
+              >
+                <Image src={newBannerPreview} alt="미리보기" fill className="object-cover" />
+              </div>
+            ) : (
+              <button
+                onClick={() => newBannerFileInputRef.current?.click()}
+                className="w-full aspect-[335/148] border-2 border-dashed border-[#d0d0d0] rounded-xl flex flex-col items-center justify-center gap-1 text-[#a6a6a6]"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="#a6a6a6" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                <span className="text-xs">이미지 선택</span>
+              </button>
+            )}
+
+            <div>
+              <label className="text-xs text-[#a6a6a6] mb-1 block">링크 경로</label>
+              <input
+                type="text"
+                value={newBannerLinkUrl}
+                onChange={(e) => setNewBannerLinkUrl(e.target.value)}
+                placeholder="/posts/123 또는 /fortune-receipt"
+                className="w-full px-3 py-2.5 bg-[#f4f5f7] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#293a92]"
+              />
+            </div>
+
+            <button
+              onClick={handleCreateBanner}
+              disabled={newBannerLoading || !newBannerFile}
+              className="w-full py-2.5 bg-[#293a92] rounded-xl text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {newBannerLoading ? '추가 중...' : '배너 추가'}
+            </button>
+          </div>
+
+          <div className="border-t border-[#f4f5f7] mb-4" />
 
           {bannerFetchError && (
             <p className="text-sm text-red-500 text-center py-2">{bannerFetchError}</p>
