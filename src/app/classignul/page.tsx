@@ -188,13 +188,13 @@ export default function ClassignulPage() {
         {step === "start" && (
           <div className="relative flex-1">
             <Image
-              src="/icons/classignul/0. 시작 표지.webp"
+              src="/icons/classignul/KakaoTalk_20260324_104838173.webp"
               alt="클래시그널 시작"
               fill
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 flex items-center justify-center translate-y-[15%]">
+            <div className="absolute inset-0 flex items-center justify-center translate-y-[40%]">
               <button
                 onClick={() => setStep("question")}
                 className="w-[260px] active:opacity-70 transition-opacity"
