@@ -194,9 +194,10 @@ export default function AdminPage() {
 
     setReorderLoading(true);
     try {
+      // 배열 위치(인덱스)를 orderIndex로 직접 사용 → 항상 유일한 값 보장
       await Promise.all([
-        apiClient.patch(`/banners/${a.id}`, { orderIndex: b.orderIndex }),
-        apiClient.patch(`/banners/${b.id}`, { orderIndex: a.orderIndex }),
+        apiClient.patch(`/banners/${a.id}`, { orderIndex: swapIndex }),
+        apiClient.patch(`/banners/${b.id}`, { orderIndex: index }),
       ]);
     } catch (err) {
       console.error('배너 순서 변경 실패:', err);
