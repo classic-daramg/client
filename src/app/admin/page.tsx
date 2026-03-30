@@ -57,6 +57,15 @@ export default function AdminPage() {
   // 배너 숨기기/보이기
   const [togglingBannerId, setTogglingBannerId] = useState<number | null>(null);
 
+  // 배너 이미지 교체
+  const [replacingBannerId, setReplacingBannerId] = useState<number | null>(null);
+  const [replaceImageLoading, setReplaceImageLoading] = useState(false);
+  const replaceBannerFileInputRef = useRef<HTMLInputElement>(null);
+
+  // 배너 삭제
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [deletingBannerId, setDeletingBannerId] = useState<number | null>(null);
+
   const [composerForm, setComposerForm] = useState<ComposerForm>({
     koreanName: '',
     englishName: '',
@@ -198,6 +207,52 @@ export default function AdminPage() {
     }
   };
 
+  // ================== 배너 이미지 교체 ==================
+
+  const handleReplaceBannerImageClick = (bannerId: number) => {
+    setReplacingBannerId(bannerId);
+    if (replaceBannerFileInputRef.current) replaceBannerFileInputRef.current.value = '';
+    replaceBannerFileInputRef.current?.click();
+  };
+
+  const handleReplaceBannerImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || replacingBannerId === null) return;
+    setReplaceImageLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      await apiClient.put(`/banners/${replacingBannerId}/images`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      showToast('배너 이미지가 교체되었습니다.');
+      fetchBanners();
+    } catch (err) {
+      console.error('배너 이미지 교체 실패:', err);
+      showToast('배너 이미지 교체에 실패했습니다.', 'error');
+    } finally {
+      setReplaceImageLoading(false);
+      setReplacingBannerId(null);
+    }
+  };
+
+  // ================== 배너 삭제 ==================
+
+  const handleDeleteBanner = async (bannerId: number) => {
+    setDeletingBannerId(bannerId);
+    try {
+      await apiClient.delete(`/banners/${bannerId}`);
+      showToast('배너가 삭제되었습니다.');
+      setDeleteConfirmId(null);
+      fetchBanners();
+    } catch (err) {
+      console.error('배너 삭제 실패:', err);
+      showToast('배너 삭제에 실패했습니다.', 'error');
+    } finally {
+      setDeletingBannerId(null);
+    }
+  };
+
   // ================== 배너 숨기기/보이기 ==================
 
   const handleToggleActive = async (banner: Banner) => {
@@ -274,6 +329,15 @@ export default function AdminPage() {
         </button>
         <h1 className="text-[#1A1A1A] text-xl font-semibold">관리자 페이지</h1>
       </header>
+
+      {/* 배너 이미지 교체용 hidden input */}
+      <input
+        ref={replaceBannerFileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleReplaceBannerImageChange}
+      />
 
       <div className="px-5 flex flex-col gap-4 pb-20">
 
@@ -391,12 +455,27 @@ export default function AdminPage() {
                       </div>
                     </div>
 
+                    {/* 이미지 교체 중 오버레이 */}
+                    {replaceImageLoading && replacingBannerId === banner.id && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <span className="text-white text-xs font-semibold">교체 중...</span>
+                      </div>
+                    )}
+
                     {/* 링크 + 버튼 행 */}
                     <div className="px-3 py-2 flex items-center justify-between gap-2">
                       <span className="text-xs text-[#4c4c4c] truncate flex-1">
                         {banner.linkUrl ?? <span className="text-[#c0c0c0]">링크 없음</span>}
                       </span>
                       <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleReplaceBannerImageClick(banner.id)}
+                          disabled={replaceImageLoading}
+                          className="text-xs font-semibold text-[#666] disabled:opacity-50"
+                        >
+                          이미지 교체
+                        </button>
+                        <span className="text-[#d0d0d0] text-xs">|</span>
                         <button
                           onClick={() => handleToggleActive(banner)}
                           disabled={togglingBannerId === banner.id}
@@ -410,6 +489,13 @@ export default function AdminPage() {
                           className="text-xs font-semibold text-[#293a92]"
                         >
                           링크 수정
+                        </button>
+                        <span className="text-[#d0d0d0] text-xs">|</span>
+                        <button
+                          onClick={() => setDeleteConfirmId(banner.id)}
+                          className="text-xs font-semibold text-red-400"
+                        >
+                          삭제
                         </button>
                       </div>
                     </div>
@@ -437,6 +523,28 @@ export default function AdminPage() {
                             className="flex-1 py-2 bg-[#293a92] rounded-xl text-xs font-semibold text-white disabled:opacity-50"
                           >
                             {bannerLoading ? '저장 중...' : '저장'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 인라인 삭제 확인 */}
+                    {deleteConfirmId === banner.id && (
+                      <div className="px-3 pb-3 flex flex-col gap-2 border-t border-[#f4f5f7] pt-2">
+                        <p className="text-xs text-[#4c4c4c] text-center">이 배너를 삭제할까요? (S3 이미지도 함께 삭제됩니다)</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setDeleteConfirmId(null)}
+                            className="flex-1 py-2 bg-[#f4f5f7] rounded-xl text-xs font-semibold text-[#4c4c4c]"
+                          >
+                            취소
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBanner(banner.id)}
+                            disabled={deletingBannerId === banner.id}
+                            className="flex-1 py-2 bg-red-500 rounded-xl text-xs font-semibold text-white disabled:opacity-50"
+                          >
+                            {deletingBannerId === banner.id ? '삭제 중...' : '삭제'}
                           </button>
                         </div>
                       </div>
