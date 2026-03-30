@@ -40,6 +40,8 @@ interface Comment {
   isLiked: boolean;
   likeCount: number;
   parentCommentId: number | null;
+  isAi?: boolean;
+  composerName?: string;
   childComments?: Comment[];
 }
 

@@ -12,6 +12,8 @@ interface Comment {
   isLiked: boolean;
   likeCount: number;
   isDeleted?: boolean;
+  isAi?: boolean;
+  composerName?: string;
   childComments?: Comment[];
 }
 
@@ -109,8 +111,11 @@ export default function CommentItem({
           {/* Username & Time */}
           <div className="flex gap-2 items-center mb-1">
             <p className="text-[14px] font-semibold leading-normal text-[#4c4c4c]">
-              {comment.writerNickname}
+              {comment.isAi ? comment.composerName : comment.writerNickname}
             </p>
+            {comment.isAi && (
+              <span className="text-[10px] font-semibold text-white bg-[#7B7FF5] rounded-full px-[6px] py-[1px]">AI</span>
+            )}
             <p className="text-[12px] font-medium leading-normal text-[#d9d9d9]">
               {formatDateTime(comment.createdAt)}
             </p>

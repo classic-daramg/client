@@ -16,6 +16,11 @@ type Banner = {
   orderIndex: number;
 };
 
+type ComposerSummary = {
+  composerId: number;
+  koreanName: string;
+};
+
 type ComposerForm = {
   koreanName: string;
   englishName: string;
@@ -77,6 +82,14 @@ export default function AdminPage() {
     era: '',
     continent: '',
   });
+
+  // AI 자동 댓글 관리
+  const [aiAutoDetect, setAiAutoDetect] = useState<boolean>(false);
+  const [aiToggleLoading, setAiToggleLoading] = useState(false);
+  const [composerList, setComposerList] = useState<ComposerSummary[]>([]);
+  const [aiAssignPostId, setAiAssignPostId] = useState('');
+  const [aiAssignComposerId, setAiAssignComposerId] = useState('');
+  const [aiAssignLoading, setAiAssignLoading] = useState(false);
 
   const [bannerFetchError, setBannerFetchError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -267,6 +280,53 @@ export default function AdminPage() {
       showToast('상태 변경에 실패했습니다.', 'error');
     } finally {
       setTogglingBannerId(null);
+    }
+  };
+
+  // ================== AI 자동 댓글 ==================
+
+  useEffect(() => {
+    if (!authInitialized || !profile || profile.role !== 'ADMIN') return;
+    // AI 설정 조회
+    apiClient.get<{ autoDetectEnabled: boolean }>('/admin/ai-comments/settings')
+      .then((res) => setAiAutoDetect(res.data.autoDetectEnabled))
+      .catch((err) => console.error('AI 설정 조회 실패:', err));
+    // 작곡가 목록 조회 (수동 할당용)
+    apiClient.get<ComposerSummary[]>('/composers')
+      .then((res) => setComposerList(res.data))
+      .catch((err) => console.error('작곡가 목록 조회 실패:', err));
+  }, [authInitialized, profile]);
+
+  const handleAiToggle = async () => {
+    setAiToggleLoading(true);
+    try {
+      await apiClient.put(`/admin/ai-comments/settings/auto-detect?enabled=${!aiAutoDetect}`);
+      setAiAutoDetect((prev) => !prev);
+      showToast(`AI 자동 감지가 ${!aiAutoDetect ? '활성화' : '비활성화'}되었습니다.`);
+    } catch (err) {
+      console.error('AI 자동 감지 토글 실패:', err);
+      showToast('AI 설정 변경에 실패했습니다.', 'error');
+    } finally {
+      setAiToggleLoading(false);
+    }
+  };
+
+  const handleAiAssign = async () => {
+    if (!aiAssignPostId || !aiAssignComposerId) {
+      showToast('게시글 ID와 작곡가를 선택해주세요.', 'error');
+      return;
+    }
+    setAiAssignLoading(true);
+    try {
+      await apiClient.post(`/admin/ai-comments/posts/${aiAssignPostId}/assign?composerId=${aiAssignComposerId}`);
+      showToast('AI 댓글이 수동으로 할당되었습니다.');
+      setAiAssignPostId('');
+      setAiAssignComposerId('');
+    } catch (err) {
+      console.error('AI 댓글 수동 할당 실패:', err);
+      showToast('수동 할당에 실패했습니다.', 'error');
+    } finally {
+      setAiAssignLoading(false);
     }
   };
 
@@ -555,6 +615,65 @@ export default function AdminPage() {
               })}
             </div>
           )}
+        </section>
+
+        {/* ===== AI 자동 댓글 관리 ===== */}
+        <section className="bg-white rounded-[20px] p-5 shadow-[0px_0px_7.1px_-3px_rgba(0,0,0,0.15)]">
+          <h2 className="text-[#1A1A1A] text-base font-semibold mb-4">AI 작곡가 댓글 관리</h2>
+
+          {/* 자동 감지 토글 */}
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <p className="text-sm font-semibold text-[#1A1A1A]">AI 자동 감지</p>
+              <p className="text-xs text-[#a6a6a6] mt-0.5">새 게시글에 AI 작곡가 댓글을 자동으로 생성합니다</p>
+            </div>
+            <button
+              onClick={handleAiToggle}
+              disabled={aiToggleLoading}
+              className={`relative w-12 h-6 rounded-full transition-colors disabled:opacity-50 ${aiAutoDetect ? 'bg-[#293a92]' : 'bg-[#d0d0d0]'}`}
+            >
+              <span
+                className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${aiAutoDetect ? 'translate-x-7' : 'translate-x-1'}`}
+              />
+            </button>
+          </div>
+
+          <div className="border-t border-[#f4f5f7] mb-4" />
+
+          {/* 수동 할당 */}
+          <p className="text-sm font-semibold text-[#1A1A1A] mb-3">수동 할당</p>
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className="text-xs text-[#a6a6a6] mb-1 block">게시글 ID</label>
+              <input
+                type="number"
+                value={aiAssignPostId}
+                onChange={(e) => setAiAssignPostId(e.target.value)}
+                placeholder="예: 42"
+                className="w-full px-3 py-2.5 bg-[#f4f5f7] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#293a92]"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[#a6a6a6] mb-1 block">작곡가</label>
+              <select
+                value={aiAssignComposerId}
+                onChange={(e) => setAiAssignComposerId(e.target.value)}
+                className="w-full px-3 py-2.5 bg-[#f4f5f7] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#293a92]"
+              >
+                <option value="">선택하세요</option>
+                {composerList.map((c) => (
+                  <option key={c.composerId} value={c.composerId}>{c.koreanName}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={handleAiAssign}
+              disabled={aiAssignLoading || !aiAssignPostId || !aiAssignComposerId}
+              className="w-full py-2.5 bg-[#293a92] rounded-xl text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {aiAssignLoading ? '할당 중...' : 'AI 댓글 생성'}
+            </button>
+          </div>
         </section>
 
         {/* ===== 작곡가 추가 ===== */}
