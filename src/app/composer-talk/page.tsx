@@ -76,6 +76,26 @@ export default function ComposerTalkPage() {
         }
     }, [isClient, isAuthenticated]);
 
+    // N 뱃지 여부 계산 함수
+    const hasNBadge = useCallback((composer: typeof composers[number]): boolean => {
+        if (!isClient) return false;
+        const lastVisitedAt = getLastVisitedAt(composer.composerId);
+        return !!composer.lastStoryPostAt && (
+            !lastVisitedAt ||
+            new Date(composer.lastStoryPostAt) > new Date(lastVisitedAt)
+        );
+    }, [isClient, getLastVisitedAt]);
+
+    // 정렬 우선순위: 하트+N(0) > 하트만(1) > N만(2) > 없음(3)
+    const getSortPriority = (composer: typeof composers[number]): number => {
+        const liked = composer.isLiked;
+        const n = hasNBadge(composer);
+        if (liked && n) return 0;
+        if (liked) return 1;
+        if (n) return 2;
+        return 3;
+    };
+
     // API에서 필터링된 데이터 사용 (검색어만 클라이언트에서 필터링)
     const filteredCards = composers
         .filter((composer) => {
@@ -84,11 +104,10 @@ export default function ComposerTalkPage() {
             return matchesSearch;
         })
         .sort((a, b) => {
-            // 1순위: 게시물 수 내림차순
-            if (b.storyPostCount !== a.storyPostCount) return b.storyPostCount - a.storyPostCount;
-            // 2순위: 좋아요한 작곡가를 상단에 배치
-            if (a.isLiked !== b.isLiked) return a.isLiked ? -1 : 1;
-            // 3순위: 태어난 년도 오름차순 (빠른 순)
+            const pa = getSortPriority(a);
+            const pb = getSortPriority(b);
+            if (pa !== pb) return pa - pb;
+            // 동순위일 때: 태어난 년도 오름차순
             return a.birthYear - b.birthYear;
         });
 
@@ -114,11 +133,7 @@ export default function ComposerTalkPage() {
                     </div>
                 ) : (
                     filteredCards.map((composer) => {
-                        const lastVisitedAt = getLastVisitedAt(composer.composerId);
-                        const showNBadge = isClient && !!composer.lastStoryPostAt && (
-                            !lastVisitedAt ||
-                            new Date(composer.lastStoryPostAt) > new Date(lastVisitedAt)
-                        );
+                        const showNBadge = hasNBadge(composer);
                         return (
                             <Link
                                 key={composer.composerId}
