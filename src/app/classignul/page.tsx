@@ -284,7 +284,7 @@ export default function ClassignulPage() {
                   onClick={async () => {
                     const shareData = {
                       title: "클래시그널",
-                      text: `나의 클래시그널 유형은 ${resultCode}! 너는 어떤 유형이야?`,
+                      text: `나의 클래시그널 유형을 알려줄게. 너도 어떤 유형인지 테스트해봐!`,
                       url: shareUrl,
                     };
                     if (navigator.share) {
