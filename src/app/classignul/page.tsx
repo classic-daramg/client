@@ -316,7 +316,7 @@ export default function ClassignulPage() {
                       alt="테스트 참여하기"
                       width={200}
                       height={60}
-                      className="w-[200px] h-auto"
+                      className="w-[187px] h-auto"
                     />
                   </button>
                 )}
