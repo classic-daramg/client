@@ -25,11 +25,11 @@ const TermsAgreementPage = () => {
 
   const handleIndividualAgreement = (key: keyof typeof agreements, checked: boolean) => {
     const newAgreements = { ...agreements, [key]: checked };
-    
+
     // Check if all individual items are checked
     const allChecked = newAgreements.terms && newAgreements.privacy && newAgreements.marketing;
     newAgreements.all = allChecked;
-    
+
     setAgreements(newAgreements);
   };
 
@@ -63,14 +63,14 @@ const TermsAgreementPage = () => {
             <div className="flex flex-col items-start pt-[21px] w-[375px] h-[54px] bg-white">
               {/* Status bar content */}
             </div>
-            
+
             {/* Header Content */}
             <div className="flex flex-col items-start px-5 pb-3 gap-4 w-[375px] h-[42px] bg-white">
               <div className="flex flex-row items-center gap-1 w-[335px] h-[30px]">
                 {/* Back Button */}
                 <button onClick={handleBack} className="w-5 h-5 flex items-center justify-center">
                   <svg width="7" height="15" viewBox="0 0 7 15" fill="none" className="rotate-180">
-                    <path d="M1 1L6 7.5L1 14" stroke="#1A1A1A" strokeWidth="2"/>
+                    <path d="M1 1L6 7.5L1 14" stroke="#1A1A1A" strokeWidth="2" />
                   </svg>
                 </button>
 
@@ -89,22 +89,111 @@ const TermsAgreementPage = () => {
 
       {/* Content */}
       <div className="absolute left-1/2 transform -translate-x-1/2 top-[123px] w-[335px] h-[599px] flex flex-col items-start gap-[15px]">
-        
+
         {/* 서비스 이용 약관 */}
         <div className="flex flex-col items-start gap-[10px] w-[335px] h-[195px]">
           <h2 className="w-[335px] h-[17px] font-pretendard font-semibold text-sm leading-[17px] flex items-center text-[#4C4C4C]">
             서비스 이용 약관
           </h2>
-          <div className="flex flex-row justify-center items-center p-[14px] gap-[10px] w-[335px] h-[168px] bg-[#F4F5F7] rounded-md">
-            <div className="flex-1 h-[140px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#A6A6A6] overflow-y-auto">
-              이용약관 전문
-              {'\n\n'}
-              제1조 (목적)
-              이 약관은 클래식듣는다람쥐(이하 &quot;회사&quot;)가 제공하는 서비스의 이용조건 및 절차, 회사와 회원의 권리, 의무, 책임사항과 기타 필요한 사항을 규정함을 목적으로 합니다.
-              {'\n\n'}
-              제2조 (정의)
-              1. &quot;서비스&quot;라 함은 회사가 제공하는 모든 서비스를 의미합니다.
-              2. &quot;회원&quot;이라 함은 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객을 말합니다.
+          <div className="flex flex-col p-[14px] w-[335px] h-[168px] bg-[#F4F5F7] rounded-md">
+            <div className="w-full h-full font-pretendard font-medium text-[13px] leading-5 text-[#A6A6A6] overflow-y-auto whitespace-pre-wrap break-words">
+              {`제1조(목적)
+
+본 약관은 클래식 듣는 다람쥐 웹서비스(이하 "서비스")를 이용함에 있어 본 서비스의 이용자(이하 "회원")의 권리, 의무 및 책임사항을 규정하는 것을 목적으로 합니다.
+
+제2조(정의)
+
+1. "서비스"란 클래식 듣는 다람쥐 웹서비스에서 제공하는 모든 기능을 의미합니다.
+2. “이용자”란 “서비스”에 접속하여 이 약관에 따라 “서비스”가 제공하는 서비스를 받는 회원 및 비회원을 말합니다.
+3. "회원"이라 함은 본 약관에 동의하고 서비스를 이용하는 개인 또는 법인을 의미합니다.
+4. “비회원”이라 함은 회원에 가입하지 않고, “서비스”가 제공하는 서비스를 이용하는 자를 말합니다.
+
+제3조 (약관의 효력 및 변경)
+
+1. 본 약관은 회원이 동의함으로써 효력이 발생합니다.
+2. “서비스”는 필요 시 관련 법령을 위배하지 않는 범위 내에서 약관을 변경할 수 있으며, 변경 사항은 서비스 내 공지사항을 통해 사전 고지합니다. 다만, 이용자에게 불리하게 약관내용을 변경하는 경우에는 최소한 30일 이상의 사전 유예기간을 두고 공지합니다. 이 경우 “서비스”는 개정 전 내용과 개정 후 내용을 명확하게 비교하여 이용자가 알기 쉽도록 표시합니다.
+
+제4조 (서비스의 중단)
+
+1. “서비스”는 컴퓨터 등 정보통신설비의 보수점검․교체 및 고장, 통신의 두절 등의 사유가 발생한 경우에는 서비스의 제공을 일시적으로 중단할 수 있습니다.
+2. 사업종목의 전환, 사업의 포기, 업체 간의 통합 등의 이유로 서비스를 제공할 수 없게 되는 경우에는 30일 이상의 사전 유예기간을 두고 공지합니다. 
+
+제5조 (회원가입)
+
+1. 회원가입은 본 약관과 개인정보 처리방침에 동의한 후 회사가 제공하는 회원가입 절차를 완료함으로써 이루어집니다.
+2. “서비스”는 회원으로 가입할 것을 신청한 이용자 중 다음 각 호에 해당하지 않는 한 회원으로 등록합니다.
+    1. 가입일 기준 만 14세 미만의 미성년자인 경우
+    2. 가입신청자가 이전에 회원자격을 상실한 적이 있는 경우, 다만 회원자격 상실 후 3년이 경과한 자로서 “서비스”의 회원재가입 승낙을 얻은 경우에는 예외로 한다.
+    3. 등록 내용에 허위, 기재누락, 오기가 있는 경우
+    4. 기타 회원으로 등록하는 것이 “서비스”의 기술상 현저히 지장이 있다고 판단되는 경우
+3. 회원가입계약의 성립 시기는 “서비스”의 승낙이 회원에게 도달한 시점으로 합니다.
+4. 회원은 회원가입 시 등록한 사항에 변경이 있는 경우, 상당한 기간 이내에 “서비스”에 대하여 회원정보 수정 등의 방법으로 그 변경사항을 알려야 합니다.
+5. 회원은 계정 정보를 정확하게 제공해야 하며, 타인의 정보를 도용할 경우 서비스 이용이 제한될 수 있습니다.
+
+제6조 (회원 탈퇴 및 자격 상실 등)
+
+1. 회원은 “서비스”에 언제든지 탈퇴를 요청할 수 있으며 “서비스”는 즉시 회원탈퇴를 처리합니다. 이때, 회원탈퇴 처리된 경우 31일 간 재가입이 제한됩니다.
+2. 회원이 다음 각 호의 사유에 해당하는 경우, “서비스”는 회원자격을 제한 및 정지시킬 수 있습니다.
+    1. 가입 신청 시에 허위 내용을 등록한 경우
+    2. 다른 사람의 “서비스” 이용을 방해하거나 그 정보를 도용하는 등 서비스 질서를 위협하는 경우
+    3. 서비스에 타인의 권리를 침해하거나 부적절한 콘텐츠를 게시한 경우
+    4. “서비스”를 이용하여 법령 또는 이 약관이 금지하거나 공서양속에 반하는 행위를 하는 경우
+3. “서비스”가 회원 자격을 제한 및 정지 시킨 후, 동일한 행위가 2회 이상 반복되거나 30일 이내에 그 사유가 시정되지 아니하는 경우 “서비스”는 회원자격을 상실시킬 수 있습니다.
+4. “서비스”가 회원자격을 상실시키는 경우에는 회원등록을 말소합니다. 이 경우 회원에게 이를 통지하고, 회원등록 말소 전에 최소한 30일 이상의 기간을 정하여 소명할 기회를 부여합니다.
+
+제7조 (회원에 대한 통지)
+
+1. “서비스”는 회원에 대한 통지를 하는 경우, 회원이 “서비스”와 미리 약정하여 지정한 전자우편 주소로 할 수 있습니다.
+2. “서비스”는 불특정다수 회원에 대한 통지의 경우 1주일이상 “서비스” 내에 마련된 공지사항 게시판에 게시함으로서 개별 통지에 갈음할 수 있습니다.
+
+제8조 (개인정보보호)
+
+1.  “서비스”는 이용자의 개인정보 수집시 서비스제공을 위하여 필요한 범위에서 최소한의 개인정보를 수집합니다.
+2. “서비스”는 이용자의 개인정보를 수집·이용하는 때에는 당해 이용자에게 그 목적을 고지하고 동의를 받습니다.
+3. “서비스”는 수집된 개인정보를 목적외의 용도로 이용할 수 없으며, 새로운 이용목적이 발생한 경우 또는 제3자에게 제공하는 경우에는 이용·제공단계에서 당해 이용자에게 그 목적을 고지하고 동의를 받습니다. 다만, 관련 법령에 달리 정함이 있는 경우에는 예외로 합니다.
+4. 이용자는 언제든지 “서비스”가 가지고 있는 자신의 개인정보에 대해 열람 및 오류 정정을 요구할 수 있으며  “서비스”는 이에 대해 필요한 조치를 취할 의무를 집니다. 이용자가 오류의 정정을 요구한 경우에는 “서비스”는 그 오류를 정정할 때까지 당해 개인정보를 이용하지 않습니다.
+5. “서비스” 또는 그로부터 개인정보를 제공받은 제3자는 개인정보의 수집목적 또는 제공받은 목적을 달성한 때에는 당해 개인정보를 지체 없이 파기합니다.
+6. “서비스”는 개인정보의 수집·이용·제공에 관한 동의 란을 미리 선택한 것으로 설정해두지 않습니다. 다만 개인정보의 수집·이용·제공에 관한 이용자의 동의 거절 시 “서비스”는 회원가입 및 서비스 이용을 제한할 수 있습니다.
+
+제9조 (”서비스”의 의무)
+
+1. “서비스”는  법령과 이 약관이 금지하거나 공서양속에 반하는 행위를 하지 않으며 이 약관이 정하는 바에 따라 지속적이고, 안정적으로 용역을 제공하는데 최선을 다하여야 합니다.
+2. “서비스”는 이용자가 원하지 않는 영리목적의 광고성 전자우편을 발송하지 않습니다.
+
+제10조 (회원의 ID 및 비밀번호에 대한 의무)
+
+1. ID와 비밀번호에 관한 관리 책임은 회원에게 있습니다.
+2. 회원은 자신의 ID 및 비밀번호를 제3자에게 이용하게 해서는 안 됩니다.
+3. 회원이 자신의 ID 및 비밀번호를 도난당하거나 제3자가 사용하고 있음을 인지한 경우에는 바로 “서비스”에 통보하고 “서비스”의 안내가 있는 경우에는 그에 따라야 합니다.
+
+제11조 (이용자의 의무) 이용자는 다음 행위를 하여서는 안 됩니다.
+
+1. 신청 또는 변경 시 허위 내용의 등록
+2. 외부 공개가 금지된 공연의 영상 촬영본 및 녹음본 업로드
+3. 타인의 정보 도용
+4. “서비스”에 게시된 정보의 변경
+5. “서비스”가 정한 정보 이외의 정보(컴퓨터 프로그램 등) 등의 송신 또는 게시
+6. “서비스” 기타 제3자의 저작권 등 지적재산권에 대한 침해
+7. “서비스” 기타 제3자의 명예를 손상시키거나 업무를 방해하는 행위
+8. 외설 또는 폭력적인 메시지, 화상, 음성, 기타 공서양속에 반하는 정보를 “서비스”에 공개 또는 게시하는 행위
+
+제12조(저작권의 귀속 및 이용제한)
+
+1. “서비스“가 작성한 저작물에 대한 저작권 기타 지적재산권은 ”서비스“에 귀속합니다.
+2. 회원이 “서비스”에 게시한 콘텐츠에 대한 저작권은 회원에게 귀속됩니다. 다만, 회원은 “서비스”가 해당 콘텐츠를 서비스 운영 및 홍보, 마케팅 목적 등으로 사용하는 것을 허락합니다. 이에는 서비스 공식 SNS 채널(인스타그램 등)에 게시물을 캡처하거나 재구성하여 게시하는 행위가 포함됩니다. 다만, 회원이 타인의 저작권을 침해한 경우 모든 법적 책임은 회원에게 있습니다.
+3. “서비스"가 “회원"의 게시물을 SNS 등에 활용할 경우, 회원의 개인정보 보호를 위해 닉네임, 프로필 사진 등 작성자를 식별할 수 있는 정보는 익명 처리(블러 또는 가림 처리)하는 것을 원칙으로 합니다.
+4. 이용자는 “서비스”를 이용함으로써 얻은 정보 중 “서비스”에게 지적재산권이 귀속된 정보를 “서비스”의 사전 승낙 없이 복제, 송신, 출판, 배포, 방송 기타 방법에 의하여 영리목적으로 이용하거나 제3자에게 이용하게 하여서는 안 됩니다.
+5. “서비스”는 약정에 따라 이용자에게 귀속된 저작권을 사용하는 경우 당해 이용자에게 통보하여야 합니다.
+
+제13조 (책임의 제한)
+
+1. 회사는 천재지변, 서비스 장애, 해킹, 회원 과실 등 불가항력적 사유로 발생한 손해에 대해 책임을 지지 않습니다. 단, 회사에 고의 또는 중대한 과실이 인정되는 경우에는 그 범위 내에서 책임을 부담합니다. 회원이 서비스 이용과 관련해 입은 손해에 대해 회사의 배상책임은 통상 손해에 한하며, 특별손해는 책임지지 않습니다.
+2. 회원이 서비스 이용 과정에서 발생하는 법적 문제에 대한 책임은 회원 본인에게 있습니다.
+
+제14조 (준거법 및 분쟁 해결)
+
+1. 서비스 이용관련 분쟁이 발생한 경우, 당사자들은 우선 협의를 통한 원만한 해결을 시도하며, 협의가 실패한 경우 법률에 따라 관할 법원에 소송을 제기할 수 있습니다. 본 약관의 준거법은 대한민국 법률로 합니다.
+2. 서비스 이용과 관련한 분쟁이 발생할 경우 회사의 소재지를 관할하는 법원을 전속 관할법원으로 합니다.`}
             </div>
           </div>
         </div>
@@ -114,18 +203,63 @@ const TermsAgreementPage = () => {
           <h2 className="w-[335px] h-[17px] font-pretendard font-semibold text-sm leading-[17px] flex items-center text-[#4C4C4C]">
             개인정보처리방침
           </h2>
-          <div className="flex flex-row justify-center items-center p-[14px] gap-[10px] w-[335px] h-[168px] bg-[#F4F5F7] rounded-md">
-            <div className="flex-1 h-[140px] font-pretendard font-medium text-xs leading-[14px] flex items-center text-[#A6A6A6] overflow-y-auto">
-              개인정보처리방침 전문
-              {'\n\n'}
-              1. 개인정보의 처리목적
-              회사는 다음의 목적을 위하여 개인정보를 처리하고 있으며, 다음의 목적 이외의 용도로는 이용하지 않습니다.
-              - 회원가입 및 관리
-              - 서비스 제공
-              - 민원사무 처리
-              {'\n\n'}
-              2. 개인정보의 처리 및 보유기간
-              회사는 정보주체로부터 개인정보를 수집할 때 동의받은 개인정보 보유·이용기간 또는 법령에 따른 개인정보 보유·이용기간 내에서 개인정보를 처리·보유합니다.
+          <div className="flex flex-col p-[14px] w-[335px] h-[168px] bg-[#F4F5F7] rounded-md">
+            <div className="w-full h-full font-pretendard font-medium text-[13px] leading-5 text-[#A6A6A6] overflow-y-auto whitespace-pre-wrap break-words">
+              {`개인정보처리방침 전문
+
+제1조 (목적)
+본 개인정보 처리방침은 <클래식 듣는 다람쥐> 서비스(이하 "서비스")를 이용하는 회원의 개인정보를 보호하고, 이를 적절히 처리하는 방법을 안내하기 위해 마련되었습니다.
+
+제2조 (수집하는 개인정보 항목)
+회사는 서비스 제공을 위해 다음과 같은 개인정보를 수집할 수 있습니다. 
+
+1. 회원가입 시: 성명, 생년월일, 이메일, 비밀번호, 닉네임 등
+2. 서비스 이용 시: 기기 정보, 접속 로그, 쿠키 등
+3. 고객 문의 시: 이름, 연락처, 문의 내용 등
+4. 커뮤니티 활동: 게시글, 댓글, 프로필 사진 등 회원이 제공한 정보
+
+제3조 (개인정보의 이용 목적)
+수집된 개인정보는 다음과 같은 목적으로 이용됩니다.
+
+1. 회원가입 및 본인 확인, 서비스 이용 관리
+2. 서비스 제공 및 맞춤형 콘텐츠 제공
+3. 고객 문의 및 불만 처리, 서비스 개선
+4. 법률상 의무 이행 및 분쟁 해결
+
+제4조 (개인정보의 보관 및 파기)
+
+1. 회원 탈퇴 또는 이용 목적이 달성된 경우 지체 없이 개인정보를 파기합니다. 단, 이용약관 위반에 따른 제재 회피 및 부정이용 방지를 위하여 아래와 같이 특정 정보를 일정 기간 동안 안전하게 보관될 수 있습니다.
+    - 보관 항목: 가입 이메일 주소, 탈퇴 일시, 서비스 이용 기록(징계 기록 등)
+    - 보관 목적: 탈퇴 후 재가입 제한 기간 적용 및 중복 가입 확인
+    - 보관 기간: 회원 탈퇴일로부터 31일간
+2. 법령에 따라 별도로 보관해야 할 경우 해당 기간 동안 안전하게 보관합니다.
+3. 전자적 파일 형태의 개인정보는 복구 불가능한 방법으로 안전하게 삭제합니다.
+4. 파기 절차 및 방법은 내부 정책에 따라 체계적으로 실시합니다.
+
+제5조 (개인정보 제공 및 위탁)
+
+1. 회원 동의 없이 개인정보를 제3자에게 제공하지 않습니다.
+2. 서비스 운영을 위해 일부 업무(예: 서버 관리, 고객 상담 등)를 신뢰할 수 있는 외부 전문 업체에 위탁할 수 있으며, 위탁 시 회원에게 사전 고지합니다.
+
+제6조 (회원의 권리 및 행사 방법)
+
+1. 회원은 언제든지 자신의 개인정보를 열람, 수정, 삭제할 수 있습니다.
+2. 개인정보 삭제 요청 시 법령상 의무 보존 대상 정보를 제외하고 즉시 처리합니다.
+3. 개인정보 관련 권리 행사는 서비스 내 ‘개인정보 관리’ 메뉴 또는 ‘직접 문의하기’를 통해 가능합니다.
+
+제7조 (개인정보 보호를 위한 기술적 및 관리적 조치)
+회사는 개인정보 보호를 위해 다음과 같은 조치를 시행합니다.
+
+1. 개인정보 암호화 및 접근 권한 제한
+2. 정기적인 보안 점검
+3. 개인정보 보호 교육 시행
+
+제8조 (문의처)
+개인정보와 관련한 문의는 아래 연락처로 문의해 주세요.
+
+- <classicaldaramz@gmail.com>
+
+본 개인정보 처리방침은 2026년 1월 1일부터 적용됩니다.`}
             </div>
           </div>
         </div>
@@ -141,9 +275,8 @@ const TermsAgreementPage = () => {
             </div>
             <button
               onClick={() => handleAllAgreement(!agreements.all)}
-              className={`w-3 h-3 rounded-full border-[1.5px] flex items-center justify-center ${
-                agreements.all ? 'border-[#293A92] bg-[#293A92]' : 'border-[#D9D9D9]'
-              }`}
+              className={`w-3 h-3 rounded-full border-[1.5px] flex items-center justify-center ${agreements.all ? 'border-[#293A92] bg-[#293A92]' : 'border-[#D9D9D9]'
+                }`}
             >
               {agreements.all && (
                 <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -154,7 +287,7 @@ const TermsAgreementPage = () => {
           {/* 개별 동의 항목들 */}
           <div className="flex flex-row justify-center items-center px-[14px] py-[25px] gap-[10px] w-[335px] h-[152px] border-2 border-[#F5F5F5] rounded-md">
             <div className="flex flex-col items-start gap-[18px] w-[311px] h-[102px]">
-              
+
               {/* 이용약관 동의 */}
               <div className="flex flex-row items-center px-[10px] gap-[18px] w-[311px] h-[17px]">
                 <div className="flex flex-col items-start gap-[2px] flex-1 h-[17px]">
@@ -164,9 +297,8 @@ const TermsAgreementPage = () => {
                 </div>
                 <button
                   onClick={() => handleIndividualAgreement('terms', !agreements.terms)}
-                  className={`w-3 h-3 rounded-full border-[1.5px] flex items-center justify-center ${
-                    agreements.terms ? 'border-[#293A92] bg-[#293A92]' : 'border-[#D9D9D9]'
-                  }`}
+                  className={`w-3 h-3 rounded-full border-[1.5px] flex items-center justify-center ${agreements.terms ? 'border-[#293A92] bg-[#293A92]' : 'border-[#D9D9D9]'
+                    }`}
                 >
                   {agreements.terms && (
                     <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -183,9 +315,8 @@ const TermsAgreementPage = () => {
                 </div>
                 <button
                   onClick={() => handleIndividualAgreement('privacy', !agreements.privacy)}
-                  className={`w-3 h-3 rounded-full border-[1.5px] flex items-center justify-center ${
-                    agreements.privacy ? 'border-[#293A92] bg-[#293A92]' : 'border-[#D9D9D9]'
-                  }`}
+                  className={`w-3 h-3 rounded-full border-[1.5px] flex items-center justify-center ${agreements.privacy ? 'border-[#293A92] bg-[#293A92]' : 'border-[#D9D9D9]'
+                    }`}
                 >
                   {agreements.privacy && (
                     <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -202,9 +333,8 @@ const TermsAgreementPage = () => {
                 </div>
                 <button
                   onClick={() => handleIndividualAgreement('marketing', !agreements.marketing)}
-                  className={`w-3 h-3 rounded-full border-[1.5px] flex items-center justify-center ${
-                    agreements.marketing ? 'border-[#293A92] bg-[#293A92]' : 'border-[#D9D9D9]'
-                  }`}
+                  className={`w-3 h-3 rounded-full border-[1.5px] flex items-center justify-center ${agreements.marketing ? 'border-[#293A92] bg-[#293A92]' : 'border-[#D9D9D9]'
+                    }`}
                 >
                   {agreements.marketing && (
                     <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -220,16 +350,15 @@ const TermsAgreementPage = () => {
       <button
         onClick={handleNext}
         disabled={!isNextEnabled}
-        className={`absolute left-1/2 transform -translate-x-1/2 top-[737px] flex flex-row justify-center items-center px-5 py-[5px] gap-[2px] w-[335px] h-12 rounded-md ${
-          isNextEnabled ? 'bg-[#293A92]' : 'bg-[#A6A6A6]'
-        }`}
+        className={`absolute left-1/2 transform -translate-x-1/2 top-[737px] flex flex-row justify-center items-center px-5 py-[5px] gap-[2px] w-[335px] h-12 rounded-md ${isNextEnabled ? 'bg-[#293A92]' : 'bg-[#A6A6A6]'
+          }`}
       >
         <span className="flex-1 h-[19px] font-pretendard font-semibold text-base leading-[19px] flex items-center justify-center text-white cursor-pointer">
           다음
         </span>
         <div className="w-5 h-5">
           <svg width="7" height="15" viewBox="0 0 7 15" fill="none">
-            <path d="M1 1L6 7.5L1 14" stroke="#FFFFFF" strokeWidth="2"/>
+            <path d="M1 1L6 7.5L1 14" stroke="#FFFFFF" strokeWidth="2" />
           </svg>
         </div>
       </button>
