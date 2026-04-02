@@ -74,6 +74,29 @@ interface PostDetailPageProps {
   }>;
 }
 
+// 컴포넌트 외부로 이동 — 렌더마다 재생성 방지
+function updateCommentLike(comments: Comment[], commentId: number, liked: boolean): Comment[] {
+  return comments.map((c) => {
+    if (c.id === commentId) {
+      return { ...c, isLiked: liked, likeCount: liked ? c.likeCount + 1 : c.likeCount - 1 };
+    }
+    if (c.childComments) {
+      return { ...c, childComments: updateCommentLike(c.childComments, commentId, liked) };
+    }
+    return c;
+  });
+}
+
+function findComment(comments: Comment[], commentId: number): Comment | undefined {
+  for (const c of comments) {
+    if (c.id === commentId) return c;
+    if (c.childComments) {
+      const found = findComment(c.childComments, commentId);
+      if (found) return found;
+    }
+  }
+}
+
 // ================== Main Component ==================
 
 export default function PostDetailPage({ params }: PostDetailPageProps) {
@@ -84,6 +107,9 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [likingCommentIds, setLikingCommentIds] = useState<Set<number>>(new Set());
+  const [isLikingPost, setIsLikingPost] = useState(false);
+  const [isScrappingPost, setIsScrappingPost] = useState(false);
 
   // ========== Authorization Hook ==========
   // 로그인 여부 및 작성자 본인 여부를 판별
@@ -118,6 +144,16 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     }
   };
 
+  // 로딩 표시 없이 조용히 새로고침 (댓글/좋아요 후 사용)
+  const silentRefresh = async (pId: string) => {
+    try {
+      const response = await apiClient.get(`/posts/${pId}`);
+      setPost(response.data);
+    } catch (err) {
+      console.error('Failed to refresh post:', err);
+    }
+  };
+
   // ========== Event Handlers ==========
   
   // 토스트 알림 표시 헬퍼
@@ -147,63 +183,48 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   
   // 좋아요 토글 핸들러
   const handleToggleLike = async () => {
-    if (!post) return;
-    
-    // 로그인 체크
+    if (!post || isLikingPost) return;
     if (!requireAuth('좋아요')) return;
 
     const prevLiked = post.isLiked;
     const prevCount = post.likeCount;
 
-    // Optimistic Update
-    setPost({
-      ...post,
-      isLiked: !prevLiked,
-      likeCount: prevLiked ? prevCount - 1 : prevCount + 1,
-    });
-
+    setPost({ ...post, isLiked: !prevLiked, likeCount: prevLiked ? prevCount - 1 : prevCount + 1 });
+    setIsLikingPost(true);
     try {
       await apiClient.post(`/posts/${postId}/like`);
       showToast(prevLiked ? '좋아요를 취소했습니다.' : '좋아요를 눌렀습니다.');
     } catch (err) {
-      // Rollback on error
-      setPost({
-        ...post,
-        isLiked: prevLiked,
-        likeCount: prevCount,
-      });
+      setPost({ ...post, isLiked: prevLiked, likeCount: prevCount });
       console.error('Failed to toggle like:', err);
-      showToast('좋아요 처리에 실패했습니다.', 'error');
+      const msg = err instanceof Error && err.message.includes('요청이 너무')
+        ? err.message
+        : (err as AxiosError<{ message: string }>).response?.data?.message || '좋아요 처리에 실패했습니다.';
+      showToast(msg, 'error');
+    } finally {
+      setIsLikingPost(false);
     }
   };
 
   // 스크랩 토글 핸들러
   const handleToggleScrap = async () => {
-    if (!post) return;
-    
-    // 로그인 체크
+    if (!post || isScrappingPost) return;
     if (!requireAuth('스크랩')) return;
 
     const prevScrapped = post.isScrapped;
 
-    // Optimistic Update
-    setPost({
-      ...post,
-      isScrapped: !prevScrapped,
-    });
-
+    setPost({ ...post, isScrapped: !prevScrapped });
+    setIsScrappingPost(true);
     try {
       await apiClient.post(`/posts/${postId}/scrap`);
       showToast(prevScrapped ? '스크랩을 취소했습니다.' : '스크랩했습니다.');
     } catch (err) {
-      // Rollback on error
-      setPost({
-        ...post,
-        isScrapped: prevScrapped,
-      });
+      setPost({ ...post, isScrapped: prevScrapped });
       console.error('Failed to toggle scrap:', err);
       const axiosError = err as AxiosError<{ message: string }>;
       showToast(axiosError.response?.data?.message || '스크랩 처리에 실패했습니다.', 'error');
+    } finally {
+      setIsScrappingPost(false);
     }
   };
 
@@ -214,20 +235,17 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
     try {
       if (parentCommentId) {
-        // 대댓글 생성
         await apiClient.post(`/comments/${parentCommentId}/replies`, { content });
         showToast('답글이 작성되었습니다.');
       } else {
-        // 댓글 생성
         await apiClient.post(`/posts/${postId}/comments`, { content });
         showToast('댓글이 작성되었습니다.');
       }
-      
-      // 포스트 데이터 새로고침
-      await fetchPostDetail(postId);
+      await silentRefresh(postId);
     } catch (err) {
       console.error('Failed to add comment:', err);
       showToast('댓글 작성에 실패했습니다.', 'error');
+      throw err; // CommentSection이 입력 내용을 유지하도록 rethrow
     }
   };
 
@@ -238,24 +256,42 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     try {
       await apiClient.delete(`/comments/${commentId}`);
       showToast('댓글이 삭제되었습니다.');
-      await fetchPostDetail(postId);
+      await silentRefresh(postId);
     } catch (err) {
       console.error('Failed to delete comment:', err);
       showToast('댓글 삭제에 실패했습니다.', 'error');
     }
   };
 
-  // 댓글 좋아요 토글 핸들러
+  // 댓글 좋아요 토글 핸들러 (낙관적 업데이트 — silentRefresh 없음)
   const handleToggleCommentLike = async (commentId: number) => {
+    if (!post) return;
     // 로그인 체크
     if (!requireAuth('댓글 좋아요')) return;
+    // 연타 방지
+    if (likingCommentIds.has(commentId)) return;
 
+    const target = findComment(post.comments, commentId);
+    if (!target) return;
+    const nowLiked = !target.isLiked;
+
+    // 낙관적 업데이트
+    setPost({ ...post, comments: updateCommentLike(post.comments, commentId, nowLiked) });
+
+    setLikingCommentIds((prev) => new Set(prev).add(commentId));
     try {
       await apiClient.post(`/comments/${commentId}/like`);
-      await fetchPostDetail(postId);
     } catch (err) {
+      // 롤백
+      setPost((prev) => prev ? { ...prev, comments: updateCommentLike(prev.comments, commentId, !nowLiked) } : prev);
       console.error('Failed to toggle comment like:', err);
       showToast('댓글 좋아요 처리에 실패했습니다.', 'error');
+    } finally {
+      setLikingCommentIds((prev) => {
+        const next = new Set(prev);
+        next.delete(commentId);
+        return next;
+      });
     }
   };  // 포스트 삭제 핸들러 (작성자 전용)
   const handleDeletePost = async () => {

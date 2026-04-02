@@ -63,10 +63,11 @@ export default function CommentSection({
         newComment.trim(),
         replyMode?.commentId
       );
+      // 성공 시에만 입력 내용 초기화
       setNewComment('');
       setReplyMode(null);
-    } catch (err) {
-      console.error('Failed to submit comment:', err);
+    } catch {
+      // 실패 시 입력 내용 유지 (page.tsx에서 toast 표시)
     } finally {
       setIsSubmitting(false);
     }

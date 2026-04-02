@@ -27,22 +27,20 @@ export function usePostAuth(
   const { isAuthenticated: checkAuth } = useAuthStore();
   const { profile } = useUserProfileStore();
 
+  // checkAuth는 함수 참조이므로 deps에 넣으면 매 렌더마다 재계산됨
+  // 대신 호출 결과를 밖에서 한 번만 평가
+  const isAuthStoreLoggedIn = checkAuth();
+
   const authStatus = useMemo(() => {
-    // 1. 로그인 여부 확인 (3가지 방법)
-    // - authStore의 isAuthenticated() 체크
-    // - isLiked/isScrapped가 null이 아닌지 확인 (서버가 로그인 유저에게만 boolean 반환)
     const isLoggedIn =
-      checkAuth() ||
+      isAuthStoreLoggedIn ||
       (isLiked !== null && isLiked !== undefined) ||
       (isScrapped !== null && isScrapped !== undefined);
-    
-    // 2. 현재 로그인한 유저의 닉네임
+
     const currentNickname = profile?.nickname || null;
-    
-    // 3. 작성자 본인 여부 확인
-    // - 로그인 상태이고, 현재 유저의 닉네임과 작성자 닉네임이 일치하는 경우
-    const isPostAuthor = isLoggedIn && 
-                         currentNickname !== null && 
+
+    const isPostAuthor = isLoggedIn &&
+                         currentNickname !== null &&
                          currentNickname === writerNickname;
 
     return {
@@ -50,7 +48,7 @@ export function usePostAuth(
       isAuthor: isPostAuthor,
       currentUserNickname: currentNickname,
     };
-  }, [checkAuth, isLiked, isScrapped, profile?.nickname, writerNickname]);
+  }, [isAuthStoreLoggedIn, isLiked, isScrapped, profile?.nickname, writerNickname]);
 
   return authStatus;
 }

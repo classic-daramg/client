@@ -165,19 +165,17 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
 
       } catch (refreshError) {
-        console.error('❌ 토큰 갱신 실패! 백엔드에서 갱신 요청을 거절했습니다:', refreshError);
-        if (axios.isAxiosError(refreshError) && refreshError.response) {
-          console.error('❌ 실패 응답 본문:', refreshError.response.data);
-          console.error('❌ 실패 응답 상태 코드:', refreshError.response.status);
-        }
+        console.error('❌ 토큰 갱신 실패:', refreshError);
 
-        // 갱신 API 자체가 실패한 경우 (Refresh Token 만료 등)
         onRefreshFailed(refreshError);
-
-        // 인증 정보 클리어 및 로그인 페이지 리다이렉트
         useAuthStore.getState().clearTokens();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/loginpage';
+
+        // refresh token 자체가 만료(401)된 경우에만 로그인 페이지로 이동
+        const refreshStatus = axios.isAxiosError(refreshError) ? refreshError.response?.status : null;
+        if (refreshStatus === 401 || refreshStatus === 403) {
+          if (typeof window !== 'undefined') {
+            window.location.href = '/loginpage';
+          }
         }
 
         return Promise.reject(refreshError);
@@ -185,6 +183,15 @@ apiClient.interceptors.response.use(
         // 갱신 작업 완료 후 플래그 해제
         isRefreshing = false;
       }
+    }
+
+    // 429 Too Many Requests — 에러 메시지를 사람이 읽을 수 있게 보강
+    if (response?.status === 429) {
+      const retryAfter = response.headers?.['retry-after'];
+      const msg = retryAfter
+        ? `요청이 너무 많습니다. ${retryAfter}초 후 다시 시도해주세요.`
+        : '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
+      return Promise.reject(new Error(msg));
     }
 
     // 그 외의 모든 에러는 그대로 reject

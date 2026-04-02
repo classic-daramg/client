@@ -27,6 +27,52 @@ interface PostContentProps {
  * @param videoUrl - 비디오 URL (optional)
  * @param hashtags - 해시태그 배열
  */
+// 컴포넌트 외부로 이동 — 렌더마다 재생성 방지
+function isValidUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return url.startsWith('http://') || url.startsWith('https://');
+  } catch {
+    return false;
+  }
+}
+
+function getYouTubeEmbedUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace('www.', '');
+    let videoId = '';
+
+    if (hostname === 'youtu.be') {
+      videoId = parsed.pathname.replace('/', '');
+    } else if (
+      hostname.endsWith('youtube.com') ||
+      hostname.endsWith('youtube-nocookie.com') ||
+      hostname.endsWith('music.youtube.com')
+    ) {
+      if (parsed.pathname.startsWith('/watch')) {
+        videoId = parsed.searchParams.get('v') || '';
+      } else if (parsed.pathname.startsWith('/embed/')) {
+        videoId = parsed.pathname.split('/')[2] || '';
+      } else if (parsed.pathname.startsWith('/shorts/')) {
+        videoId = parsed.pathname.split('/')[2] || '';
+      } else if (parsed.pathname.startsWith('/v/')) {
+        videoId = parsed.pathname.split('/')[2] || '';
+      }
+    }
+
+    if (!videoId || videoId.length !== 11) return null;
+
+    const start = parsed.searchParams.get('start') || parsed.searchParams.get('t');
+    const startSeconds = start ? start.replace('s', '') : '';
+    const startParam = startSeconds ? `?start=${startSeconds}` : '';
+
+    return `https://www.youtube.com/embed/${videoId}${startParam}`;
+  } catch {
+    return null;
+  }
+}
+
 export default function PostContent({
   title,
   content,
@@ -37,16 +83,6 @@ export default function PostContent({
   additionalComposerNames = [],
   showComposerChip = false,
 }: PostContentProps) {
-  // URL 검증 함수
-  const isValidUrl = (url: string): boolean => {
-    try {
-      new URL(url);
-      return url.startsWith('http://') || url.startsWith('https://');
-    } catch {
-      return false;
-    }
-  };
-
   // 유효한 이미지만 필터링
   const validImages = images.filter(isValidUrl);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -66,44 +102,8 @@ export default function PostContent({
     setIsImageModalOpen(true);
   };
 
-  // YouTube URL을 embed URL로 변환
-  const getYouTubeEmbedUrl = (url: string): string | null => {
-    try {
-      const parsed = new URL(url);
-      const hostname = parsed.hostname.replace('www.', '');
-      let videoId = '';
-
-      if (hostname === 'youtu.be') {
-        videoId = parsed.pathname.replace('/', '');
-      } else if (
-        hostname.endsWith('youtube.com') ||
-        hostname.endsWith('youtube-nocookie.com') ||
-        hostname.endsWith('music.youtube.com')
-      ) {
-        if (parsed.pathname.startsWith('/watch')) {
-          videoId = parsed.searchParams.get('v') || '';
-        } else if (parsed.pathname.startsWith('/embed/')) {
-          videoId = parsed.pathname.split('/')[2] || '';
-        } else if (parsed.pathname.startsWith('/shorts/')) {
-          videoId = parsed.pathname.split('/')[2] || '';
-        } else if (parsed.pathname.startsWith('/v/')) {
-          videoId = parsed.pathname.split('/')[2] || '';
-        }
-      }
-
-      if (!videoId || videoId.length !== 11) {
-        return null;
-      }
-
-      const start = parsed.searchParams.get('start') || parsed.searchParams.get('t');
-      const startSeconds = start ? start.replace('s', '') : '';
-      const startParam = startSeconds ? `?start=${startSeconds}` : '';
-
-      return `https://www.youtube.com/embed/${videoId}${startParam}`;
-    } catch {
-      return null;
-    }
-  };
+  // 유효한 embed URL을 한 번만 계산
+  const embedUrl = videoUrl ? getYouTubeEmbedUrl(videoUrl) : null;
 
   return (
     <div className="px-5 pb-5 flex flex-col gap-4 bg-white">
@@ -199,10 +199,10 @@ export default function PostContent({
       )}
 
       {/* 비디오 (YouTube Embed) */}
-      {videoUrl && getYouTubeEmbedUrl(videoUrl) && (
+      {embedUrl && (
         <div className="relative w-full aspect-video bg-[#d9d9d9] rounded-lg overflow-hidden">
           <iframe
-            src={getYouTubeEmbedUrl(videoUrl)!}
+            src={embedUrl}
             title="YouTube video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
